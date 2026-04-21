@@ -1,0 +1,519 @@
+/* ----------------------------------------------------------------====
+   HLQUERY DESIGN SYSTEM - BEAUTIFUL & CONSISTENT
+   ----------------------------------------------------------------==== */
+
+:root {
+  /* Primary Colors */
+  --primary: #0067b2;
+  --primary-hover: #005a9a;
+  --primary-light: rgba(0, 103, 178, 0.1);
+  --primary-dark: #004d82;
+  
+  /* Neutral Colors */
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  
+  /* Semantic Colors */
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  
+  /* Spacing Scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Shadows - Beautiful Elevation */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.16), 0 8px 16px rgba(0, 0, 0, 0.12);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL BUTTON STYLES - CONSISTENT & BEAUTIFUL
+   ----------------------------------------------------------------==== */
+
+/* Primary Buttons - All Views */
+.v-btn[color="primary"][variant="flat"],
+.v-btn.color-primary.variant-flat {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  border-radius: var(--radius-md) !important;
+  font-weight: 500 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: all var(--transition-base) !important;
+  padding: 8px 16px !important;
+  min-height: 36px !important;
+}
+
+.v-btn[color="primary"][variant="flat"]:hover,
+.v-btn.color-primary.variant-flat:hover {
+  background: var(--primary-hover) !important;
+  box-shadow: var(--shadow-md) !important;
+  transform: translateY(-1px);
+}
+
+.v-btn[color="primary"][variant="flat"]:active,
+.v-btn.color-primary.variant-flat:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm) !important;
+}
+
+.v-btn[color="primary"][variant="flat"] .v-btn__content,
+.v-btn.color-primary.variant-flat .v-btn__content {
+  color: #ffffff !important;
+}
+
+.v-btn[color="primary"][variant="flat"] .v-icon,
+.v-btn.color-primary.variant-flat .v-icon {
+  color: #ffffff !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL CARD STYLES - CONSISTENT & BEAUTIFUL
+   ----------------------------------------------------------------==== */
+
+.v-card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--gray-200) !important;
+  background: #ffffff !important;
+  transition: all var(--transition-base) !important;
+}
+
+.v-card:hover {
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-2px);
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL INPUT STYLES - CONSISTENT & BEAUTIFUL
+   ----------------------------------------------------------------==== */
+
+.v-text-field :deep(.v-field),
+.v-select :deep(.v-field),
+.v-autocomplete :deep(.v-field) {
+  border-radius: var(--radius-md) !important;
+  background: var(--gray-50) !important;
+  border: 1px solid var(--gray-200) !important;
+  transition: all var(--transition-base) !important;
+}
+
+.v-text-field :deep(.v-field--focused),
+.v-select :deep(.v-field--focused),
+.v-autocomplete :deep(.v-field--focused) {
+  background: #ffffff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--primary-light) !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL TABLE STYLES - CONSISTENT & BEAUTIFUL
+   Man-page inspired hover effects
+   ----------------------------------------------------------------==== */
+
+/* Base table container */
+.v-data-table,
+.v-table,
+table {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  background: #ffffff !important;
+}
+
+/* Table wrapper */
+.v-data-table__wrapper,
+.v-table__wrapper {
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden !important;
+}
+
+/* ----------------------------------------------------------------====
+   TABLE HEADER STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.v-data-table__thead,
+.v-table thead,
+table thead {
+  background: linear-gradient(135deg, var(--gray-600) 0%, var(--gray-700) 100%) !important;
+  position: relative !important;
+}
+
+.v-data-table__thead th,
+.v-table thead th,
+table thead th {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  padding: 16px 20px !important;
+  text-align: left !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+  transition: all var(--transition-fast) !important;
+  position: relative !important;
+}
+
+.v-data-table__thead th:hover,
+.v-table thead th:hover,
+table thead th:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ----------------------------------------------------------------====
+   TABLE BODY STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.v-data-table__tbody,
+.v-table tbody,
+table tbody {
+  background: #ffffff !important;
+}
+
+.v-data-table__tbody tr,
+.v-table tbody tr,
+table tbody tr {
+  transition: all var(--transition-fast) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  background: #ffffff !important;
+  position: relative !important;
+}
+
+/* Man-page inspired hover effect - smooth and consistent */
+.v-data-table__tbody tr:hover,
+.v-table tbody tr:hover,
+table tbody tr:hover {
+  background: var(--gray-50) !important;
+  background-color: var(--gray-50) !important;
+  cursor: pointer !important;
+  transform: translateX(2px) !important;
+  box-shadow: -2px 0 0 0 var(--primary-light) !important;
+}
+
+/* Hover effect for table cells */
+.v-data-table__tbody tr:hover td,
+.v-table tbody tr:hover td,
+table tbody tr:hover td {
+  background: var(--gray-50) !important;
+  background-color: var(--gray-50) !important;
+  color: var(--gray-900) !important;
+}
+
+/* Table cell styles */
+.v-data-table__tbody td,
+.v-table tbody td,
+table tbody td {
+  padding: 16px 20px !important;
+  color: var(--gray-700) !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  transition: all var(--transition-fast) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+}
+
+/* Zebra striping for better readability */
+.v-data-table__tbody tr:nth-child(even),
+.v-table tbody tr:nth-child(even),
+table tbody tr:nth-child(even) {
+  background: var(--gray-50) !important;
+}
+
+.v-data-table__tbody tr:nth-child(even):hover,
+.v-table tbody tr:nth-child(even):hover,
+table tbody tr:nth-child(even):hover {
+  background: var(--gray-100) !important;
+  background-color: var(--gray-100) !important;
+}
+
+.v-data-table__tbody tr:nth-child(even):hover td,
+.v-table tbody tr:nth-child(even):hover td,
+table tbody tr:nth-child(even):hover td {
+  background: var(--gray-100) !important;
+  background-color: var(--gray-100) !important;
+}
+
+/* Last row border removal */
+.v-data-table__tbody tr:last-child,
+.v-table tbody tr:last-child,
+table tbody tr:last-child {
+  border-bottom: none !important;
+}
+
+.v-data-table__tbody tr:last-child td,
+.v-table tbody tr:last-child td,
+table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* ----------------------------------------------------------------====
+   TABLE ROW INTERACTIVE STATES
+   ----------------------------------------------------------------==== */
+
+/* Clickable rows */
+.v-data-table__tbody tr[role="button"],
+.v-table tbody tr[role="button"],
+table tbody tr[role="button"] {
+  cursor: pointer !important;
+}
+
+.v-data-table__tbody tr[role="button"]:active,
+.v-table tbody tr[role="button"]:active,
+table tbody tr[role="button"]:active {
+  background: var(--gray-100) !important;
+  transform: translateX(1px) !important;
+}
+
+/* Selected row state */
+.v-data-table__tbody tr.v-data-table__tr--selected,
+.v-table tbody tr.selected,
+table tbody tr.selected {
+  background: var(--primary-light) !important;
+  border-left: 3px solid var(--primary) !important;
+}
+
+.v-data-table__tbody tr.v-data-table__tr--selected:hover,
+.v-table tbody tr.selected:hover,
+table tbody tr.selected:hover {
+  background: var(--primary-light) !important;
+  opacity: 0.9 !important;
+}
+
+/* ----------------------------------------------------------------====
+   TABLE CELL SPECIFIC STYLES
+   ----------------------------------------------------------------==== */
+
+/* First column - often contains identifiers */
+.v-data-table__tbody td:first-child,
+.v-table tbody td:first-child,
+table tbody td:first-child {
+  font-weight: 500 !important;
+  color: var(--gray-900) !important;
+}
+
+/* Last column - often contains actions */
+.v-data-table__tbody td:last-child,
+.v-table tbody td:last-child,
+table tbody td:last-child {
+  text-align: right !important;
+}
+
+/* ----------------------------------------------------------------====
+   TABLE RESPONSIVE STYLES
+   ----------------------------------------------------------------==== */
+
+@media (max-width: 768px) {
+  .v-data-table__thead th,
+  .v-table thead th,
+  table thead th {
+    padding: 12px 16px !important;
+    font-size: 12px !important;
+  }
+  
+  .v-data-table__tbody td,
+  .v-table tbody td,
+  table tbody td {
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ----------------------------------------------------------------====
+   TABLE DARK MODE SUPPORT
+   ----------------------------------------------------------------==== */
+
+.v-theme--dark .v-data-table__thead,
+.v-theme--dark .v-table thead,
+.v-theme--dark table thead {
+  background: linear-gradient(135deg, var(--gray-700) 0%, var(--gray-800) 100%) !important;
+}
+
+.v-theme--dark .v-data-table__tbody tr,
+.v-theme--dark .v-table tbody tr,
+.v-theme--dark table tbody tr {
+  background: var(--gray-800) !important;
+  border-bottom-color: var(--gray-700) !important;
+}
+
+.v-theme--dark .v-data-table__tbody tr:hover,
+.v-theme--dark .v-table tbody tr:hover,
+.v-theme--dark table tbody tr:hover {
+  background: var(--gray-700) !important;
+}
+
+.v-theme--dark .v-data-table__tbody tr:nth-child(even),
+.v-theme--dark .v-table tbody tr:nth-child(even),
+.v-theme--dark table tbody tr:nth-child(even) {
+  background: var(--gray-800) !important;
+}
+
+.v-theme--dark .v-data-table__tbody tr:nth-child(even):hover,
+.v-theme--dark .v-table tbody tr:nth-child(even):hover,
+.v-theme--dark table tbody tr:nth-child(even):hover {
+  background: var(--gray-700) !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL ALERT STYLES - CONSISTENT & BEAUTIFUL
+   ----------------------------------------------------------------==== */
+
+.v-alert {
+  border-radius: var(--radius-md) !important;
+  border-left-width: 4px !important;
+  border-left-style: solid !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL PAGE HEADER STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.page-header {
+  margin-bottom: var(--space-8) !important;
+  padding-bottom: var(--space-4) !important;
+}
+
+.page-title {
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 32px !important;
+  font-weight: 600 !important;
+  line-height: 40px !important;
+  color: var(--gray-900) !important;
+  margin: 0 0 var(--space-2) 0 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.page-subtitle {
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: var(--gray-500) !important;
+  margin: 0 !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL ACTION BAR STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.action-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: var(--space-6) !important;
+  gap: var(--space-4) !important;
+}
+
+.action-bar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-4) !important;
+  flex: 1 !important;
+}
+
+.action-bar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-3) !important;
+  margin-left: auto !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL EMPTY STATE STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.empty-state {
+  text-align: center !important;
+  padding: var(--space-16) var(--space-8) !important;
+}
+
+.empty-state-icon {
+  font-size: 64px !important;
+  color: var(--gray-300) !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+.empty-state-title {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: var(--gray-700) !important;
+  margin-bottom: var(--space-2) !important;
+}
+
+.empty-state-subtitle {
+  font-size: 14px !important;
+  color: var(--gray-500) !important;
+  max-width: 500px !important;
+  margin: 0 auto !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL LOADING STATE STYLES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.loading-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: var(--space-16) !important;
+  color: var(--gray-500) !important;
+}
+
+/* ----------------------------------------------------------------====
+   GLOBAL SPACING UTILITIES - CONSISTENT
+   ----------------------------------------------------------------==== */
+
+.mb-section {
+  margin-bottom: var(--space-8) !important;
+}
+
+.mb-card {
+  margin-bottom: var(--space-6) !important;
+}
+
+.mt-section {
+  margin-top: var(--space-8) !important;
+}
+
+.mt-card {
+  margin-top: var(--space-6) !important;
+}
+
+
+

@@ -1,0 +1,70 @@
+{
+  "name": "hlquery-analyzer",
+  "version": "1.0.0",
+  "description": "Professional web interface for managing, monitoring, and analyzing your HLQuery search server",
+  "type": "module",
+  "author": "HLQuery Team",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "hlquery",
+    "search",
+    "analytics",
+    "dashboard",
+    "enterprise",
+    "monitoring",
+    "vue",
+    "vuetify"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/hlquery.git",
+    "directory": "etc/hanalyzer"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/hlquery/issues"
+  },
+  "homepage": "https://hlquery.com",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview",
+    "preview:prod": "vite preview --mode production",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "type-check": "vue-tsc --noEmit",
+    "clean": "rm -rf dist node_modules/.vite",
+    "analyze": "vite-bundle-visualizer",
+    "check": "node -v && npm -v && echo '✓ Prerequisites OK'",
+    "postinstall": "echo '✓ Dependencies installed. Run \"npm run dev\" or \"./hanalyzer\" to start'"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.2.0",
+    "@mdi/font": "^7.4.47",
+    "axios": "^1.15.0",
+    "chart.js": "^4.5.1",
+    "gsap": "^3.15.0",
+    "three": "^0.184.0",
+    "vue": "^3.5.32",
+    "vue-chartjs": "^5.3.3",
+    "vue-router": "^5.0.4",
+    "vuetify": "^4.0.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@tailwindcss/typography": "^0.5.19",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "autoprefixer": "^10.5.0",
+    "nodemon": "^3.1.14",
+    "postcss": "^8.5.10",
+    "tailwindcss": "^4.2.2",
+    "terser": "^5.46.1",
+    "vite": "^8.0.8",
+    "vite-plugin-vuetify": "^2.1.3"
+  }
+}

@@ -1,0 +1,143 @@
+/* ----------------------------------------------------------------=====
+   GLOBAL CUSTOM BUTTON STYLES
+   ----------------------------------------------------------------===== */
+
+/* Base custom button - Blue by default */
+.custom-btn,
+.action-btn-blue {
+  border-radius: 6px !important;
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-weight: 600 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  text-transform: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  background: #1976d2 !important;
+  background-color: #1976d2 !important;
+  border: none !important;
+  letter-spacing: normal !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.custom-btn:hover,
+.action-btn-blue:hover {
+  background: #1565c0 !important;
+  background-color: #1565c0 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+.custom-btn .v-btn__content,
+.action-btn-blue .v-btn__content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ffffff !important;
+  height: 100% !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-btn *,
+.custom-btn span,
+.action-btn-blue *,
+.action-btn-blue span {
+  color: #ffffff !important;
+}
+
+/* Hide icons in custom buttons */
+.custom-btn .v-icon,
+.custom-btn .v-btn__prepend,
+.custom-btn .v-btn__append,
+.action-btn-blue .v-icon,
+.action-btn-blue .v-btn__prepend,
+.action-btn-blue .v-btn__append {
+  display: none !important;
+}
+
+.custom-btn .v-btn__overlay,
+.action-btn-blue .v-btn__overlay {
+  display: none !important;
+}
+
+.custom-btn::before,
+.action-btn-blue::before {
+  display: none !important;
+}
+
+/* Green variant - for other buttons (not connection-status-btn which has its own 3D style) */
+.custom-btn-green {
+  border-radius: 6px !important;
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-weight: 600 !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  line-height: 1 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  text-transform: none !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
+  background: #10b981 !important;
+  background-color: #10b981 !important;
+  border: none !important;
+  letter-spacing: normal !important;
+  color: #ffffff !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.custom-btn-green:hover {
+  background: #059669 !important;
+  background-color: #059669 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+}
+
+.custom-btn-green .v-btn__content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #ffffff !important;
+  height: 100% !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.custom-btn-green *,
+.custom-btn-green span {
+  color: #ffffff !important;
+}
+
+/* Hide icons in green buttons */
+.custom-btn-green .v-icon,
+.custom-btn-green .v-btn__prepend,
+.custom-btn-green .v-btn__append {
+  display: none !important;
+}
+
+.custom-btn-green .v-btn__overlay {
+  display: none !important;
+}
+
+.custom-btn-green::before {
+  display: none !important;
+}
+
+/* Note: connection-status-btn styles are defined in AppHeader.vue with 3D effect */
+/* Disconnected state - Red (defined in AppHeader.vue) */
+
+/* Force white text on all flat buttons */
+.v-btn--variant-flat .v-btn__content {
+  color: #ffffff !important;
+}

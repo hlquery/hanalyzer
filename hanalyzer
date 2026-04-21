@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+#
+# hlquery Analyzer (hanalyzer) - Command Line Interface
+# Convenient wrapper script for starting and managing hanalyzer
+#
+# Usage:
+#   hanalyzer [command] [options]
+#
+# Commands:
+#   start, dev, run     Start development server (default)
+#   build               Build for production
+#   preview             Preview production build
+#   install             Install dependencies
+#   help                Show this help message
+#
+# Options:
+#   --port PORT         Set server port (default: 8080)
+#   --host HOST         Set server host (default: localhost)
+#   --api URL           Set hlquery API URL (default: http://localhost:9200)
+#   --open              Open browser automatically
+#   --help, -h          Show help message
+#
+# Examples:
+#   hanalyzer                           # Start dev server with defaults
+#   hanalyzer --port 3000               # Start on port 3000
+#   hanalyzer --api http://api.example.com:9200  # Connect to remote server
+#   hanalyzer build                     # Build for production
+#   hanalyzer preview                   # Preview production build
+#
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m' # No Color
+
+# Script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Default values
+COMMAND="start"
+PORT="8080"
+HOST="localhost"
+API_URL="http://localhost:9200"
+OPEN_BROWSER=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    start|dev|run)
+      COMMAND="start"
+      shift
+      ;;
+    build)
+      COMMAND="build"
+      shift
+      ;;
+    preview)
+      COMMAND="preview"
+      shift
+      ;;
+    install)
+      COMMAND="install"
+      shift
+      ;;
+    --port|-p)
+      PORT="$2"
+      shift 2
+      ;;
+    --host|-H)
+      HOST="$2"
+      shift 2
+      ;;
+    --api|-a)
+      API_URL="$2"
+      shift 2
+      ;;
+    --open|-o)
+      OPEN_BROWSER=true
+      shift
+      ;;
+    help|--help|-h)
+      cat << EOF
+${CYAN}HLQuery Analyzer (hanalyzer) - Command Line Interface${NC}
+
+${GREEN}Usage:${NC}
+  hanalyzer [command] [options]
+
+${GREEN}Commands:${NC}
+  start, dev, run     Start development server (default)
+  build               Build for production
+  build:prod          Build optimized production version
+  preview             Preview production build
+  install             Install dependencies
+  clean               Clean build artifacts
+  help                Show this help message
+
+${GREEN}Options:${NC}
+  --port, -p PORT     Set server port (default: 8080)
+  --host, -H HOST     Set server host (default: localhost)
+  --api, -a URL       Set hlquery API URL (default: http://localhost:9200)
+  --open, -o          Open browser automatically
+  --help, -h          Show help message
+
+${GREEN}Examples:${NC}
+  hanalyzer                           # Start dev server with defaults
+  hanalyzer --port 3000               # Start on port 3000
+  hanalyzer --api http://api.example.com:9200  # Connect to remote server
+  hanalyzer --open                    # Start and open browser
+  hanalyzer build                     # Build for production
+  hanalyzer build:prod                # Build optimized production version
+  hanalyzer preview                   # Preview production build
+  hanalyzer install                   # Install dependencies
+
+${GREEN}Static Config:${NC}
+  hanalyzer.conf.js
+  Use this JS file for dev/build defaults like host, port, and API target.
+
+${GREEN}Runtime Config:${NC}
+  public/hanalyzer.config.json
+  Use this JSON file for defaultBaseUrl, auth, and optional usageOutput.
+
+${GREEN}Quick Start:${NC}
+  1. Install dependencies: ${CYAN}hanalyzer install${NC}
+  2. Start server: ${CYAN}hanalyzer${NC}
+  3. Open browser: ${CYAN}http://localhost:8080${NC}
+
+For more information, see README.md
+EOF
+      exit 0
+      ;;
+    *)
+      echo -e "${RED}Error: Unknown option '$1'${NC}" >&2
+      echo "Run 'hanalyzer --help' for usage information" >&2
+      exit 1
+      ;;
+  esac
+done
+
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+  echo -e "${RED}Error: Node.js is not installed${NC}" >&2
+  echo "Please install Node.js 18+ from https://nodejs.org/" >&2
+  exit 1
+fi
+
+# Check Node.js version
+NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+  echo -e "${YELLOW}Warning: Node.js version 18+ is recommended${NC}" >&2
+  echo "Current version: $(node -v)" >&2
+fi
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+  echo -e "${RED}Error: npm is not installed${NC}" >&2
+  exit 1
+fi
+
+# Function to check if dependencies are installed
+check_dependencies() {
+  if [ ! -d "node_modules" ] || [ ! -f "package-lock.json" ]; then
+    echo -e "${YELLOW}Dependencies not found. Installing...${NC}"
+    npm install
+  fi
+}
+
+# Function to check hlquery server
+check_hlquery_server() {
+  if [ "$COMMAND" = "start" ]; then
+    echo -e "${BLUE}Checking hlquery server connection...${NC}"
+    if command -v curl &> /dev/null; then
+      if curl -s --max-time 2 "$API_URL/health" > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ hlquery server is running at $API_URL${NC}"
+      else
+        echo -e "${YELLOW}⚠ Warning: Cannot connect to hlquery server at $API_URL${NC}"
+        echo -e "${YELLOW}  Make sure hlquery is running before using hanalyzer${NC}"
+      fi
+    fi
+  fi
+}
+
+# Execute command
+case $COMMAND in
+  install)
+    echo -e "${CYAN}Installing dependencies...${NC}"
+    npm install
+    echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
+    ;;
+  start|dev|run)
+    check_dependencies
+    check_hlquery_server
+    
+    echo -e "${CYAN}Starting hanalyzer development server...${NC}"
+    echo -e "${BLUE}Server URL: ${GREEN}http://$HOST:$PORT${NC}"
+    echo -e "${BLUE}API Target:   ${GREEN}$API_URL${NC}"
+    echo ""
+    
+    # Export overrides consumed by vite.config.js on top of hanalyzer.conf.js
+    export HANALYZER_PORT="$PORT"
+    export HANALYZER_HOST="$HOST"
+    export HANALYZER_API_TARGET="$API_URL"
+    
+    if [ "$OPEN_BROWSER" = true ]; then
+      export BROWSER=open
+    fi
+    
+    npm run dev
+    ;;
+  build)
+    check_dependencies
+    echo -e "${CYAN}Building for production...${NC}"
+    npm run build
+    echo -e "${GREEN}✓ Build complete! Files are in dist/ directory${NC}"
+    ;;
+  build:prod)
+    check_dependencies
+    echo -e "${CYAN}Building optimized production version...${NC}"
+    npm run build:prod
+    echo -e "${GREEN}✓ Production build complete! Files are in dist/ directory${NC}"
+    ;;
+  preview)
+    check_dependencies
+    if [ ! -d "dist" ]; then
+      echo -e "${YELLOW}No dist/ directory found. Building first...${NC}"
+      npm run build
+    fi
+    echo -e "${CYAN}Starting preview server...${NC}"
+    npm run preview
+    ;;
+  clean)
+    echo -e "${CYAN}Cleaning build artifacts...${NC}"
+    rm -rf dist node_modules/.vite
+    echo -e "${GREEN}✓ Clean complete${NC}"
+    ;;
+  *)
+    echo -e "${RED}Error: Unknown command '$COMMAND'${NC}" >&2
+    exit 1
+    ;;
+esac

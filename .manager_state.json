@@ -1,0 +1,8 @@
+{
+   "api" : "http://localhost:9200",
+   "host" : "127.0.0.1",
+   "name" : "hanalyzer-local",
+   "cwd" : "/home/cferry/work/hlquery/etc/hanalyzer",
+   "started_at" : 1770665565,
+   "port" : "8080"
+}
