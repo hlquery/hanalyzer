@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.png" alt="hanalyzer logo" width="200">
+  <img src="https://docs.hlquery.com/img/hlquery/2.png" alt="hlquery logo" width="200">
 </div>
 
 <div align="center">
