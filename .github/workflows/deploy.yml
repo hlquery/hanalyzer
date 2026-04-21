@@ -2,9 +2,10 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, unstable ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, unstable ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,20 +20,17 @@ jobs:
       with:
         node-version: '18'
         cache: 'npm'
-        cache-dependency-path: etc/hanalyzer/package-lock.json
+        cache-dependency-path: package-lock.json
         
     - name: Install dependencies
-      working-directory: etc/hanalyzer
       run: npm ci
       
     - name: Build application
-      working-directory: etc/hanalyzer
       run: npm run build:prod
       env:
         NODE_ENV: production
         
     - name: Run tests (if available)
-      working-directory: etc/hanalyzer
       run: npm test || echo "No tests configured"
       continue-on-error: true
       
@@ -40,38 +38,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: dist
-        path: etc/hanalyzer/dist
+        path: dist
         retention-days: 7
-
-  docker:
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'push'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-      
-    - name: Login to Docker Hub (optional)
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-      if: ${{ secrets.DOCKER_USERNAME != '' }}
-      continue-on-error: true
-      
-    - name: Build Docker image
-      working-directory: etc/hanalyzer
-      run: |
-        docker build -t hlquery-analyzer:${{ github.sha }} .
-        docker tag hlquery-analyzer:${{ github.sha }} hlquery-analyzer:latest
-        
-    - name: Push Docker image (optional)
-      run: |
-        docker push hlquery-analyzer:${{ github.sha }}
-        docker push hlquery-analyzer:latest
-      if: ${{ secrets.DOCKER_USERNAME != '' }}
-      continue-on-error: true

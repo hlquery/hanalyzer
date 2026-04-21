@@ -1,24 +1,43 @@
 <div align="center">
-  <img src="public/logo.png" alt="hlquery analyzer logo" width="200">
+  <img src="public/logo.png" alt="hanalyzer logo" width="200">
 </div>
 
 <div align="center">
 
-# hanalyzer
+**A modern dashboard for managing, monitoring, and analyzing HLQuery servers.**
 
-**Professional web interface for managing, monitoring, and analyzing your HLQuery search server**
-
+[![Follow hlquery](https://img.shields.io/badge/Follow-%40hlquery-blue?logo=x&logoColor=white)](https://x.com/hlquery)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/hlquery/hlquery)](https://github.com/hlquery/hlquery/pulse)
+[![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-181717?logo=github&logoColor=white)](https://github.com/hlquery/hanalyzer)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
 </div>
 
----
-
 > **Development Status**: hanalyzer is currently in active development and should not be used in production environments. The software may contain bugs, incomplete features, and breaking changes may occur without notice.
 
-## Overview
+### Overview
 
-hanalyzer is a modern, feature-rich web dashboard built with Vue.js 3 and Vuetify that provides a comprehensive interface for managing, monitoring, and analyzing your HLQuery search server. It offers real-time insights into your search infrastructure, making it easy to manage collections, documents, and monitor server performance.
+hanalyzer is a modern web dashboard for HLQuery, built with Vue 3 and Vuetify. It provides a practical interface for managing collections and documents, inspecting server state, and visualizing runtime activity from a browser.
+
+It connects to the HLQuery API for indexing, querying, monitoring, and administration, and includes a local CLI wrapper for development, preview, and production builds.
+
+### Quick Start
+
+Clone the repository normally:
+
+```bash
+$ git clone https://github.com/hlquery/hlquery.git
+$ cd hlquery/etc/hanalyzer
+```
+
+Install dependencies and start the dashboard:
+
+```bash
+$ npm install
+$ ./hanalyzer
+```
+
+By default, hanalyzer runs on `http://localhost:8080` and connects to HLQuery at `http://localhost:9200`.
 
 ### Key Features
 
@@ -32,7 +51,7 @@ hanalyzer is a modern, feature-rich web dashboard built with Vue.js 3 and Vuetif
 - **WAL Timeline**: Track Write-Ahead Log activity and performance
 - **Modern UI**: Beautiful, responsive interface built with Vuetify and Tailwind CSS
 
-## Quick Start
+## Detailed Setup
 
 ### Prerequisites
 
