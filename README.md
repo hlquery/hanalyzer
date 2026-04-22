@@ -107,62 +107,33 @@ export default {
 }
 ```
 
-The `./hanalyzer` CLI can still override `port`, `host`, and `apiTarget` at runtime.
-Use `runtime.defaultAuthToken` or `runtime.defaultAuthByServer` in `hanalyzer.conf.js` if you want auth defaults with comments and examples.
-For remote access through a hostname, add it to `server.allowedHosts` or pass `./hanalyzer --allow-host your-hostname`.
-
-Create a runtime JSON config file from the example:
-
-```bash
-cp public/hanalyzer.config.json.example public/hanalyzer.config.json
-```
-
-Edit `public/hanalyzer.config.json` to configure your settings:
-
-```json
-{
-  "defaultBaseUrl": "http://localhost:9200",
-  "defaultAuthToken": "replace-me",
-  "defaultAuthMethod": "bearer",
-  "useProxy": false
-}
-```
-
-Notes:
-- `defaultBaseUrl` sets the initial HLQuery server URL.
-- `defaultAuthToken` is only used as a fallback when no token is already saved in the UI for the current server.
-- `defaultAuthMethod` supports `bearer` and `api-key`.
-- `useProxy` forces browser requests through `/api`. Leave it `false` for plain static hosting; set it to `true` only when your web server actually proxies `/api/*` to HLQuery.
-- You can also use `defaultAuthByServer` for per-server token overrides.
-- This file is intended for deployment-time config, so secrets do not need to be hardcoded into the built bundle.
-
 ### Running hanalyzer
 
 **Using the hanalyzer CLI (Recommended):**
 
 ```bash
-./hanalyzer
+$ ./hanalyzer
 ```
 
 Or with custom options:
 
 ```bash
-./hanalyzer --port 3000
-./hanalyzer --api http://your-server:9200
-./hanalyzer --open  # Automatically open browser
+$ ./hanalyzer --port 3000
+$ ./hanalyzer --api http://your-server:9200
+$ ./hanalyzer --open  # Automatically open browser
 ```
 
 **Using npm scripts:**
 
 ```bash
 # Development server
-npm run dev
+$ npm run dev
 
 # Production build
-npm run build
+$ npm run build
 
 # Preview production build
-npm run preview
+$ npm run preview
 ```
 
 Important:
@@ -179,20 +150,20 @@ Important:
 Make sure your HLQuery server is running:
 
 ```bash
-./run/hlquery start
+$ ./run/hlquery start
 ```
 
 Verify it's accessible:
 
 ```bash
-curl http://localhost:9200/health
+$ curl http://localhost:9200/health
 ```
 
 ### 2. Start hanalyzer
 
 ```bash
-cd etc/hanalyzer
-./hanalyzer
+$ cd etc/hanalyzer
+$ ./hanalyzer
 ```
 
 ### 3. Access the Dashboard
@@ -235,87 +206,6 @@ You should see the hanalyzer dashboard with connection status to your HLQuery se
 - **JSON Editor**: Full-featured JSON editor for document editing
 - **Document Inspector**: Detailed view of document structure and metadata
 - **Bulk Operations**: Perform operations on multiple documents
-
-## Command Line Interface
-
-The `hanalyzer` CLI provides convenient commands:
-
-```bash
-# Start development server
-hanalyzer
-hanalyzer start
-hanalyzer dev
-
-# Build for production
-hanalyzer build
-
-# Preview production build
-hanalyzer preview
-
-# Install dependencies
-hanalyzer install
-
-# Show help
-hanalyzer --help
-```
-
-### CLI Options
-
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--port, -p` | Set server port | `8080` |
-| `--host, -H` | Set server host | `localhost` |
-| `--api, -a` | Set HLQuery API URL | `http://localhost:9200` |
-| `--open, -o` | Open browser automatically | `false` |
-| `--help, -h` | Show help message | - |
-
-### Examples
-
-```bash
-# Start on custom port
-hanalyzer --port 3000
-
-# Connect to remote server
-hanalyzer --api http://api.example.com:9200
-
-# Start and open browser
-hanalyzer --open
-
-# Build for production
-hanalyzer build
-```
-
-## Production Deployment
-
-### Building for Production
-
-```bash
-npm run build:prod
-```
-
-This creates an optimized production build in the `dist/` directory.
-
-### Using Nginx
-
-An example `nginx.conf` is provided for reverse proxy configuration.
-
-### Runtime Config File
-
-Use `hanalyzer.conf.js` for local dev/build settings and `public/hanalyzer.config.json` for browser runtime settings.
-
-For production, prefer `public/hanalyzer.config.json` for app-level configuration.
-
-## Architecture
-
-hanalyzer is built with modern web technologies:
-
-- **Vue.js 3** - Progressive JavaScript framework
-- **Vuetify 3** - Material Design component framework
-- **Vite** - Next-generation frontend build tool
-- **Vue Router** - Official router for Vue.js
-- **Axios** - HTTP client for API requests
-- **Chart.js** - Data visualization library
-- **Three.js** - 3D graphics for RocksDB Visualization
 
 ## Contributing
 

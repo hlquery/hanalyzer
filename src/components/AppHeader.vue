@@ -73,104 +73,104 @@
     
     <v-spacer class="mobile-hide-spacer"></v-spacer>
     
-    <!-- Navigation Dropdown -->
-    <v-menu
-      v-if="isEffectivelyConnected"
-      v-model="showNavMenu"
-      location="bottom"
-      :offset="8"
-      class="nav-menu"
-      @update:modelValue="handleNavMenuToggle"
-    >
-      <template v-slot:activator="{ props }">
-        <v-btn
-          v-bind="props"
-          variant="text"
-          size="default"
-          class="hlquery-nav-button header-action-btn header-action-btn--light nav-menu-btn"
-          title="Manage"
-          prepend-icon="mdi-menu"
-        >
-          <span class="nav-button-text">Manage</span>
-        </v-btn>
-      </template>
-      <v-list class="nav-menu-list">
-        <router-link to="/collections" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isCollectionsActive }]"
-            prepend-icon="mdi-folder-multiple"
+    <div class="header-right-actions">
+      <!-- Navigation Dropdown -->
+      <v-menu
+        v-if="isEffectivelyConnected"
+        v-model="showNavMenu"
+        location="bottom"
+        :offset="8"
+        class="nav-menu"
+        @update:modelValue="handleNavMenuToggle"
+      >
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-bind="props"
+            variant="text"
+            size="default"
+            class="hlquery-nav-button header-action-btn header-action-btn--light nav-menu-btn"
+            title="Manage"
+            prepend-icon="mdi-menu"
           >
-            <v-list-item-title>Collections</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/aliases" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isAliasesActive }]"
-            prepend-icon="mdi-link-variant"
-          >
-            <v-list-item-title>Aliases</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/sql" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isSqlActive }]"
-            prepend-icon="mdi-database"
-          >
-            <v-list-item-title>SQL</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/access" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isAccessActive }]"
-            prepend-icon="mdi-key-chain"
-          >
-            <v-list-item-title>Access</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/globals" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isGlobalsActive }]"
-            prepend-icon="mdi-earth"
-          >
-            <v-list-item-title>Globals</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/links" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isLinksActive }]"
-            prepend-icon="mdi-lan"
-          >
-            <v-list-item-title>Links</v-list-item-title>
-          </v-list-item>
-        </router-link>
-        <router-link to="/dashboard" custom v-slot="{ navigate, href }">
-          <v-list-item
-            :href="href"
-            @click="navigate"
-            :class="['nav-menu-item', { 'nav-menu-item--active': isDashboardActive }]"
-            prepend-icon="mdi-view-dashboard"
-          >
-            <v-list-item-title>Dashboard</v-list-item-title>
-          </v-list-item>
-        </router-link>
-      </v-list>
-    </v-menu>
+            <span class="nav-button-text">Manage</span>
+          </v-btn>
+        </template>
+        <v-list class="nav-menu-list">
+          <router-link to="/collections" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isCollectionsActive }]"
+              prepend-icon="mdi-folder-multiple"
+            >
+              <v-list-item-title>Collections</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/aliases" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isAliasesActive }]"
+              prepend-icon="mdi-link-variant"
+            >
+              <v-list-item-title>Aliases</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/sql" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isSqlActive }]"
+              prepend-icon="mdi-database"
+            >
+              <v-list-item-title>SQL</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/access" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isAccessActive }]"
+              prepend-icon="mdi-key-chain"
+            >
+              <v-list-item-title>Access</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/globals" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isGlobalsActive }]"
+              prepend-icon="mdi-earth"
+            >
+              <v-list-item-title>Globals</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/links" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isLinksActive }]"
+              prepend-icon="mdi-lan"
+            >
+              <v-list-item-title>Links</v-list-item-title>
+            </v-list-item>
+          </router-link>
+          <router-link to="/dashboard" custom v-slot="{ navigate, href }">
+            <v-list-item
+              :href="href"
+              @click="navigate"
+              :class="['nav-menu-item', { 'nav-menu-item--active': isDashboardActive }]"
+              prepend-icon="mdi-view-dashboard"
+            >
+              <v-list-item-title>Dashboard</v-list-item-title>
+            </v-list-item>
+          </router-link>
+        </v-list>
+      </v-menu>
 
-
-    <!-- Connection Status - Far Right -->
-    <div class="d-flex align-center connection-buttons-container">
+      <!-- Connection Status - Far Right -->
+      <div class="d-flex align-center connection-buttons-container">
       <!-- Connection Status Button - Opens server settings menu -->
       <v-menu 
         v-model="showServerMenu" 
@@ -298,6 +298,16 @@
                 @mousedown.stop
                 class="server-url-input-modern"
               ></v-text-field>
+              <v-checkbox
+                v-model="sslEnabled"
+                label="Use SSL (HTTPS)"
+                color="success"
+                density="compact"
+                hide-details
+                class="mt-2 ssl-checkbox"
+                @click.stop
+                @mousedown.stop
+              ></v-checkbox>
             </div>
             
             <!-- Authentication Section -->
@@ -423,6 +433,7 @@
         </v-card>
       </v-menu>
     </div>
+    </div>
     </v-app-bar>
   </div>
 </template>
@@ -482,6 +493,7 @@ const searchQuery = ref('')
 provide('headerSearchQuery', searchQuery)
 
 const serverUrl = ref('http://localhost:9200')
+const sslEnabled = ref(false)
 const showServerMenu = ref(false)
 const showNavMenu = ref(false)
 const showPingMenu = ref(false)
@@ -1036,6 +1048,24 @@ const normalizeServerUrl = (url) => {
   return normalizedUrl.replace(/\/+$/, '')
 }
 
+const applyProtocolToUrl = (url, useSsl = false) => {
+  const trimmedUrl = (url || '').trim()
+  if (!trimmedUrl) return ''
+
+  const targetProtocol = useSsl ? 'https://' : 'http://'
+  let normalizedUrl = trimmedUrl
+
+  if (normalizedUrl.startsWith('http://')) {
+    normalizedUrl = `${targetProtocol}${normalizedUrl.slice('http://'.length)}`
+  } else if (normalizedUrl.startsWith('https://')) {
+    normalizedUrl = `${targetProtocol}${normalizedUrl.slice('https://'.length)}`
+  } else {
+    normalizedUrl = `${targetProtocol}${normalizedUrl}`
+  }
+
+  return normalizedUrl.replace(/\/+$/, '')
+}
+
 const resolveTokenForUrl = (url) => {
   const targetUrl = url || ''
   // FIRST: Check getAuthHeaders - if it returns headers, auth exists and is being used
@@ -1180,6 +1210,7 @@ const useActiveToken = () => {
 const openServerMenu = () => {
   // Sync serverUrl with current baseUrl when opening menu
   serverUrl.value = baseUrl.value
+  sslEnabled.value = serverUrl.value.startsWith('https://')
   showServerMenu.value = true
   
   // Immediately check if the current server requires authentication
@@ -1269,18 +1300,11 @@ const updateBaseUrl = () => {
   console.log('[UPDATE BASE URL] Starting...', { serverUrl: serverUrl.value, authToken: authToken.value ? `[${authToken.value.length} chars]` : 'EMPTY' })
   
   if (!serverUrl.value || serverUrl.value.trim() === '') {
-    serverUrl.value = 'http://localhost:9200'
+    serverUrl.value = sslEnabled.value ? 'https://localhost:9200' : 'http://localhost:9200'
   }
   
-  let url = serverUrl.value.trim()
-  
-  // Add protocol if missing
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `http://${url}`
-  }
-  
-  // Normalize URL before saving
-  const normalizedUrl = url.replace(/\/+$/, '')
+  const normalizedUrl = applyProtocolToUrl(serverUrl.value, sslEnabled.value)
+  serverUrl.value = normalizedUrl
   const existingAuthForTarget = getAuthForServer(normalizedUrl) || loadAuthFromStorage(normalizedUrl)
   const hadStoredTokenForTarget = !!(existingAuthForTarget && (existingAuthForTarget.token || existingAuthForTarget.apiKey))
   
@@ -1366,16 +1390,28 @@ watch([authToken, serverUrl, showServerMenu], () => {
     const token = authToken.value ? authToken.value.trim() : ''
     const url = serverUrl.value || baseUrl.value || baseUrl || 'http://localhost:9200'
     if (!url || !token) return
-    let normalizedUrl = url.trim()
-    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
-      normalizedUrl = `http://${normalizedUrl}`
-    }
-    normalizedUrl = normalizedUrl.replace(/\/+$/, '')
+    const normalizedUrl = applyProtocolToUrl(url, sslEnabled.value)
     setAuthForServer(normalizedUrl, {
       method: 'bearer',
       token
     })
   }, 400)
+})
+
+watch(serverUrl, (newUrl) => {
+  const trimmedUrl = (newUrl || '').trim()
+  if (trimmedUrl.startsWith('https://')) {
+    sslEnabled.value = true
+  } else if (trimmedUrl.startsWith('http://')) {
+    sslEnabled.value = false
+  }
+})
+
+watch(sslEnabled, (enabled) => {
+  if (!showServerMenu.value) return
+  const currentUrl = serverUrl.value || ''
+  if (!currentUrl.trim()) return
+  serverUrl.value = applyProtocolToUrl(currentUrl, enabled)
 })
 
 const handlePingMenuClick = (event) => {
@@ -3291,6 +3327,30 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   border: none !important;
 }
 
+.ssl-checkbox {
+  margin-inline-start: 0 !important;
+}
+
+.ssl-checkbox :deep(.v-selection-control) {
+  align-items: flex-start !important;
+  min-height: 0 !important;
+}
+
+.ssl-checkbox :deep(.v-selection-control__wrapper) {
+  flex: 0 0 auto !important;
+  margin-top: 1px !important;
+}
+
+.ssl-checkbox :deep(.v-label) {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  line-height: 1.25 !important;
+  word-break: normal !important;
+  color: #1e293b !important;
+  opacity: 1 !important;
+}
+
 /* Modern Auth Method Select - Matching filter-input-modern style */
 .auth-method-select-modern :deep(.v-field) {
   background: #f1f5f9 !important;
@@ -3591,6 +3651,15 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   position: relative;
 }
 
+.header-right-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 12px;
+  min-width: 0;
+  flex: 0 0 auto;
+}
+
 /* Connection Ping Display */
 .connection-ping-display {
   padding: 10px 12px;
@@ -3820,6 +3889,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .app-navbar {
     padding: 0 8px !important;
     height: 56px !important;
+    min-height: 56px !important;
   }
 
   .mobile-hide {
@@ -3842,6 +3912,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     justify-content: space-between !important;
     align-items: center !important;
     padding: 0 8px !important;
+    height: 56px !important;
+    min-height: 56px !important;
   }
 
   .app-navbar :deep(.v-app-bar__content) {
@@ -3852,21 +3924,56 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     display: flex !important;
     flex-direction: row !important;
     gap: 8px !important;
+    flex-wrap: nowrap !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .hlquery-nav-logo {
     display: flex !important;
     min-width: 0 !important;
-    flex: 0 1 auto !important;
+    flex: 1 1 auto !important;
+    height: 100% !important;
+    align-items: center !important;
+  }
+
+  .app-navbar .v-app-bar-title {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
   }
 
   .hlquery-logo-container {
     display: flex !important;
     padding: 4px 6px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 !important;
+    align-self: center !important;
+    transform: none !important;
   }
 
   .logo-image {
     height: 26px;
+    display: block !important;
+    margin: 0 !important;
+  }
+
+  .header-right-actions {
+    margin-left: auto !important;
+    gap: 6px !important;
+    flex: 0 0 auto !important;
+    height: 100% !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    min-width: fit-content !important;
   }
 
   .connection-buttons-container {
@@ -3874,27 +3981,42 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     left: auto !important;
     right: auto !important;
     transform: none !important;
-    margin-left: auto !important;
+    margin-left: 0 !important;
     margin-right: 0 !important;
     z-index: 10 !important;
-    gap: 10px !important;
+    gap: 0 !important;
     width: auto !important;
-    height: 56px !important;
+    height: auto !important;
+    min-height: 36px !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-end !important;
     padding-right: 0 !important;
     flex: 0 0 auto !important;
+    display: flex !important;
   }
 
   .nav-menu-btn {
     display: inline-flex !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    max-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     padding: 0 !important;
     border-radius: 12px !important;
+    margin-right: 0 !important;
+    align-self: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+  }
+
+  .app-navbar .nav-menu-btn,
+  .app-navbar .connection-status-btn.header-action-btn--light {
+    background: #ffffff !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12) !important;
   }
 
   .nav-menu-btn .nav-button-text {
@@ -3905,12 +4027,23 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .nav-menu-btn :deep(.v-btn__prepend),
   .nav-menu-btn :deep(.v-btn__prepend-inner) {
     display: inline-flex !important;
-    width: 100% !important;
     min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     justify-content: center !important;
     align-items: center !important;
+  }
+
+  .nav-menu-btn :deep(.v-btn__content) {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .nav-menu-btn :deep(.v-btn__prepend),
+  .nav-menu-btn :deep(.v-btn__prepend-inner) {
+    width: auto !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
   }
 
   .nav-menu-btn :deep(.v-btn__prepend) {
@@ -3925,6 +4058,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 
   .nav-menu-btn :deep(.v-icon) {
     margin: 0 !important;
+    font-size: 16px !important;
   }
 
   .connection-status-btn {
@@ -3933,18 +4067,36 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     margin-right: 0 !important;
     justify-content: center !important;
     align-items: center !important;
-    width: 42px !important;
-    min-width: 42px !important;
-    max-width: 42px !important;
-    height: 42px !important;
-    min-height: 42px !important;
+    flex: 0 0 44px !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     padding: 0 !important;
     border-radius: 12px !important;
+    align-self: center !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+  }
+
+  .app-navbar .connection-status-btn,
+  .app-navbar .connection-status-btn.v-btn,
+  .app-navbar .connection-status-btn.v-btn--variant-flat,
+  .app-navbar .connection-status-btn.header-action-btn--light,
+  .app-navbar .connection-status-btn.header-action-btn--light.v-btn,
+  .app-navbar .connection-status-btn.header-action-btn--light.v-btn--variant-flat {
+    min-width: 44px !important;
+    max-width: 44px !important;
+    width: 44px !important;
+    padding: 0 !important;
   }
 
   .connection-status-btn :deep(.v-btn__content) {
     display: inline-flex !important;
     width: 100% !important;
+    height: 100% !important;
     justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
@@ -3958,7 +4110,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     display: inline-flex !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
     justify-content: center !important;
     align-items: center !important;
   }
@@ -3975,6 +4129,49 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 
   .connection-status-btn :deep(.v-icon) {
     margin: 0 !important;
+    font-size: 16px !important;
+  }
+
+  .connection-status-btn.disconnected {
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+  }
+
+  .connection-status-btn.disconnected :deep(.v-btn__content) {
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 0 !important;
+    text-indent: 0 !important;
+    font-size: 0 !important;
+    line-height: 0 !important;
+  }
+
+  .connection-status-btn.disconnected :deep(.v-btn__content)::after {
+    content: '' !important;
+  }
+
+  .connection-status-btn.disconnected :deep(.v-btn__prepend),
+  .connection-status-btn.disconnected :deep(.v-btn__prepend-inner) {
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .connection-status-btn.disconnected :deep(.v-btn__prepend) {
+    margin-inline-end: 0 !important;
+  }
+
+  .connection-status-btn.disconnected :deep(.v-btn__prepend .v-icon),
+  .connection-status-btn.disconnected :deep(.v-btn__prepend-inner .v-icon),
+  .connection-status-btn.disconnected :deep(.v-icon) {
+    font-size: 16px !important;
+    margin: 0 !important;
   }
 
   .reconnect-btn :deep(.v-btn__content) {
@@ -3987,6 +4184,30 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   }
   .connection-host-text {
     display: none !important;
+  }
+
+  .app-navbar .connection-status-btn :deep(.v-btn__content),
+  .app-navbar .connection-status-btn :deep(.v-btn__wrapper),
+  .app-navbar .connection-status-btn :deep(.v-btn__prepend) ~ .v-btn__content {
+    justify-content: center !important;
+    text-align: center !important;
+    gap: 0 !important;
+  }
+
+  .app-navbar .connection-status-btn :deep(.v-btn__prepend),
+  .app-navbar .connection-status-btn :deep(.v-btn__prepend-inner) {
+    margin-right: 0 !important;
+    justify-content: center !important;
+  }
+
+  .app-navbar .connection-status-btn :deep(.v-btn__wrapper) {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .header-right-actions > *,
+  .connection-buttons-container > * {
+    flex: 0 0 auto !important;
   }
 
   .connection-menu-card {

@@ -501,6 +501,25 @@
       </v-card-text>
     </v-card>
 
+    <v-card class="mb-card search-usage-card" variant="outlined">
+      <v-card-title class="d-flex align-center">
+        <v-icon icon="mdi-book-open-page-variant-outline" size="20" color="#1976d2" class="mr-3"></v-icon>
+        <span class="font-weight-bold">How to use</span>
+      </v-card-title>
+      <v-card-text>
+        <div class="text-body-2 text-medium-emphasis mb-4">
+          Use these query patterns in the search box to build more precise searches.
+        </div>
+
+        <div class="search-usage-grid">
+          <div v-for="example in searchUsageExamples" :key="example.label" class="search-usage-item">
+            <div class="search-usage-label">{{ example.label }}</div>
+            <code class="search-usage-code">{{ example.query }}</code>
+          </div>
+        </div>
+      </v-card-text>
+    </v-card>
+
     <v-alert
       v-if="error"
       type="error"
@@ -743,6 +762,17 @@ const filterOperators = [
   { label: 'Less or Equal', value: '<=' },
   { label: 'Contains', value: 'contains' },
   { label: 'Starts With', value: 'starts_with' }
+]
+
+const searchUsageExamples = [
+  { label: 'Field-specific search', query: 'title:laptop' },
+  { label: 'Range query', query: 'price:[100 TO 500]' },
+  { label: 'Fuzzy search', query: 'laptop~2' },
+  { label: 'Wildcard search', query: 'laptop*' },
+  { label: 'Case-sensitive search', query: 'is:casesensitive Laptop' },
+  { label: 'Boost term importance', query: 'laptop^2.0 computer' },
+  { label: 'NOT operator', query: '!apple' },
+  { label: 'Combined queries', query: 'title:laptop AND price:[100 TO 500]' }
 ]
 
 const addFilter = () => {
@@ -1339,5 +1369,40 @@ watch(selectedCollection, async (nextValue, previousValue) => {
   letter-spacing: -0.02em !important;
   margin: 0 !important;
   padding: 0 !important;
+}
+
+.search-usage-card {
+  border-radius: 16px;
+}
+
+.search-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.search-usage-item {
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.search-usage-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.search-usage-code {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.82rem;
 }
 </style>

@@ -105,6 +105,16 @@ const routes = [
     }
   },
   {
+    path: '/collections/:name/search-syntax',
+    name: 'collection-search-syntax',
+    component: () => import('./views/CollectionSearchSyntaxView.vue'),
+    props: true,
+    meta: {
+      title: 'Collection Search Syntax',
+      icon: 'mdi-text-box-search-outline'
+    }
+  },
+  {
     path: '/collections/:name/schema',
     name: 'collection-schema',
     component: () => import('./views/CollectionSchemaView.vue'),
@@ -375,6 +385,8 @@ router.beforeEach(async (to, from) => {
     const collectionName = to.params.name
     if (to.name === 'collection-documents') {
       title = collectionName
+    } else if (to.name === 'collection-search-syntax') {
+      title = `${collectionName} - Search Syntax`
     } else if (to.name === 'collection-schema') {
       title = `${collectionName} - Schema`
     } else if (to.name === 'collection-details') {

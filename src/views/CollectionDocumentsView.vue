@@ -124,15 +124,13 @@
                 @click="clearSearchInput"
               ></i>
             </div>
-            <a
+            <router-link
               class="collection-search-help-link"
-              href="https://docs.hlquery.com/api/advanced-query-verification"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Open search syntax instructions"
+              :to="searchSyntaxRoute"
+              aria-label="Open internal search syntax examples"
             >
-              Search syntax
-            </a>
+              How to use
+            </router-link>
           </div>
         </div>
 
@@ -1678,6 +1676,10 @@ const collectionTabRoute = (tab) => {
   }
   return { path: getDocumentsRoutePath(currentPage.value), query: nextQuery }
 }
+const searchSyntaxRoute = computed(() => {
+  const encodedName = encodeURIComponent(collectionName.value || route.params.name || '')
+  return { path: `/collections/${encodedName}/search-syntax` }
+})
 const titleScopeFields = computed(() =>
   searchFieldItems.value.filter((field) => ['name', 'title'].includes(String(field).toLowerCase()))
 )
@@ -2935,7 +2937,10 @@ const handleSearch = async () => {
 
   if ((searchQuery.value || '').toLowerCase().includes('do:casesensitive') ||
       (searchQuery.value || '').toLowerCase().includes('do:case_sensitive') ||
-      (searchQuery.value || '').toLowerCase().includes('do:case-sensitive')) {
+      (searchQuery.value || '').toLowerCase().includes('do:case-sensitive') ||
+      (searchQuery.value || '').toLowerCase().includes('is:casesensitive') ||
+      (searchQuery.value || '').toLowerCase().includes('is:case_sensitive') ||
+      (searchQuery.value || '').toLowerCase().includes('is:case-sensitive')) {
     options.caseSensitive = true
   }
   
@@ -5327,6 +5332,52 @@ onUnmounted(() => {
   text-decoration: underline;
 }
 
+.collection-search-usage-card {
+  margin-top: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.collection-search-usage-header {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.collection-search-usage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.collection-search-usage-item {
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+}
+
+.collection-search-usage-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 6px;
+}
+
+.collection-search-usage-code {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+}
+
 .collection-date-toolbar-btn.active {
   border-color: #b9d1ee !important;
   background: #f5f9ff !important;
@@ -5462,8 +5513,7 @@ onUnmounted(() => {
   }
 
   .collection-search-help-link {
-    min-height: 0;
-    padding-top: 2px;
+    display: none !important;
   }
 }
 
@@ -7959,56 +8009,234 @@ body :deep([role="tooltip"]) {
 @media (max-width: 760px) {
   .collections-header {
     flex-direction: column !important;
-    align-items: center !important;
+    align-items: stretch !important;
     justify-content: flex-start !important;
-    gap: 10px !important;
-    margin-bottom: 14px !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
   }
 
   .collections-title-section {
     width: 100%;
     min-width: 0;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    text-align: center;
+    text-align: left;
     order: 1;
   }
 
   .collections-title-text {
     min-width: 0;
     word-break: break-word;
-    justify-content: center;
-    text-align: center;
+    justify-content: flex-start;
+    text-align: left;
     width: 100%;
     margin-bottom: 0 !important;
+    font-size: 20px !important;
+    gap: 8px !important;
   }
 
   .collections-header-actions {
     width: 100%;
-    max-width: 420px;
+    max-width: none;
     margin-left: 0 !important;
+    display: flex !important;
     flex-wrap: wrap !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     align-items: center !important;
+    gap: 4px 14px !important;
     order: 2;
   }
 
   .collections-header-actions > * {
-    flex: 1 1 120px;
+    flex: 0 0 auto !important;
+    width: auto !important;
     min-width: 0 !important;
-    max-width: 132px;
+    max-width: none !important;
   }
 
   .collection-name-label {
     display: inline-block;
-    width: 100%;
-    text-align: center;
+    min-width: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
   }
 
-  .add-document-header-btn,
-  .schema-header-btn,
-  .delete-header-btn {
-    min-height: 36px !important;
+  .collections-header-actions .collections-action-btn,
+  .collections-header-actions .collections-action-btn.v-btn,
+  .collections-header-actions .collections-action-btn.v-btn--variant-flat,
+  .collections-header-actions .collections-action-btn.v-btn--size-small,
+  .collections-header-actions .collections-action-btn.v-btn--variant-flat.v-btn--size-small,
+  .collections-header-actions .add-document-header-btn,
+  .collections-header-actions .schema-header-btn,
+  .collections-header-actions .delete-header-btn {
+    width: auto !important;
+    min-width: 96px !important;
+    max-width: none !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 10px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #043061 0%, #032a4f 100%) !important;
+    background-color: #043061 !important;
+    box-shadow: 0 6px 14px rgba(4, 48, 97, 0.18) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    justify-content: center !important;
+    transform: none !important;
+  }
+
+  .collections-header-actions .delete-header-btn,
+  .collections-header-actions .delete-header-btn.v-btn,
+  .collections-header-actions .delete-header-btn.v-btn--variant-flat {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    background-color: #dc2626 !important;
+    box-shadow: 0 6px 14px rgba(220, 38, 38, 0.18) !important;
+    color: #ffffff !important;
+  }
+
+  .collections-header-actions .collections-action-btn::before,
+  .collections-header-actions .add-document-header-btn::before,
+  .collections-header-actions .schema-header-btn::before,
+  .collections-header-actions .delete-header-btn::before {
+    display: none !important;
+  }
+
+  .collections-header-actions .collections-action-btn :deep(.v-btn__overlay),
+  .collections-header-actions .collections-action-btn :deep(.v-btn__underlay),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__overlay),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__overlay),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__overlay) {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
+  .collections-header-actions .collections-action-btn :deep(.v-btn__content),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__content),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__content),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__content) {
+    display: inline-flex !important;
+    width: auto !important;
+    height: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+    line-height: 1 !important;
+    text-indent: 0 !important;
+    text-align: center !important;
+    padding: 0 !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+  }
+
+  .collections-header-actions .collections-action-btn :deep(.v-btn__prepend),
+  .collections-header-actions .collections-action-btn :deep(.v-btn__prepend-inner),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__prepend),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__prepend-inner),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__prepend),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__prepend-inner),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__prepend),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__prepend-inner) {
+    width: auto !important;
+    height: 100% !important;
+    margin: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-width: 0 !important;
+  }
+
+  .collections-header-actions .collections-action-btn :deep(.v-btn__prepend .v-icon),
+  .collections-header-actions .collections-action-btn :deep(.v-btn__prepend-inner .v-icon),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__prepend .v-icon),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__prepend-inner .v-icon),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__prepend .v-icon),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__prepend-inner .v-icon),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__prepend .v-icon),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__prepend-inner .v-icon) {
+    margin: 0 !important;
+    font-size: 15px !important;
+    color: inherit !important;
+  }
+
+  .collections-header-actions .collections-action-btn :deep(.v-btn__content > span:last-child),
+  .collections-header-actions .add-document-header-btn :deep(.v-btn__content > span:last-child),
+  .collections-header-actions .schema-header-btn :deep(.v-btn__content > span:last-child),
+  .collections-header-actions .delete-header-btn :deep(.v-btn__content > span:last-child) {
+    text-align: left !important;
+    font-weight: 700 !important;
+    color: inherit !important;
+  }
+
+  .collections-header-actions .collections-action-btn:hover,
+  .collections-header-actions .collections-action-btn:active,
+  .collections-header-actions .add-document-header-btn:hover,
+  .collections-header-actions .schema-header-btn:hover,
+  .collections-header-actions .delete-header-btn:hover,
+  .collections-header-actions .add-document-header-btn:active,
+  .collections-header-actions .schema-header-btn:active,
+  .collections-header-actions .delete-header-btn:active {
+    transform: none !important;
+    box-shadow: inherit !important;
+    background: inherit !important;
+    color: inherit !important;
+  }
+
+  .collection-tabs-container {
+    margin-bottom: 18px;
+  }
+
+  .collection-tabs :deep(.v-slide-group__content) {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .collection-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+    padding: 10px 6px !important;
+    min-height: 54px !important;
+    border-radius: 12px !important;
+    justify-content: center !important;
+  }
+
+  .collection-tab :deep(.v-btn__content) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+
+  .collection-tab .mr-2 {
+    margin-right: 0 !important;
+  }
+
+  .collection-tab .tab-text {
+    display: block;
+    width: 100%;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .collection-tab .tab-count {
+    display: none !important;
+  }
+
+  .collection-tab :deep(.v-icon) {
+    font-size: 16px !important;
+  }
+
+  .collection-search-usage-grid {
+    grid-template-columns: 1fr;
   }
 }
 
