@@ -298,16 +298,20 @@
                 @mousedown.stop
                 class="server-url-input-modern"
               ></v-text-field>
-              <v-checkbox
-                v-model="sslEnabled"
-                label="Use SSL (HTTPS)"
-                color="success"
-                density="compact"
-                hide-details
+              <label
                 class="mt-2 ssl-checkbox"
                 @click.stop
                 @mousedown.stop
-              ></v-checkbox>
+              >
+                <input
+                  v-model="sslEnabled"
+                  type="checkbox"
+                  class="ssl-checkbox__input"
+                  @click.stop
+                  @mousedown.stop
+                />
+                <span class="ssl-checkbox__label">Use SSL (HTTPS)</span>
+              </label>
             </div>
             
             <!-- Authentication Section -->
@@ -3328,25 +3332,48 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .ssl-checkbox {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
   margin-inline-start: 0 !important;
+  margin-top: 14px !important;
+  margin-bottom: 14px !important;
+  cursor: pointer !important;
+  user-select: none !important;
 }
 
-.ssl-checkbox :deep(.v-selection-control) {
-  align-items: flex-start !important;
-  min-height: 0 !important;
+.ssl-checkbox__input {
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  margin: 0 !important;
+  accent-color: #10b981 !important;
+  cursor: pointer !important;
+  flex: 0 0 15px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: currentColor !important;
 }
 
-.ssl-checkbox :deep(.v-selection-control__wrapper) {
-  flex: 0 0 auto !important;
-  margin-top: 1px !important;
+.ssl-checkbox__input:focus,
+.ssl-checkbox__input:focus-visible,
+.ssl-checkbox__input:active {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.ssl-checkbox :deep(.v-label) {
+.ssl-checkbox__label {
+  display: inline-block !important;
   white-space: normal !important;
   overflow: visible !important;
   text-overflow: unset !important;
-  line-height: 1.25 !important;
+  line-height: 1.3 !important;
   word-break: normal !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
   color: #1e293b !important;
   opacity: 1 !important;
 }
