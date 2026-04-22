@@ -174,13 +174,14 @@
               <template v-slot:activator="{ props }">
                 <button
                   v-bind="props"
-                  class="google-toolbar-btn items-per-page-btn collection-date-toolbar-btn"
+                  class="google-toolbar-btn items-per-page-btn collection-date-toolbar-btn collection-toolbar-segment-btn"
                   :class="{ 'active': showDateRangeMenu || hasDateRange }"
                   :aria-label="hasDateRange ? `Date filter ${dateRangeSummary}` : 'Open date filter'"
                   style="height: 40px; border-radius: 8px; padding: 0 16px; font-weight: 500; display: flex; align-items: center; gap: 8px;"
                 >
                   <v-icon size="18">mdi-calendar-range</v-icon>
-                  <span>{{ dateRangeButtonLabel }}</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--desktop">{{ dateRangeButtonLabel }}</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--mobile">Date</span>
                   <i
                     v-if="hasDateRange"
                     class="mdi mdi-close-circle collection-date-trigger-clear"
@@ -252,12 +253,13 @@
               <template v-slot:activator="{ props }">
                 <button
                   v-bind="props"
-                  class="google-toolbar-btn items-per-page-btn"
+                  class="google-toolbar-btn items-per-page-btn collection-toolbar-segment-btn"
                   :class="{ 'active': showItemsPerPageMenu }"
                   style="height: 40px; border-radius: 8px; padding: 0 16px; font-weight: 500; display: flex; align-items: center; gap: 8px;"
                 >
                   <v-icon size="18">mdi-format-list-numbered</v-icon>
-                  <span>{{ itemsPerPage }} per page</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--desktop">{{ itemsPerPage }} per page</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--mobile">Per page</span>
                 </button>
               </template>
               <v-list class="google-menu">
@@ -285,13 +287,14 @@
               <template v-slot:activator="{ props }">
                 <button
                   v-bind="props"
-                  class="google-toolbar-btn quick-sort-btn"
+                  class="google-toolbar-btn quick-sort-btn collection-toolbar-segment-btn"
                   :class="{ 'active': showQuickSortMenu }"
                   :aria-label="`Sort: ${getQuickSortLabel()}`"
                   style="height: 40px; border-radius: 8px;"
                 >
                   <v-icon size="16">mdi-sort-variant</v-icon>
-                  <span>{{ getQuickSortLabel() }}</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--desktop">{{ getQuickSortLabel() }}</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--mobile">Sort</span>
                 </button>
               </template>
               <v-list class="google-menu">
@@ -5440,6 +5443,7 @@ onUnmounted(() => {
 @media (max-width: 720px) {
   .collection-search-row {
     align-items: stretch;
+    flex-direction: column;
   }
 
   .collection-date-toolbar-btn {
@@ -5449,6 +5453,17 @@ onUnmounted(() => {
 
   .collection-date-menu-grid {
     grid-template-columns: 1fr;
+  }
+
+  .collection-search-input,
+  .collection-search-help-link {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .collection-search-help-link {
+    min-height: 0;
+    padding-top: 2px;
   }
 }
 
@@ -7941,6 +7956,62 @@ body :deep([role="tooltip"]) {
   margin-left: auto !important;
 }
 
+@media (max-width: 760px) {
+  .collections-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .collections-title-section {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    order: 1;
+  }
+
+  .collections-title-text {
+    min-width: 0;
+    word-break: break-word;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+
+  .collections-header-actions {
+    width: 100%;
+    max-width: 420px;
+    margin-left: 0 !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    order: 2;
+  }
+
+  .collections-header-actions > * {
+    flex: 1 1 120px;
+    min-width: 0 !important;
+    max-width: 132px;
+  }
+
+  .collection-name-label {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+  }
+
+  .add-document-header-btn,
+  .schema-header-btn,
+  .delete-header-btn {
+    min-height: 36px !important;
+  }
+}
+
 /* Text Back Button */
 .back-button-text {
   font-family: Inter, Helvetica, sans-serif !important;
@@ -8985,6 +9056,87 @@ body :deep([role="tooltip"]) {
   align-items: center;
   gap: 8px;
   justify-self: end;
+}
+
+.collection-toolbar-label--mobile {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .collection-results-toolbar {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .collection-results-toolbar .google-toolbar-left,
+  .collection-results-toolbar .google-toolbar-center,
+  .collection-results-toolbar .google-toolbar-right {
+    width: 100%;
+    justify-self: stretch !important;
+    justify-content: flex-start !important;
+  }
+
+  .collection-results-toolbar .google-toolbar-center {
+    display: none;
+  }
+
+  .collection-results-toolbar .google-toolbar-right {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    align-items: stretch;
+    gap: 8px !important;
+  }
+
+  .collection-results-toolbar .google-toolbar-right > * {
+    min-width: 0 !important;
+  }
+
+  .collection-results-toolbar .items-per-page-btn,
+  .collection-results-toolbar .collection-date-toolbar-btn,
+  .collection-results-toolbar .quick-sort-btn {
+    width: 100%;
+    min-width: 0 !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    padding: 8px 6px !important;
+    border-radius: 14px !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 4px !important;
+  }
+
+  .collection-results-toolbar .collection-toolbar-segment-btn :deep(.v-icon) {
+    margin: 0 !important;
+  }
+
+  .collection-results-toolbar .collection-toolbar-label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.15;
+  }
+
+  .collection-results-toolbar .collection-toolbar-label--desktop {
+    display: none;
+  }
+
+  .collection-results-toolbar .collection-toolbar-label--mobile {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+  }
+
+  .collection-results-toolbar .collection-date-trigger-clear {
+    display: none !important;
+  }
 }
 
 .google-toolbar-btn {

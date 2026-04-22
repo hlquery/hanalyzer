@@ -327,6 +327,8 @@ html {
   margin: 0 auto;
   padding: 28px 24px 40px;
   padding-top: 112px !important;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 /* Font Awesome Icons - Modern styling */
@@ -752,6 +754,7 @@ html {
   .fullscreen-content {
     padding: 16px 12px 16px 12px;
     padding-top: 84px !important; /* Extra separation from the mobile header */
+    overflow-x: hidden;
   }
   
   .v-card-title {

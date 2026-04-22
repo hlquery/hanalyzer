@@ -204,7 +204,7 @@
             </v-btn>
           </div>
         </template>
-        <v-card min-width="580" class="connection-menu-card" @click.stop @mousedown.stop>
+        <v-card class="connection-menu-card" @click.stop @mousedown.stop>
           <v-card-title class="connection-info-title pa-4 pb-3">
             <div class="d-flex flex-column w-100">
               <div class="connection-menu-header-row">
@@ -3208,7 +3208,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   background: #ffffff !important;
   overflow: hidden;
   padding: 0 !important;
-  min-width: 540px !important;
+  width: min(580px, calc(100vw - 24px)) !important;
+  min-width: 0 !important;
+  max-width: calc(100vw - 24px) !important;
 }
 
 .connection-menu-card .v-card-title,
@@ -3819,43 +3821,29 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     padding: 0 8px !important;
     height: 56px !important;
   }
-  
-  /* Hide navigation buttons and settings in mobile */
+
   .mobile-hide {
     display: none !important;
   }
-  
-  /* Hide spacer in mobile */
+
   .mobile-hide-spacer {
     display: none !important;
   }
-  
-  /* Hide logo completely in mobile */
-  .hlquery-nav-logo {
-    display: none !important;
-  }
-  
-  .hlquery-logo-container {
-    display: none !important;
-  }
-  
-  /* Hide logo text in mobile */
+
   .mobile-hide-text {
     display: none !important;
   }
-  
-  /* Hide search bar completely in mobile */
+
   .header-search-container {
     display: none !important;
   }
-  
-  /* Make app bar flex layout for mobile */
+
   .v-app-bar {
     justify-content: space-between !important;
     align-items: center !important;
     padding: 0 8px !important;
   }
-  
+
   .app-navbar :deep(.v-app-bar__content) {
     justify-content: space-between !important;
     align-items: center !important;
@@ -3863,37 +3851,130 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     width: 100% !important;
     display: flex !important;
     flex-direction: row !important;
+    gap: 8px !important;
   }
-  
-  /* Center connection buttons container on mobile - FULLY CENTERED */
+
+  .hlquery-nav-logo {
+    display: flex !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+  }
+
+  .hlquery-logo-container {
+    display: flex !important;
+    padding: 4px 6px !important;
+  }
+
+  .logo-image {
+    height: 26px;
+  }
+
   .connection-buttons-container {
-    position: absolute !important;
-    left: 50% !important;
+    position: static !important;
+    left: auto !important;
     right: auto !important;
-    transform: translateX(-50%) !important;
-    margin-left: 0 !important;
+    transform: none !important;
+    margin-left: auto !important;
     margin-right: 0 !important;
     z-index: 10 !important;
-    gap: 0 !important;
+    gap: 10px !important;
     width: auto !important;
+    height: 56px !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-right: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  .nav-menu-btn {
+    display: inline-flex !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+  }
+
+  .nav-menu-btn .nav-button-text {
+    display: none !important;
+  }
+
+  .nav-menu-btn :deep(.v-btn__content),
+  .nav-menu-btn :deep(.v-btn__prepend),
+  .nav-menu-btn :deep(.v-btn__prepend-inner) {
+    display: inline-flex !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
     justify-content: center !important;
     align-items: center !important;
   }
-  
-  /* Show connection status button in mobile - CENTERED */
+
+  .nav-menu-btn :deep(.v-btn__prepend) {
+    margin-inline-end: 0 !important;
+  }
+
+  .nav-menu-btn :deep(.v-btn__append),
+  .nav-menu-btn :deep(.v-btn__append-inner),
+  .nav-menu-btn :deep(.v-btn__wrapper) {
+    display: none !important;
+  }
+
+  .nav-menu-btn :deep(.v-icon) {
+    margin: 0 !important;
+  }
+
   .connection-status-btn {
     display: flex !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     justify-content: center !important;
     align-items: center !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
   }
-  
-  /* Center the button content text */
+
   .connection-status-btn :deep(.v-btn__content) {
+    display: inline-flex !important;
+    width: 100% !important;
     justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .connection-status-btn :deep(.v-btn__prepend),
+  .connection-status-btn :deep(.v-btn__prepend-inner) {
+    display: inline-flex !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .connection-status-btn :deep(.v-btn__prepend) {
+    margin-inline-end: 0 !important;
+  }
+
+  .connection-status-btn :deep(.v-btn__append),
+  .connection-status-btn :deep(.v-btn__append-inner),
+  .connection-status-btn :deep(.v-btn__wrapper) {
+    display: none !important;
+  }
+
+  .connection-status-btn :deep(.v-icon) {
+    margin: 0 !important;
   }
 
   .reconnect-btn :deep(.v-btn__content) {
@@ -3904,11 +3985,29 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .reconnect-btn :deep(.v-btn__prepend) {
     margin-inline-end: 6px !important;
   }
-  
-  /* Center the host text */
   .connection-host-text {
-    text-align: center !important;
-    margin: 0 auto !important;
+    display: none !important;
+  }
+
+  .connection-menu-card {
+    width: min(calc(100vw - 16px), 580px) !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 14px !important;
+  }
+
+  .connection-menu-card .v-card-title,
+  .connection-menu-card .v-card-text {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .connection-menu-card .v-card-title {
+    padding-top: 18px !important;
+    padding-bottom: 12px !important;
+  }
+
+  .connection-menu-card .v-card-text {
+    padding-bottom: 18px !important;
   }
 }
 

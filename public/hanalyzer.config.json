@@ -1,4 +1,4 @@
 {
-  "defaultBaseUrl": "/api",
-  "useProxy": true
+  "defaultBaseUrl": "http://localhost:9200",
+  "useProxy": false
 }
