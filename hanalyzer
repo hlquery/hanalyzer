@@ -193,6 +193,15 @@ check_hlquery_server() {
   fi
 }
 
+# Export overrides consumed by vite.config.js on top of hanalyzer.conf.js
+export_vite_env() {
+  export HANALYZER_PORT="$PORT"
+  export HANALYZER_PREVIEW_PORT="$PORT"
+  export HANALYZER_HOST="$HOST"
+  export HANALYZER_ALLOWED_HOSTS="$ALLOWED_HOSTS"
+  export HANALYZER_API_TARGET="$API_URL"
+}
+
 # Execute command
 case $COMMAND in
   install)
@@ -212,11 +221,7 @@ case $COMMAND in
     echo -e "${BLUE}API Target:   ${GREEN}$API_URL${NC}"
     echo ""
     
-    # Export overrides consumed by vite.config.js on top of hanalyzer.conf.js
-    export HANALYZER_PORT="$PORT"
-    export HANALYZER_HOST="$HOST"
-    export HANALYZER_ALLOWED_HOSTS="$ALLOWED_HOSTS"
-    export HANALYZER_API_TARGET="$API_URL"
+    export_vite_env
     
     if [ "$OPEN_BROWSER" = true ]; then
       export BROWSER=open
@@ -243,6 +248,11 @@ case $COMMAND in
       npm run build
     fi
     echo -e "${CYAN}Starting preview server...${NC}"
+    echo -e "${BLUE}Preview URL: ${GREEN}http://$HOST:$PORT${NC}"
+    if [ -n "$ALLOWED_HOSTS" ]; then
+      echo -e "${BLUE}Allowed Hosts: ${GREEN}$ALLOWED_HOSTS${NC}"
+    fi
+    export_vite_env
     npm run preview
     ;;
   clean)

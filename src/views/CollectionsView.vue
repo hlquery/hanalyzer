@@ -4902,6 +4902,33 @@ onUnmounted(() => {
   visibility: hidden !important;
 }
 
+.collections-header-actions .items-per-page-btn,
+.collections-header-actions .items-per-page-btn:hover,
+.collections-header-actions .items-per-page-btn:focus,
+.collections-header-actions .items-per-page-btn:focus-visible,
+.collections-header-actions .items-per-page-btn:active,
+.collections-header-actions .items-per-page-btn.active {
+  background: #f3f4f6 !important;
+  background-color: #f3f4f6 !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.collections-header-actions .items-per-page-btn:hover,
+.collections-header-actions .items-per-page-btn:focus,
+.collections-header-actions .items-per-page-btn:focus-visible {
+  background: #e5e7eb !important;
+  background-color: #e5e7eb !important;
+}
+
+.collections-header-actions .items-per-page-btn,
+.collections-header-actions .items-per-page-btn span,
+.collections-header-actions .items-per-page-btn :deep(.v-icon) {
+  color: #1f2937 !important;
+  font-weight: 700 !important;
+}
+
 /* Google-style Menu */
 .google-menu {
   padding: 8px 0 !important;

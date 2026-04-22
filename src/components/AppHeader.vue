@@ -1,11 +1,43 @@
 <template>
-  <v-app-bar 
-    color="#111827"
-    elevation="0"
-    :class="['app-navbar', { 'app-navbar--scrolled': isScrolled }]"
-    height="76"
-    @contextmenu="handleHeaderContextMenu"
-  >
+  <div class="app-header-shell">
+    <div
+      v-if="demoModeEnabled"
+      class="demo-mode-banner"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="demo-mode-banner__inner">
+        <v-icon icon="mdi-flask-outline" size="18" class="demo-mode-banner__icon" />
+        <div class="demo-mode-banner__content">
+          <span class="demo-mode-banner__title">Demo mode enabled.</span>
+          <span class="demo-mode-banner__message">
+            <template
+              v-for="(segment, index) in demoModeMessageParts"
+              :key="`demo-message-${index}`"
+            >
+              <a
+                v-if="segment.type === 'link'"
+                :href="segment.value"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="demo-mode-banner__link"
+              >
+                {{ segment.value }}
+              </a>
+              <span v-else>{{ segment.value }}</span>
+            </template>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <v-app-bar 
+      color="#111827"
+      elevation="0"
+      :class="['app-navbar', { 'app-navbar--scrolled': isScrolled }]"
+      height="76"
+      @contextmenu="handleHeaderContextMenu"
+    >
     <!-- Logo - Left -->
     <v-app-bar-title class="hlquery-nav-logo">
       <router-link to="/collections" class="hlquery-logo-container">
@@ -391,7 +423,8 @@
         </v-card>
       </v-menu>
     </div>
-  </v-app-bar>
+    </v-app-bar>
+  </div>
 </template>
 
 <script setup>
@@ -455,11 +488,49 @@ const showPingMenu = ref(false)
 const isScrolled = ref(false)
 const isHovered = ref(false)
 const distributedMode = ref('auto')
+const demoModeEnabled = ref(false)
+const demoModeMessage = ref('')
+const defaultDemoModeMessage = 'Search and browsing are enabled. Write and admin actions are blocked while demo mode is active.'
 const distributedModeOptions = [
   { title: 'Auto (Server Default)', value: 'auto' },
   { title: 'Force On (distributed=on)', value: 'on' },
   { title: 'Force Off (distributed=off)', value: 'off' }
 ]
+
+const demoModeMessageParts = computed(() => {
+  const message = (demoModeMessage.value || defaultDemoModeMessage).trim()
+  const parts = []
+  const urlPattern = /(https?:\/\/[^\s]+)/g
+  let lastIndex = 0
+  let match
+
+  while ((match = urlPattern.exec(message)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        type: 'text',
+        value: message.slice(lastIndex, match.index)
+      })
+    }
+
+    parts.push({
+      type: 'link',
+      value: match[0]
+    })
+
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < message.length) {
+    parts.push({
+      type: 'text',
+      value: message.slice(lastIndex)
+    })
+  }
+
+  return parts.length > 0
+    ? parts
+    : [{ type: 'text', value: message }]
+})
 
 const handleNavMenuToggle = (isOpen) => {
   showNavMenu.value = isOpen
@@ -573,6 +644,7 @@ const getLatencyColorClass = (latency) => {
 // Check if auth is required on the server
 const authRequired = ref(false)
 let authCheckTimer = null
+let demoModeCheckTimer = null
 
 // Watch authRequired to update global flag so interceptor knows whether to send auth headers
 watch(authRequired, (isRequired) => {
@@ -679,6 +751,38 @@ const checkAuthRequired = async () => {
   }
 }
 
+const checkDemoMode = async () => {
+  const baseUrlValue = getBaseUrlValue(baseUrl)
+  if (!baseUrlValue || !isConnected.value) {
+    demoModeEnabled.value = false
+    demoModeMessage.value = ''
+    return
+  }
+
+  try {
+    const useProxy = shouldUseProxy(baseUrlValue)
+    const healthUrl = buildApiUrl(baseUrlValue, useProxy, '/health')
+    const response = await axios.get(healthUrl, {
+      timeout: 4000,
+      validateStatus: () => true
+    })
+
+    if (response.status !== 200 || !response.data || typeof response.data !== 'object') {
+      demoModeEnabled.value = false
+      demoModeMessage.value = ''
+      return
+    }
+
+    demoModeEnabled.value = response.data.demo_mode === true
+    demoModeMessage.value = typeof response.data.demo_message === 'string'
+      ? response.data.demo_message.trim()
+      : ''
+  } catch (err) {
+    demoModeEnabled.value = false
+    demoModeMessage.value = ''
+  }
+}
+
 // Check auth requirement periodically when connected
 watch([isConnected, baseUrl], () => {
   if (authCheckTimer) {
@@ -694,6 +798,23 @@ watch([isConnected, baseUrl], () => {
     }, 30000)
   } else {
     authRequired.value = false
+  }
+}, { immediate: true })
+
+watch([isConnected, baseUrl], () => {
+  if (demoModeCheckTimer) {
+    clearInterval(demoModeCheckTimer)
+    demoModeCheckTimer = null
+  }
+
+  if (isConnected.value) {
+    checkDemoMode()
+    demoModeCheckTimer = setInterval(() => {
+      checkDemoMode()
+    }, 30000)
+  } else {
+    demoModeEnabled.value = false
+    demoModeMessage.value = ''
   }
 }, { immediate: true })
 
@@ -821,6 +942,7 @@ onMounted(() => {
 
   const handleRuntimeConfigLoaded = () => {
     checkAuthRequired()
+    checkDemoMode()
     checkConnection()
     loadCollectionsAsync()
   }
@@ -850,6 +972,11 @@ onUnmounted(() => {
   if (authCheckTimer) {
     clearInterval(authCheckTimer)
     authCheckTimer = null
+  }
+
+  if (demoModeCheckTimer) {
+    clearInterval(demoModeCheckTimer)
+    demoModeCheckTimer = null
   }
   
   // Remove server settings open event listener
@@ -1299,6 +1426,76 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 </script>
 
 <style scoped>
+.app-header-shell {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.demo-mode-banner {
+  position: relative;
+  z-index: 101;
+  width: 100%;
+  background:
+    linear-gradient(90deg, rgba(180, 83, 9, 0.98) 0%, rgba(217, 119, 6, 0.98) 52%, rgba(245, 158, 11, 0.98) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 10px 24px rgba(120, 53, 15, 0.2);
+}
+
+.demo-mode-banner__inner {
+  min-height: 44px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.demo-mode-banner__icon {
+  color: #fff7ed;
+  flex: 0 0 auto;
+}
+
+.demo-mode-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  text-align: center;
+  color: #fffaf0;
+}
+
+.demo-mode-banner__title {
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.demo-mode-banner__message {
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.demo-mode-banner__link {
+  color: #ffffff !important;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.88);
+  text-underline-offset: 2px;
+}
+
+.demo-mode-banner__link:hover,
+.demo-mode-banner__link:focus-visible {
+  color: #fff7ed !important;
+  text-decoration-color: #fff7ed;
+  outline: none;
+}
+
 /* Floating Header - Dark with Soft Shadow */
 .app-navbar {
   background: rgba(15, 23, 42, 0.94) !important;
@@ -3600,6 +3797,24 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 @media (max-width: 600px) {
+  .demo-mode-banner__inner {
+    min-height: 0;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .demo-mode-banner__content {
+    justify-content: flex-start;
+    text-align: left;
+    gap: 4px;
+  }
+
+  .demo-mode-banner__title,
+  .demo-mode-banner__message {
+    font-size: 12px;
+  }
+
   .app-navbar {
     padding: 0 8px !important;
     height: 56px !important;
