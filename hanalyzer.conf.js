@@ -30,9 +30,9 @@ const config = {
   server: {
     port: 8080,
     host: 'localhost',
-    allowedHosts: [],
+    allowedHosts: ['demo.hlquery.com'],
     apiTarget: 'http://localhost:9200',
-    baseUrl: '/',
+    baseUrl: './',
     open: true
   },
   preview: {

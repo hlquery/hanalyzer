@@ -10,7 +10,7 @@
     <v-app-bar-title class="hlquery-nav-logo">
       <router-link to="/collections" class="hlquery-logo-container">
         <img 
-          src="/logo.png" 
+          :src="logoSrc"
           alt="hlquery logo" 
           class="logo-image"
         />
@@ -408,6 +408,7 @@ const theme = useTheme()
 const router = useRouter()
 const route = useRoute()
 const baseUrl = inject('baseUrl')
+const logoSrc = `${import.meta.env.BASE_URL || './'}logo.png`
 const emit = defineEmits(['open-command-palette'])
 
 // Check if navigation items are active

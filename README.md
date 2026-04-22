@@ -100,14 +100,16 @@ export default {
   server: {
     port: 8080,
     host: 'localhost',
+    allowedHosts: ['demo.hlquery.com'],
     apiTarget: 'http://localhost:9200',
-    baseUrl: '/'
+    baseUrl: './'
   }
 }
 ```
 
 The `./hanalyzer` CLI can still override `port`, `host`, and `apiTarget` at runtime.
 Use `runtime.defaultAuthToken` or `runtime.defaultAuthByServer` in `hanalyzer.conf.js` if you want auth defaults with comments and examples.
+For remote access through a hostname, add it to `server.allowedHosts` or pass `./hanalyzer --allow-host your-hostname`.
 
 Create a runtime JSON config file from the example:
 
@@ -166,6 +168,7 @@ npm run preview
 Important:
 - Do not open `dist/index.html` with `file://`.
 - Serve the built files over `http://` or `https://`, for example with `npm run preview`.
+- The production build now defaults to relative asset paths plus hash-based routing, so `dist/` can be mounted under `/`, `/hanalyzer/`, or another static subdirectory without extra rewrite rules.
 
 > **Note**: hanalyzer runs on port **8080** by default. Ensure this port is available and not blocked by your firewall.
 

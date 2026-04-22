@@ -6,6 +6,17 @@ import defaultConfig from './hanalyzer.conf.js'
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
+  const normalizeBaseUrl = (value, fallback) => {
+    const normalized = typeof value === 'string' ? value.trim() : ''
+    const base = normalized || fallback
+    if (base === './' || base === '../') {
+      return base
+    }
+    if (!base) {
+      return fallback
+    }
+    return base.endsWith('/') ? base : `${base}/`
+  }
   const parseAllowedHosts = (value) => {
     if (typeof value === 'boolean') {
       return value
@@ -61,6 +72,10 @@ export default defineConfig(({ mode }) => {
       port: parseInt(process.env.HANALYZER_PREVIEW_PORT || `${defaultConfig.preview.port}`, 10)
     }
   }
+
+  const resolvedBaseUrl = isProduction
+    ? normalizeBaseUrl(appConfig.server.baseUrl, './')
+    : '/'
   
   return {
     plugins: [
@@ -72,7 +87,7 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url))
       }
     },
-    base: appConfig.server.baseUrl,
+    base: resolvedBaseUrl,
     build: {
       target: 'es2015',
       outDir: 'dist',

@@ -1,6 +1,20 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import axios from 'axios'
 import { buildApiUrl, shouldUseProxy } from './utils/apiHelpers'
+
+const resolveRouterBase = () => {
+  const configuredBase = import.meta.env.BASE_URL || '/'
+  if (configuredBase === './' || configuredBase === '../') {
+    if (typeof window === 'undefined') {
+      return '/'
+    }
+
+    const url = new URL('.', window.location.href)
+    return url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`
+  }
+
+  return configuredBase
+}
 
 const normalizeCollectionTab = (value) => {
   if (value === 'synonyms' || value === 'stopwords' || value === 'documents') {
@@ -323,7 +337,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHashHistory(resolveRouterBase()),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
