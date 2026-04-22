@@ -27,7 +27,7 @@ Clone the repository normally:
 
 ```bash
 $ git clone https://github.com/hlquery/hlquery.git
-$ cd hlquery/etc/hanalyzer
+$ cd hanalyzer/
 ```
 
 Install dependencies and start the dashboard:
@@ -313,69 +313,6 @@ hanalyzer is built with modern web technologies:
 - **Axios** - HTTP client for API requests
 - **Chart.js** - Data visualization library
 - **Three.js** - 3D graphics for RocksDB Visualization
-
-### Project Structure
-
-```
-etc/hanalyzer/
-├── src/
-│   ├── components/     # Reusable Vue components
-│   ├── composables/    # Vue composition API utilities
-│   ├── views/          # Page components
-│   ├── utils/          # Utility functions
-│   └── router.js       # Vue Router configuration
-├── public/             # Static assets and runtime JSON config
-├── assets/             # CSS and design system files
-├── hanalyzer.conf.js   # Shared dev/build configuration
-├── vite.config.js      # Vite configuration
-├── package.json        # Dependencies and scripts
-└── hanalyzer           # CLI wrapper script
-```
-
-## Troubleshooting
-
-### Cannot Connect to HLQuery Server
-
-1. Verify HLQuery server is running:
-   ```bash
-   ./run/hlquery status
-   ```
-
-2. Check the API URL in `public/hanalyzer.config.json`:
-   ```json
-   { "defaultBaseUrl": "http://localhost:9200" }
-   ```
-
-3. Test connection manually:
-   ```bash
-   curl http://localhost:9200/health
-   ```
-
-### Port Already in Use
-
-Change the port with the CLI option:
-
-```bash
-hanalyzer --port 3000
-```
-
-### Dependencies Installation Issues
-
-Clear cache and reinstall:
-
-```bash
-rm -rf node_modules package-lock.json
-npm install
-```
-
-### Build Errors
-
-Ensure you're using the correct Node.js version:
-
-```bash
-node -v  # Should be 18+
-npm -v   # Should be 9+
-```
 
 ## Contributing
 
