@@ -6,6 +6,36 @@ import defaultConfig from './hanalyzer.conf.js'
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production'
+  const parseAllowedHosts = (value) => {
+    if (typeof value === 'boolean') {
+      return value
+    }
+
+    if (typeof value !== 'string') {
+      return []
+    }
+
+    const normalized = value.trim()
+    if (!normalized) {
+      return []
+    }
+
+    if (normalized.toLowerCase() === 'true' || normalized === '*') {
+      return true
+    }
+
+    return normalized
+      .split(',')
+      .map((host) => host.trim())
+      .filter(Boolean)
+  }
+
+  const allowedHostsOverride = parseAllowedHosts(process.env.HANALYZER_ALLOWED_HOSTS)
+  const allowedHosts =
+    allowedHostsOverride === true || allowedHostsOverride.length > 0
+      ? allowedHostsOverride
+      : defaultConfig.server.allowedHosts
+
   const vendorChunkMap = [
     ['vue-vendor', ['vue', 'vue-router']],
     ['vuetify-vendor', ['vuetify']],
@@ -22,6 +52,7 @@ export default defineConfig(({ mode }) => {
       ...defaultConfig.server,
       port: parseInt(process.env.HANALYZER_PORT || `${defaultConfig.server.port}`, 10),
       host: process.env.HANALYZER_HOST || defaultConfig.server.host,
+      allowedHosts,
       apiTarget: process.env.HANALYZER_API_TARGET || defaultConfig.server.apiTarget,
       baseUrl: process.env.HANALYZER_BASE_URL || defaultConfig.server.baseUrl
     },
@@ -96,6 +127,7 @@ export default defineConfig(({ mode }) => {
     server: {
       port: appConfig.server.port,
       host: appConfig.server.host,
+      allowedHosts: appConfig.server.allowedHosts,
       strictPort: false,
       open: appConfig.server.open,
       cors: true,
@@ -170,6 +202,7 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: appConfig.preview.port,
       host: appConfig.server.host,
+      allowedHosts: appConfig.server.allowedHosts,
       strictPort: false
     },
     optimizeDeps: {

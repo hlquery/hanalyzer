@@ -30,6 +30,7 @@ const config = {
   server: {
     port: 8080,
     host: 'localhost',
+    allowedHosts: [],
     apiTarget: 'http://localhost:9200',
     baseUrl: '/',
     open: true

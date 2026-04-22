@@ -16,6 +16,7 @@
 # Options:
 #   --port PORT         Set server port (default: 8080)
 #   --host HOST         Set server host (default: localhost)
+#   --allow-host HOSTS  Comma-separated hostnames allowed by Vite
 #   --api URL           Set hlquery API URL (default: http://localhost:9200)
 #   --open              Open browser automatically
 #   --help, -h          Show help message
@@ -46,6 +47,7 @@ cd "$SCRIPT_DIR"
 COMMAND="start"
 PORT="8080"
 HOST="localhost"
+ALLOWED_HOSTS=""
 API_URL="http://localhost:9200"
 OPEN_BROWSER=false
 
@@ -76,6 +78,10 @@ while [[ $# -gt 0 ]]; do
       HOST="$2"
       shift 2
       ;;
+    --allow-host)
+      ALLOWED_HOSTS="$2"
+      shift 2
+      ;;
     --api|-a)
       API_URL="$2"
       shift 2
@@ -103,6 +109,7 @@ ${GREEN}Commands:${NC}
 ${GREEN}Options:${NC}
   --port, -p PORT     Set server port (default: 8080)
   --host, -H HOST     Set server host (default: localhost)
+  --allow-host HOSTS  Comma-separated hostnames allowed by Vite
   --api, -a URL       Set hlquery API URL (default: http://localhost:9200)
   --open, -o          Open browser automatically
   --help, -h          Show help message
@@ -110,6 +117,7 @@ ${GREEN}Options:${NC}
 ${GREEN}Examples:${NC}
   hanalyzer                           # Start dev server with defaults
   hanalyzer --port 3000               # Start on port 3000
+  hanalyzer --host 0.0.0.0 --allow-host demo.hlquery.com
   hanalyzer --api http://api.example.com:9200  # Connect to remote server
   hanalyzer --open                    # Start and open browser
   hanalyzer build                     # Build for production
@@ -198,12 +206,16 @@ case $COMMAND in
     
     echo -e "${CYAN}Starting hanalyzer development server...${NC}"
     echo -e "${BLUE}Server URL: ${GREEN}http://$HOST:$PORT${NC}"
+    if [ -n "$ALLOWED_HOSTS" ]; then
+      echo -e "${BLUE}Allowed Hosts: ${GREEN}$ALLOWED_HOSTS${NC}"
+    fi
     echo -e "${BLUE}API Target:   ${GREEN}$API_URL${NC}"
     echo ""
     
     # Export overrides consumed by vite.config.js on top of hanalyzer.conf.js
     export HANALYZER_PORT="$PORT"
     export HANALYZER_HOST="$HOST"
+    export HANALYZER_ALLOWED_HOSTS="$ALLOWED_HOSTS"
     export HANALYZER_API_TARGET="$API_URL"
     
     if [ "$OPEN_BROWSER" = true ]; then
