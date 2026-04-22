@@ -87,7 +87,7 @@ import { useConnectionStatus } from './composables/useConnectionStatus'
 
 const router = useRouter()
 const route = useRoute()
-const baseUrl = ref('http://localhost:9200')
+const baseUrl = ref('/api')
 const connectionState = useConnectionStatus(baseUrl)
 const { isConnected } = connectionState
 const commandPaletteOpen = ref(false)

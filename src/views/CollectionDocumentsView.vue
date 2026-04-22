@@ -124,6 +124,15 @@
                 @click="clearSearchInput"
               ></i>
             </div>
+            <a
+              class="collection-search-help-link"
+              href="https://docs.hlquery.com/api/advanced-query-verification"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Open search syntax instructions"
+            >
+              Search syntax
+            </a>
           </div>
         </div>
 
@@ -2920,6 +2929,12 @@ const handleSearch = async () => {
   if (hasFilter) {
     options.filterBy = filterString
   }
+
+  if ((searchQuery.value || '').toLowerCase().includes('do:casesensitive') ||
+      (searchQuery.value || '').toLowerCase().includes('do:case_sensitive') ||
+      (searchQuery.value || '').toLowerCase().includes('do:case-sensitive')) {
+    options.caseSensitive = true
+  }
   
   // Add sort_by - prioritize relevance for search queries
   // When there's a search query, always use relevance sorting to show most relevant results first
@@ -5290,6 +5305,23 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.collection-search-help-link {
+  align-items: center;
+  color: #475569;
+  display: inline-flex;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+  min-height: 40px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.collection-search-help-link:hover {
+  color: #0f172a;
+  text-decoration: underline;
 }
 
 .collection-date-toolbar-btn.active {

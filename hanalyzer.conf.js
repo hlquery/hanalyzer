@@ -13,7 +13,7 @@ const config = {
     version: packageVersion
   },
   runtime: {
-    defaultBaseUrl: 'http://localhost:9200',
+    defaultBaseUrl: '/api',
     // Example: set a fallback token used when the UI does not already have one saved.
     defaultAuthToken: '',
     // Supported values: 'bearer' or 'api-key'.

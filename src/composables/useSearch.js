@@ -161,6 +161,10 @@ export function useSearch(baseUrl) {
         params.prefix = !!options.prefix
       }
 
+      if (options.caseSensitive !== undefined) {
+        params.case_sensitive = !!options.caseSensitive
+      }
+
       if (options.dropTokensThreshold !== undefined && options.dropTokensThreshold !== null && options.dropTokensThreshold !== '') {
         params.drop_tokens_threshold = Number(options.dropTokensThreshold)
       }

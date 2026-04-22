@@ -26,7 +26,10 @@ if (typeof window !== 'undefined') {
     ...(hanalyzerConfig.runtime || {}),
     ...(window.HANALYZER_CONFIG || {})
   }
-  window.__HLQUERY_BASE_URL__ = window.__HLQUERY_BASE_URL__ || 'http://localhost:9200'
+  const runtimeDefaultBaseUrl = typeof window.HANALYZER_CONFIG.defaultBaseUrl === 'string'
+    ? window.HANALYZER_CONFIG.defaultBaseUrl.trim()
+    : ''
+  window.__HLQUERY_BASE_URL__ = window.__HLQUERY_BASE_URL__ || runtimeDefaultBaseUrl || '/api'
   // Initialize auth required flag to false - will be set when we check server requirements
   window.__HLQUERY_AUTH_REQUIRED__ = false
 }
@@ -89,10 +92,10 @@ axios.interceptors.request.use(
     // If using proxy (/api), get server URL from window global
     if (requestUrl.startsWith('/api')) {
       // Get from window global (set by App.vue/AppHeader when baseUrl changes)
-      serverUrl = window.__HLQUERY_BASE_URL__ || 'http://localhost:9200'
+      serverUrl = window.__HLQUERY_BASE_URL__ || '/api'
       // Ensure it's set as default if not already
       if (!window.__HLQUERY_BASE_URL__) {
-        window.__HLQUERY_BASE_URL__ = 'http://localhost:9200'
+        window.__HLQUERY_BASE_URL__ = '/api'
       }
     } else if (requestUrl.startsWith('http')) {
       // Full URL provided - extract host
@@ -104,7 +107,7 @@ axios.interceptors.request.use(
       }
     } else if (!serverUrl) {
       // Fallback to window global
-      serverUrl = window.__HLQUERY_BASE_URL__ || 'http://localhost:9200'
+      serverUrl = window.__HLQUERY_BASE_URL__ || '/api'
     }
     
     // Normalize serverUrl to match how we store credentials
@@ -160,7 +163,7 @@ axios.interceptors.response.use(
       
       // Get server URL the same way as request interceptor
       if (requestUrl.startsWith('/api')) {
-        serverUrl = window.__HLQUERY_BASE_URL__ || 'http://localhost:9200'
+        serverUrl = window.__HLQUERY_BASE_URL__ || '/api'
       } else if (requestUrl.startsWith('http')) {
         try {
           const url = new URL(requestUrl)

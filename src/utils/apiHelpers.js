@@ -9,12 +9,12 @@
  */
 export function getBaseUrlValue(baseUrl) {
   if (typeof baseUrl === 'string') {
-    return baseUrl.trim() || 'http://localhost:9200'
+    return baseUrl.trim() || '/api'
   }
   if (baseUrl?.value && typeof baseUrl.value === 'string') {
     return baseUrl.value.trim()
   }
-  return 'http://localhost:9200'
+  return '/api'
 }
 
 /**
@@ -34,7 +34,12 @@ export function shouldUseProxy(baseUrlValue) {
     return !!import.meta.env.DEV
   }
 
-  // `/api` proxying is guaranteed in the Vite dev server, but not in static or preview builds.
+  if (baseUrlValue === '/api' || baseUrlValue.startsWith('/api?')) {
+    return true
+  }
+
+  // `/api` proxying is guaranteed in the Vite dev server, but not in static or preview builds
+  // unless the runtime config explicitly requests it.
   if (!import.meta.env.DEV) {
     return false
   }
