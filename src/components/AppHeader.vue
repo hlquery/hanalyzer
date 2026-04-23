@@ -187,6 +187,8 @@
             variant="flat"
             size="default"
             prepend-icon="mdi-cog"
+            :title="`Server: ${serverHost}`"
+            :aria-label="`Server settings for ${serverHost}`"
             class="connection-status-btn header-action-btn header-action-btn--light"
           >
             <span class="connection-host-text">{{ serverHost }}</span>
@@ -4092,15 +4094,15 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     display: flex !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     align-items: center !important;
-    flex: 0 0 44px !important;
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
+    flex: 0 1 136px !important;
+    width: auto !important;
+    min-width: 112px !important;
+    max-width: 136px !important;
     height: 44px !important;
     min-height: 44px !important;
-    padding: 0 !important;
+    padding: 0 10px !important;
     border-radius: 12px !important;
     align-self: center !important;
     overflow: hidden !important;
@@ -4114,22 +4116,23 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .app-navbar .connection-status-btn.header-action-btn--light,
   .app-navbar .connection-status-btn.header-action-btn--light.v-btn,
   .app-navbar .connection-status-btn.header-action-btn--light.v-btn--variant-flat {
-    min-width: 44px !important;
-    max-width: 44px !important;
-    width: 44px !important;
-    padding: 0 !important;
+    min-width: 112px !important;
+    max-width: 136px !important;
+    width: auto !important;
+    padding: 0 10px !important;
   }
 
   .connection-status-btn :deep(.v-btn__content) {
     display: inline-flex !important;
     width: 100% !important;
     height: 100% !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
     align-items: center !important;
-    text-align: center !important;
+    text-align: left !important;
     margin: 0 !important;
     padding: 0 !important;
-    gap: 0 !important;
+    gap: 6px !important;
+    min-width: 0 !important;
   }
 
   .connection-status-btn :deep(.v-btn__prepend),
@@ -4157,6 +4160,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .connection-status-btn :deep(.v-icon) {
     margin: 0 !important;
     font-size: 16px !important;
+    flex: 0 0 auto !important;
   }
 
   .connection-status-btn.disconnected {
@@ -4210,26 +4214,32 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     margin-inline-end: 6px !important;
   }
   .connection-host-text {
-    display: none !important;
+    display: inline-block !important;
+    min-width: 0 !important;
+    max-width: 92px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 
   .app-navbar .connection-status-btn :deep(.v-btn__content),
   .app-navbar .connection-status-btn :deep(.v-btn__wrapper),
   .app-navbar .connection-status-btn :deep(.v-btn__prepend) ~ .v-btn__content {
-    justify-content: center !important;
-    text-align: center !important;
-    gap: 0 !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    gap: 6px !important;
+    min-width: 0 !important;
   }
 
   .app-navbar .connection-status-btn :deep(.v-btn__prepend),
   .app-navbar .connection-status-btn :deep(.v-btn__prepend-inner) {
     margin-right: 0 !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   .app-navbar .connection-status-btn :deep(.v-btn__wrapper) {
     width: 100% !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   .header-right-actions > *,

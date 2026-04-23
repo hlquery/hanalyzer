@@ -662,6 +662,7 @@
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
               @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
+              @contextmenu="showDocumentContextMenu($event, doc)"
             >
               <!-- Title on top - CLICKABLE -->
               <h3 
@@ -732,6 +733,7 @@
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
               @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
+              @contextmenu="showDocumentContextMenu($event, doc)"
             >
               <!-- Title on top - CLICKABLE -->
               <h3 
