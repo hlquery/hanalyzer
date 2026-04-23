@@ -1714,6 +1714,12 @@ const searchScopeOptions = computed(() => {
   return options
 })
 const getScopeFields = () => {
+  const hasLoadedSearchFields = Array.isArray(availableFields.value) && availableFields.value.length > 0
+
+  if (!hasLoadedSearchFields && searchScopeMode.value !== 'custom') {
+    return []
+  }
+
   if (searchScopeMode.value === 'identity') {
     return [...titleScopeFields.value]
   }
@@ -1738,6 +1744,18 @@ const getExplicitQueryFields = () => {
   return getScopeFields()
 }
 
+const ensureSearchSchemaReady = async () => {
+  if (searchScopeMode.value === 'all') {
+    return
+  }
+
+  if (Array.isArray(availableFields.value) && availableFields.value.length > 0) {
+    return
+  }
+
+  await loadCollectionSchema(false)
+}
+
 const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 const buildWildcardMatcher = (rawQuery) => {
@@ -1756,23 +1774,6 @@ const buildWildcardMatcher = (rawQuery) => {
 
   const regex = new RegExp(pattern)
   return (value) => regex.test(String(value || '').toLowerCase())
-}
-
-const getDefaultQueryByFields = () => {
-  const schemaFields = searchFieldItems.value || []
-  if (schemaFields.length > 0) {
-    const fieldMap = new Map(schemaFields.map((field) => [String(field).toLowerCase(), field]))
-    const preferred = ['name', 'title', 'content']
-      .map((key) => fieldMap.get(key))
-      .filter(Boolean)
-
-    if (preferred.length > 0) {
-      return preferred.join(',')
-    }
-  }
-
-  // Fallback when schema is not loaded yet.
-  return 'name,title,content'
 }
 
 const buildFieldScopedQuery = (query, fields, mode = 'OR') => {
@@ -2913,6 +2914,7 @@ const handleSearch = async () => {
   
   searchPerformed.value = true
   searchError.value = null
+  await ensureSearchSchemaReady()
   
   const options = {}
   const explicitQueryFields = getExplicitQueryFields()
@@ -2923,10 +2925,8 @@ const handleSearch = async () => {
   if (hasQuery) {
     if (searchScopeMode.value === 'custom' && explicitQueryFields.length > 1 && queryByMode.value === 'AND') {
       effectiveQuery = buildFieldScopedQuery(searchQuery.value, explicitQueryFields, 'AND')
-    } else if (explicitQueryFields.length > 0) {
+    } else if (searchScopeMode.value !== 'all' && explicitQueryFields.length > 0) {
       options.queryBy = explicitQueryFields.join(',')
-    } else {
-      options.queryBy = getDefaultQueryByFields()
     }
   }
   

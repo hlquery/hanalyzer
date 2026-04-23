@@ -847,10 +847,11 @@ const openCollectionInNewTab = (collectionName, event) => {
 const handleCollectionClick = (collectionName, event) => {
   // Only handle left clicks - right clicks should show browser context menu
   if (event) {
-    // Right click (button 2) - let browser show context menu, don't interfere
+    // Right click (button 2) - let the browser fully handle the event.
+    // Stopping propagation here can interfere with the native context menu,
+    // especially when the row is wrapped by router-link/Vuetify table markup.
     if (event.button === 2) {
-      event.stopPropagation() // Stop propagation but don't prevent default
-      return // Let browser handle the context menu
+      return
     }
     // Ctrl/Cmd + click - let browser handle it (open in new tab)
     if (event.ctrlKey || event.metaKey) {
