@@ -15,9 +15,13 @@
               <span class="collection-name-text">{{ collectionName }}</span>
             </v-btn>
           </span>
-          <span class="title-separator">/</span>
+          <span class="title-separator" aria-hidden="true">/</span>
           <span class="doc-name">{{ documentId || 'Document' }}</span>
         </h1>
+        <div class="document-subtitle-line">
+          <span class="document-subtitle-label">Document ID</span>
+          <span class="document-subtitle-id">{{ documentId || 'Document' }}</span>
+        </div>
         <div v-if="document && !loading" class="fields-count-header">
           <v-icon size="14" class="mr-2">mdi-information-outline</v-icon>
           <span>{{ Object.keys(document).length }} {{ Object.keys(document).length === 1 ? 'field' : 'fields' }}</span>
@@ -677,12 +681,110 @@ onMounted(async () => {
   word-break: break-word;
 }
 
+.document-subtitle-line {
+  display: none;
+}
+
 .document-header-actions {
   display: flex;
   gap: 12px;
   flex-shrink: 0;
   align-items: center;
   padding-top: 4px;
+}
+
+@media (max-width: 700px) {
+  .document-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .document-title-section {
+    width: 100%;
+  }
+
+  .document-title-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    min-width: 0;
+  }
+
+  .collection-link-wrapper {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .collection-link-btn {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .collection-name-text {
+    display: inline-block !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  .title-separator,
+  .doc-name {
+    display: none;
+  }
+
+  .document-subtitle-line {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 6px;
+    padding-left: 26px;
+    min-width: 0;
+  }
+
+  .document-subtitle-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+    line-height: 1.3;
+  }
+
+  .document-subtitle-id {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: #0f172a;
+    word-break: break-word;
+  }
+
+  .fields-count-header {
+    margin-top: 10px;
+    padding-left: 26px;
+  }
+
+  .document-header-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 0;
+  }
+
+  .document-header-actions .collections-action-btn,
+  .document-header-actions .delete-action-btn {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .document-header-actions .collections-action-btn :deep(.v-btn__content),
+  .document-header-actions .delete-action-btn :deep(.v-btn__content) {
+    white-space: nowrap !important;
+  }
 }
 
 /* Delete Action Button - Red 3D version like before */

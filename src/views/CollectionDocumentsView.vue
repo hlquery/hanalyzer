@@ -124,13 +124,6 @@
                 @click="clearSearchInput"
               ></i>
             </div>
-            <router-link
-              class="collection-search-help-link"
-              :to="searchSyntaxRoute"
-              aria-label="Open internal search syntax examples"
-            >
-              How to use
-            </router-link>
           </div>
         </div>
 
@@ -146,6 +139,19 @@
         
         
         <!-- Items Per Page Control - Always visible at top -->
+        <div
+          v-if="documents.length > 0 || searchPerformed"
+          class="collection-results-toolbar-head"
+        >
+          <router-link
+            class="collection-search-help-link"
+            :to="searchSyntaxRoute"
+            aria-label="Open internal search syntax examples"
+          >
+            How to use
+          </router-link>
+        </div>
+
         <div class="google-toolbar collection-results-toolbar" v-if="documents.length > 0 || searchPerformed">
           <div class="google-toolbar-left" style="gap: 16px;">
             <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
@@ -5320,21 +5326,48 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
+.collection-results-toolbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 10px 0 4px 0;
+}
+
 .collection-search-help-link {
   align-items: center;
+  background: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  border-radius: 8px;
+  box-shadow: none !important;
   color: #475569;
   display: inline-flex;
   font-size: 0.9rem;
   font-weight: 600;
   line-height: 1;
   min-height: 40px;
+  outline: none !important;
+  padding: 0 4px;
   text-decoration: none;
   white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .collection-search-help-link:hover {
   color: #0f172a;
   text-decoration: underline;
+}
+
+.collection-search-help-link:focus,
+.collection-search-help-link:focus-visible,
+.collection-search-help-link:active,
+.collection-search-help-link:visited {
+  background: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #475569;
+  outline: none !important;
 }
 
 .collection-search-usage-card {
@@ -5500,6 +5533,11 @@ onUnmounted(() => {
   .collection-search-row {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .collection-results-toolbar-head {
+    justify-content: flex-end;
+    margin: 8px 0 6px 0;
   }
 
   .collection-date-toolbar-btn {
@@ -5706,6 +5744,10 @@ onUnmounted(() => {
 .compact-search-input::placeholder {
   color: #374151;
   font-size: 13px;
+}
+
+.compact-search-input:focus::placeholder {
+  color: transparent;
 }
 
 .compact-search-clear {
@@ -7059,8 +7101,9 @@ body :deep([role="tooltip"]) {
 
 .collection-tab.v-tab--selected {
   color: #ffffff !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
   background: #032548 !important;
+  background-color: #032548 !important;
   border-bottom: none !important;
   border-radius: 6px !important;
   margin-bottom: 0 !important;
@@ -7189,7 +7232,7 @@ body :deep([role="tooltip"]) {
 
 .collection-tab.v-tab--selected .tab-text {
   color: #ffffff !important;
-  font-weight: 500 !important;
+  font-weight: 600 !important;
 }
 
 .tab-count {
@@ -7203,8 +7246,8 @@ body :deep([role="tooltip"]) {
 }
 
 .collection-tab.v-tab--selected .tab-count {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 700 !important;
   opacity: 1 !important;
 }
 

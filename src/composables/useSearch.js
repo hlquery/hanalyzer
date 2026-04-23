@@ -11,6 +11,14 @@ const hasCaseSensitiveDirective = (query) => {
   return /\b(?:do|is):case[-_]?sensitive\b/i.test(String(query || ''))
 }
 
+const normalizeQueryBy = (queryBy) => {
+  if (Array.isArray(queryBy)) {
+    return queryBy.map((field) => String(field || '').trim()).filter(Boolean).join(',')
+  }
+
+  return String(queryBy || '').trim()
+}
+
 export function useSearch(baseUrl) {
   const searchResults = ref([])
   const loading = ref(false)
@@ -90,8 +98,9 @@ export function useSearch(baseUrl) {
         params.q = trimmedQuery  // Preserve quotes - don't remove them!
         // Only add query_by when explicitly set to real field names.
         // If user selected '*', omit query_by so backend uses its default all-fields behavior.
-        if (options.queryBy && options.queryBy.trim() && options.queryBy.trim() !== '*') {
-          params.query_by = Array.isArray(options.queryBy) ? options.queryBy.join(',') : options.queryBy
+        const queryBy = normalizeQueryBy(options.queryBy)
+        if (queryBy && queryBy !== '*') {
+          params.query_by = queryBy
         }
       } else if (options.filterBy && options.filterBy.trim()) {
         // The search endpoint expects a wildcard query for filter-only requests.
