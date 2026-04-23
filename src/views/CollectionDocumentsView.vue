@@ -668,7 +668,6 @@
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
               @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
-              @contextmenu="showDocumentContextMenu($event, doc)"
             >
               <!-- Title on top - CLICKABLE -->
               <h3 
@@ -739,7 +738,6 @@
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
               @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
-              @contextmenu="showDocumentContextMenu($event, doc)"
             >
               <!-- Title on top - CLICKABLE -->
               <h3 
@@ -1225,53 +1223,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <!-- Document Context Menu -->
-    <v-overlay
-      v-model="showDocumentContextMenuDialog"
-      class="context-menu-overlay"
-      :scrim="false"
-      @click="showDocumentContextMenuDialog = false"
-    >
-      <v-card
-        class="document-context-menu-card"
-        :style="{
-          position: 'fixed',
-          left: contextMenuLocation.x + 'px',
-          top: contextMenuLocation.y + 'px',
-          zIndex: 10000
-        }"
-        @click.stop
-      >
-        <v-list density="compact" class="document-context-menu" min-width="200">
-          <v-list-item @click="handleContextMenuOpen">
-            <template v-slot:prepend>
-              <v-icon size="18">mdi-open-in-new</v-icon>
-            </template>
-            <v-list-item-title>Open in New Tab</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="handleContextMenuCopyId">
-            <template v-slot:prepend>
-              <v-icon size="18">mdi-content-copy</v-icon>
-            </template>
-            <v-list-item-title>Copy Document ID</v-list-item-title>
-          </v-list-item>
-          <v-list-item @click="handleContextMenuViewDetails">
-            <template v-slot:prepend>
-              <v-icon size="18">mdi-eye</v-icon>
-            </template>
-            <v-list-item-title>View Details</v-list-item-title>
-          </v-list-item>
-          <v-divider class="my-1"></v-divider>
-          <v-list-item @click="handleContextMenuDelete" class="text-error">
-            <template v-slot:prepend>
-              <v-icon size="18" color="error">mdi-delete</v-icon>
-            </template>
-            <v-list-item-title>Delete Document</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-overlay>
 
     <!-- Document Detail Dialog -->
     <v-dialog v-model="showDocumentDialog" max-width="900" persistent>
@@ -3540,66 +3491,7 @@ const showDeleteDocumentDialog = ref(false)
 const documentToDelete = ref(null)
 const deletingDocument = ref(false)
 
-// Context menu for documents
-const showDocumentContextMenuDialog = ref(false)
-const contextMenuDocument = ref(null)
-const contextMenuLocation = ref({ x: 0, y: 0 })
 const deleteDocumentError = ref(null)
-
-// Context menu handlers for documents
-const showDocumentContextMenu = (event, doc) => {
-  event.preventDefault()
-  event.stopPropagation()
-  contextMenuDocument.value = doc
-  // Use clientX/clientY for viewport-relative positioning
-  contextMenuLocation.value = { 
-    x: event.clientX, 
-    y: event.clientY 
-  }
-  showDocumentContextMenuDialog.value = true
-}
-
-const handleContextMenuOpen = () => {
-  if (contextMenuDocument.value && contextMenuDocument.value.id) {
-    showDocumentContextMenuDialog.value = false
-    const encodedName = encodeURIComponent(collectionName.value)
-    const encodedDocId = encodeURIComponent(contextMenuDocument.value.id)
-    const path = `/collections/${encodedName}/documents/${encodedDocId}`
-    window.open(path, '_blank')
-  }
-}
-
-const handleContextMenuCopyId = async () => {
-  if (contextMenuDocument.value && contextMenuDocument.value.id) {
-    try {
-      await navigator.clipboard.writeText(contextMenuDocument.value.id)
-      toast.success('Document ID copied to clipboard', 'Copied')
-      showDocumentContextMenuDialog.value = false
-    } catch (err) {
-      toast.error('Failed to copy document ID', 'Error')
-    }
-  }
-}
-
-const handleContextMenuViewDetails = async () => {
-  if (contextMenuDocument.value && contextMenuDocument.value.id) {
-    showDocumentContextMenuDialog.value = false
-    try {
-      const doc = await getDocument(collectionName.value, contextMenuDocument.value.id)
-      documentJson.value = JSON.stringify(doc, null, 2)
-      showDocumentDialog.value = true
-    } catch (err) {
-      toast.error('Failed to load document details', 'Error')
-    }
-  }
-}
-
-const handleContextMenuDelete = () => {
-  if (contextMenuDocument.value && contextMenuDocument.value.id) {
-    showDocumentContextMenuDialog.value = false
-    confirmDeleteDocument(contextMenuDocument.value.id)
-  }
-}
 
 const confirmDeleteDocument = (docId) => {
   documentToDelete.value = docId
