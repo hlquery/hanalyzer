@@ -1010,6 +1010,10 @@ const buildFilterBy = () => {
   return filterParts.join('')
 }
 
+const hasCaseSensitiveDirective = (query) => {
+  return /\b(?:do|is):case[-_]?sensitive\b/i.test(String(query || ''))
+}
+
 const handleSearch = async () => {
   if (selectedCollection.value && (searchQuery.value || filters.value.length > 0)) {
     // Update URL with search parameters
@@ -1046,8 +1050,15 @@ const handleSearch = async () => {
     options.prioritizeExactMatch = prioritizeExactMatch.value
     options.exhaustiveSearch = exhaustiveSearch.value
     options.includeCreatedAt = includeCreatedAt.value
-    options.includeMaybe = includeMaybe.value
-    if (includeMaybe.value) {
+    if (hasCaseSensitiveDirective(searchQuery.value)) {
+      options.caseSensitive = true
+      options.numTypos = 0
+      options.prefix = false
+      options.includeMaybe = false
+    } else {
+      options.includeMaybe = includeMaybe.value
+    }
+    if (options.includeMaybe) {
       options.maybeMin = maybeMin.value
       options.maybeLimit = maybeLimit.value
     }

@@ -298,13 +298,13 @@ html {
 /* FORCE white text on blue buttons */
 .v-btn.bg-primary,
 .v-btn[style*="background: #1976d2"],
-.v-btn.v-btn--variant-flat:not(.v-btn--variant-text),
+.v-btn.v-btn--variant-flat:not(.v-btn--variant-text):not(.header-action-btn--light):not(.connection-status-btn),
 .action-btn-blue {
   color: #ffffff !important;
 }
 
 .v-btn.bg-primary *,
-.v-btn.v-btn--variant-flat:not(.v-btn--variant-text) *,
+.v-btn.v-btn--variant-flat:not(.v-btn--variant-text):not(.header-action-btn--light):not(.connection-status-btn) *,
 .action-btn-blue * {
   color: #ffffff !important;
 }

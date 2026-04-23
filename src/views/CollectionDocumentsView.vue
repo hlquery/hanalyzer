@@ -2944,6 +2944,9 @@ const handleSearch = async () => {
       (searchQuery.value || '').toLowerCase().includes('is:case_sensitive') ||
       (searchQuery.value || '').toLowerCase().includes('is:case-sensitive')) {
     options.caseSensitive = true
+    options.includeMaybe = false
+    options.numTypos = 0
+    options.prefix = false
   }
   
   // Add sort_by - prioritize relevance for search queries
@@ -2962,7 +2965,7 @@ const handleSearch = async () => {
   // Fast default: request only near-page-size results.
   const resultLimit = Math.min(Math.max(Number(itemsPerPage.value) || 20, 10), 40)
   options.highlight = false
-  options.includeMaybe = true
+  options.includeMaybe = options.caseSensitive ? false : true
   options.maybeMin = 3
   options.maybeLimit = 1
   try {

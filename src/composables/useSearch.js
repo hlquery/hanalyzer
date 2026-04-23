@@ -7,6 +7,10 @@ const DEBUG_SEARCH = false
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
 
+const hasCaseSensitiveDirective = (query) => {
+  return /\b(?:do|is):case[-_]?sensitive\b/i.test(String(query || ''))
+}
+
 export function useSearch(baseUrl) {
   const searchResults = ref([])
   const loading = ref(false)
@@ -195,7 +199,9 @@ export function useSearch(baseUrl) {
 
       // Maybe suggestions:
       // enabled by default and can be disabled per-search from the UI.
-      const maybeEnabled = options.includeMaybe !== undefined ? !!options.includeMaybe : true
+      const maybeEnabled = hasCaseSensitiveDirective(trimmedQuery)
+        ? false
+        : (options.includeMaybe !== undefined ? !!options.includeMaybe : true)
       params.maybe = maybeEnabled
       if (maybeEnabled) {
         const maybeMin = options.maybeMin !== undefined && options.maybeMin !== null && options.maybeMin !== ''

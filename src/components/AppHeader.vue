@@ -618,14 +618,21 @@ const { collections, loading: collectionsLoading, loadCollectionsAsync } = useCo
 
 // Get server host from baseUrl
 const serverHost = computed(() => {
-  if (!baseUrl.value) return 'localhost:9200'
+  const rawBaseUrl = (baseUrl.value || '').trim()
+  if (!rawBaseUrl) return 'localhost:9200'
+
+  if (rawBaseUrl.startsWith('/')) {
+    return window.location.host || rawBaseUrl
+  }
+
   try {
-    const url = new URL(baseUrl.value)
+    const url = new URL(rawBaseUrl)
     return url.host || url.hostname + (url.port ? ':' + url.port : '')
   } catch {
     // If it's not a valid URL, try to extract host manually
-    const match = baseUrl.value.match(/https?:\/\/([^\/]+)/)
-    return match ? match[1] : baseUrl.value.replace(/https?:\/\//, '').split('/')[0]
+    const match = rawBaseUrl.match(/https?:\/\/([^\/]+)/)
+    const fallbackHost = match ? match[1] : rawBaseUrl.replace(/https?:\/\//, '').split('/')[0]
+    return fallbackHost || window.location.host || 'localhost:9200'
   }
 })
 
