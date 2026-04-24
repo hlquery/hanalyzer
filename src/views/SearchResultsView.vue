@@ -250,12 +250,32 @@
               :items="searchResults"
               hover
               class="results-data-table border rounded"
-              @click:row="(e, { item }) => viewDocument(item, e)"
             >
+              <template #[`item.id`]="{ item, value }">
+                <router-link
+                  :to="getDocumentRoute(item)"
+                  class="results-table-link"
+                >
+                  {{ value || '—' }}
+                </router-link>
+              </template>
+
               <template #[`item.title`]="{ item }">
-                <span class="font-weight-medium text-primary" style="cursor: pointer;">
+                <router-link
+                  :to="getDocumentRoute(item)"
+                  class="results-table-link font-weight-medium"
+                >
                   {{ item.title || '—' }}
-                </span>
+                </router-link>
+              </template>
+
+              <template #[`item.name`]="{ item, value }">
+                <router-link
+                  :to="getDocumentRoute(item)"
+                  class="results-table-link font-weight-medium"
+                >
+                  {{ value || '—' }}
+                </router-link>
               </template>
               
               <template #[`item.content`]="{ value }">
@@ -484,41 +504,6 @@ const truncateText = (text, maxLength) => {
   return text
 }
 
-const viewDocument = (doc, event = null) => {
-  if (!doc || !doc.id || !selectedCollection.value) return
-  
-  // Handle modifier keys for new tab/window
-  if (event) {
-    // Ctrl/Cmd + click or middle mouse button -> open in new tab
-    if (event.ctrlKey || event.metaKey || event.button === 1) {
-      const encodedName = encodeURIComponent(selectedCollection.value)
-      const encodedDocId = encodeURIComponent(doc.id)
-      const path = `/collections/${encodedName}/documents/${encodedDocId}`
-      const route = router.resolve({ path: path })
-      if (route && route.href) {
-        window.open(route.href, '_blank')
-      } else {
-        window.open(path, '_blank')
-      }
-      return
-    }
-    // Right click -> allow default context menu
-    if (event.button === 2) {
-      return
-    }
-  }
-  
-  const encodedName = encodeURIComponent(selectedCollection.value)
-  const encodedDocId = encodeURIComponent(doc.id)
-  const path = `/collections/${encodedName}/documents/${encodedDocId}`
-  router.push({ path: path }).catch(err => {
-    // Ignore navigation errors
-    if (err.name !== 'NavigationDuplicated' && !err.message?.includes('Avoided redundant navigation')) {
-      console.error('Navigation error:', err)
-    }
-  })
-}
-
 const copyDocumentId = (docId) => {
   copyToClipboard(docId, 'Document ID copied to clipboard')
 }
@@ -558,49 +543,6 @@ const handleSearch = async () => {
 const handleSortChange = () => {
   if (selectedCollection.value && searchQuery.value) {
     handleSearch()
-  }
-}
-
-const viewCollection = (collectionName, event = null) => {
-  if (!collectionName) return
-  
-  // Handle modifier keys for new tab/window
-  if (event) {
-    // Ctrl/Cmd + click or middle mouse button -> open in new tab
-    if (event.ctrlKey || event.metaKey || event.button === 1) {
-      try {
-        const encodedName = encodeURIComponent(collectionName)
-        const path = `/collections/${encodedName}`
-        const route = router.resolve({ path: path })
-        if (route && route.href) {
-          window.open(route.href, '_blank')
-        } else {
-          window.open(path, '_blank')
-        }
-      } catch (err) {
-        console.error('Error opening collection in new tab:', err)
-        const encodedName = encodeURIComponent(collectionName)
-        window.open(`/collections/${encodedName}`, '_blank')
-      }
-      return
-    }
-    // Right click -> allow default context menu
-    if (event.button === 2) {
-      return
-    }
-  }
-  
-  try {
-    const encodedName = encodeURIComponent(collectionName)
-    const path = `/collections/${encodedName}`
-    router.push({ path: path }).catch(err => {
-      // Ignore navigation errors (e.g., navigating to same route)
-      if (err.name !== 'NavigationDuplicated' && !err.message?.includes('Avoided redundant navigation')) {
-        console.error('Navigation error:', err)
-      }
-    })
-  } catch (err) {
-    console.error('Error navigating to collection:', err, 'Collection name:', collectionName)
   }
 }
 
@@ -776,6 +718,17 @@ onMounted(async () => {
 
 .results-data-table :deep(tr:hover) {
   background-color: #f1f3f4 !important;
+}
+
+.results-table-link {
+  color: #1a73e8;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+}
+
+.results-table-link:hover {
+  text-decoration: underline;
 }
 
 .result-card {

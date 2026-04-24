@@ -43,23 +43,33 @@
 
     <!-- Tabs for Collection Management - Light gray professional style -->
     <div class="collection-tabs-container mb-2">
-      <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
-        <v-tab value="documents" class="collection-tab" :to="collectionTabRoute('documents')">
-          <v-icon size="16" class="mr-2">mdi-file-document-outline</v-icon>
-          <span class="tab-text">Documents</span>
-          <span class="tab-count" v-if="totalDocuments > 0 || documents.length > 0">({{ totalDocuments > 0 ? totalDocuments : documents.length }})</span>
-        </v-tab>
-        <v-tab value="synonyms" class="collection-tab" :to="collectionTabRoute('synonyms')">
-          <v-icon size="16" class="mr-2">mdi-swap-horizontal</v-icon>
-          <span class="tab-text">Synonyms</span>
-          <span class="tab-count">({{ synonyms.length }})</span>
-        </v-tab>
-        <v-tab value="stopwords" class="collection-tab" :to="collectionTabRoute('stopwords')">
-          <v-icon size="16" class="mr-2">mdi-cancel</v-icon>
-          <span class="tab-text">Stopwords</span>
-          <span class="tab-count">({{ stopwords.length }})</span>
-        </v-tab>
-      </v-tabs>
+      <div class="collection-tabs-bar">
+        <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
+          <v-tab value="documents" class="collection-tab" :to="collectionTabRoute('documents')">
+            <v-icon size="16" class="mr-2">mdi-file-document-outline</v-icon>
+            <span class="tab-text">Documents</span>
+            <span class="tab-count" v-if="totalDocuments > 0 || documents.length > 0">({{ totalDocuments > 0 ? totalDocuments : documents.length }})</span>
+          </v-tab>
+          <v-tab value="synonyms" class="collection-tab" :to="collectionTabRoute('synonyms')">
+            <v-icon size="16" class="mr-2">mdi-swap-horizontal</v-icon>
+            <span class="tab-text">Synonyms</span>
+            <span class="tab-count">({{ synonyms.length }})</span>
+          </v-tab>
+          <v-tab value="stopwords" class="collection-tab" :to="collectionTabRoute('stopwords')">
+            <v-icon size="16" class="mr-2">mdi-cancel</v-icon>
+            <span class="tab-text">Stopwords</span>
+            <span class="tab-count">({{ stopwords.length }})</span>
+          </v-tab>
+        </v-tabs>
+
+        <router-link
+          class="collection-search-help-link collection-search-help-link--tabs"
+          :to="searchSyntaxRoute"
+          aria-label="Open internal search syntax examples"
+        >
+          How to use
+        </router-link>
+      </div>
     </div>
 
     <!-- Documents Tab -->
@@ -138,20 +148,6 @@
         </div>
         
         
-        <!-- Items Per Page Control - Always visible at top -->
-        <div
-          v-if="documents.length > 0 || searchPerformed"
-          class="collection-results-toolbar-head"
-        >
-          <router-link
-            class="collection-search-help-link"
-            :to="searchSyntaxRoute"
-            aria-label="Open internal search syntax examples"
-          >
-            How to use
-          </router-link>
-        </div>
-
         <div class="google-toolbar collection-results-toolbar" v-if="documents.length > 0 || searchPerformed">
           <div class="google-toolbar-left" style="gap: 16px;">
             <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
@@ -5218,13 +5214,6 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
-.collection-results-toolbar-head {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin: 10px 0 4px 0;
-}
-
 .collection-search-help-link {
   align-items: center;
   background: transparent !important;
@@ -5260,6 +5249,12 @@ onUnmounted(() => {
   box-shadow: none !important;
   color: #475569;
   outline: none !important;
+}
+
+.collection-search-help-link--tabs {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 8px;
 }
 
 .collection-search-usage-card {
@@ -5427,11 +5422,6 @@ onUnmounted(() => {
     flex-direction: column;
   }
 
-  .collection-results-toolbar-head {
-    justify-content: flex-end;
-    margin: 8px 0 6px 0;
-  }
-
   .collection-date-toolbar-btn {
     width: 100%;
     justify-content: space-between;
@@ -5441,14 +5431,9 @@ onUnmounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .collection-search-input,
-  .collection-search-help-link {
+  .collection-search-input {
     width: 100%;
     min-width: 0;
-  }
-
-  .collection-search-help-link {
-    display: none !important;
   }
 }
 
@@ -6955,6 +6940,18 @@ body :deep([role="tooltip"]) {
   margin-bottom: 16px;
 }
 
+.collection-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.collection-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .collection-tabs :deep(.v-tabs-container) {
   background: transparent;
   padding: 0;
@@ -8123,6 +8120,17 @@ body :deep([role="tooltip"]) {
 
   .collection-tabs-container {
     margin-bottom: 18px;
+  }
+
+  .collection-tabs-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .collection-search-help-link--tabs {
+    align-self: flex-end;
+    min-height: 36px;
   }
 
   .collection-tabs :deep(.v-slide-group__content) {
