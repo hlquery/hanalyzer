@@ -668,11 +668,11 @@
               <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-title-link"
+                class="document-result-link"
                 style="display: inline-block; text-decoration: none;"
               >
-                <h3
-                  style="margin: 0;"
+                <h3 
+                  class="document-title-link"
                   @mouseenter="$event.target.style.textDecoration = 'underline'"
                   @mouseleave="$event.target.style.textDecoration = 'none'"
                 >
@@ -683,7 +683,8 @@
               <!-- Date - Document name on same line - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text; text-decoration: none;"
+                class="document-result-link document-meta-link"
+                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -743,11 +744,11 @@
               <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-title-link"
+                class="document-result-link"
                 style="display: inline-block; text-decoration: none;"
               >
-                <h3
-                  style="margin: 0;"
+                <h3 
+                  class="document-title-link"
                   @mouseenter="$event.target.style.textDecoration = 'underline'"
                   @mouseleave="$event.target.style.textDecoration = 'none'"
                 >
@@ -758,7 +759,8 @@
               <!-- Date - Document name on same line - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text; text-decoration: none;"
+                class="document-result-link document-meta-link"
+                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -3442,6 +3444,10 @@ const handleDocumentClick = (doc, event) => {
   // Check if click was on a link or button
   if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON' || event.target.closest('a') || event.target.closest('button')) {
     return
+  }
+
+  if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
+    event.currentTarget.blur()
   }
   
   // Only navigate if it's a simple click without text selection
@@ -6481,6 +6487,24 @@ onUnmounted(() => {
   }
 }
 
+.document-result-link {
+  text-decoration: none;
+  outline: none;
+  border: none;
+  box-shadow: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.document-result-link:focus,
+.document-result-link:focus-visible,
+.document-result-link:active,
+.document-result-link:hover {
+  text-decoration: none !important;
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .document-title-link {
   color: #1a0dab;
   font-size: 20px;
@@ -6490,10 +6514,31 @@ onUnmounted(() => {
   cursor: pointer;
   user-select: text;
   -webkit-user-select: text;
+  outline: none;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .document-title-link:hover {
   text-decoration: underline;
+}
+
+.document-title-link:focus,
+.document-title-link:focus-visible,
+.document-title-link:active,
+.document-meta-link:focus,
+.document-meta-link:focus-visible,
+.document-meta-link:active {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.document-meta-link {
+  outline: none;
+  border: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Disable ALL tooltips on document cards - be VERY aggressive */
