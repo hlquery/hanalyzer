@@ -50,27 +50,6 @@
       </router-link>
     </v-app-bar-title>
     
-    <!-- Search Bar - Left Positioned -->
-    <div 
-      v-if="isEffectivelyConnected"
-      class="header-search-container"
-    >
-      <v-text-field
-        ref="searchInputRef"
-        v-model="searchQuery"
-        placeholder="Search collections"
-        variant="plain"
-        density="compact"
-        hide-details
-        class="header-search-input-improved"
-        prepend-inner-icon="mdi-magnify"
-        :clearable="!!searchQuery && searchQuery.trim().length > 0"
-        @keyup.enter="handleSearch"
-        @click:clear="handleClearSearch"
-        @click:prepend-inner="handleSearch"
-      ></v-text-field>
-    </div>
-    
     <v-spacer class="mobile-hide-spacer"></v-spacer>
     
     <div class="header-right-actions">
@@ -445,7 +424,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, inject, nextTick, provide } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, inject, nextTick } from 'vue'
 import { useTheme, useDisplay } from 'vuetify'
 import { useRouter, useRoute } from 'vue-router'
 import { useConnectionStatus } from '../composables/useConnectionStatus'
@@ -490,14 +469,6 @@ const isGlobalsActive = computed(() => {
 const isLinksActive = computed(() => {
   return route.path === '/links' || route.path.startsWith('/links/')
 })
-
-
-
-// Header search state
-const searchQuery = ref('')
-
-// Provide search query so CollectionsView can filter
-provide('headerSearchQuery', searchQuery)
 
 const serverUrl = ref('http://localhost:9200')
 const sslEnabled = ref(false)
@@ -846,23 +817,6 @@ watch([isConnected, baseUrl], () => {
   }
 }, { immediate: true })
 
-
-
-// Simple search handler - navigates to collections search page
-const handleSearch = () => {
-  if (!searchQuery.value || !searchQuery.value.trim()) {
-    return
-  }
-  const query = encodeURIComponent(searchQuery.value.trim())
-  router.push(`/search/collections/${query}`)
-}
-
-const handleClearSearch = () => {
-  searchQuery.value = ''
-}
-
-// Removed all autocomplete-related handlers - no longer needed
-
 // Load collections on mount and when baseUrl changes
 watch(baseUrl, (newUrl) => {
   // Update window global for axios interceptor
@@ -881,11 +835,6 @@ watch(distributedMode, (newMode) => {
       window.localStorage.removeItem('hlquery_distributed_mode')
     }
   }
-})
-
-// Watch route to clear search when navigating
-watch(() => route.path, () => {
-  searchQuery.value = ''
 })
 
 // Function to force left alignment - EXTREMELY aggressive
@@ -910,8 +859,7 @@ const handleKeyboardShortcut = (event) => {
     if (searchInputRef.value && isEffectivelyConnected.value) {
       searchInputRef.value.focus()
     } else {
-      // Try to find the search input in the DOM
-      const searchInput = document.querySelector('.header-search-input-improved input')
+      const searchInput = document.querySelector('.collections-list-search-input input')
       if (searchInput) {
         searchInput.focus()
       }
@@ -1605,6 +1553,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   border-radius: 10px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  transform: translateY(-2px);
 }
 
 .hlquery-logo-container::before {
@@ -1683,6 +1632,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   display: flex !important;
   align-items: center !important;
   position: relative !important;
+  transform: translateY(-2px);
 }
 
 .header-search-container--reduced {
@@ -2744,7 +2694,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .nav-menu-btn {
   min-width: 140px !important;
   justify-content: center !important;
-  margin-right: 14px !important;
+  margin-right: 6px !important;
   height: 34px !important;
   min-height: 34px !important;
   padding-inline: 12px !important;
@@ -3639,7 +3589,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .connection-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 8px;
   padding: 10px;
   background: #f8fafc;
   border-radius: 8px;
@@ -3697,6 +3647,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   gap: 12px;
   min-width: 0;
   flex: 0 0 auto;
+  transform: translateY(-2px);
 }
 
 /* Connection Ping Display */

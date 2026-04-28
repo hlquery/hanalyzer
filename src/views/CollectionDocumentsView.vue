@@ -2039,7 +2039,17 @@ const handleDeleteCollection = async () => {
 
 // Wrapper to pass sortBy option
 const loadDocuments = async (collectionName, options = {}) => {
-  await loadDocumentsBase(collectionName, options)
+  const effectiveSort = Object.prototype.hasOwnProperty.call(options, 'sortBy')
+    ? options.sortBy
+    : (sortBy.value || 'id:asc')
+  const page = Math.max(1, Number(options.page) || currentPage.value || 1)
+  const perPage = Math.max(1, Number(options.perPage) || itemsPerPage.value || 100)
+
+  await loadDocumentsBase(collectionName, {
+    page,
+    perPage,
+    sortBy: effectiveSort
+  })
 }
 
 // Make searched words bold in text
@@ -2986,58 +2996,6 @@ const getQuickSortLabel = () => {
   return 'Relevance'
 }
 
-const sortDocumentsLocally = (sortValue) => {
-  if (!Array.isArray(documents.value) || documents.value.length === 0 || !sortValue) {
-    return false
-  }
-
-  const [field, direction = 'asc'] = String(sortValue).split(':')
-  const descending = direction === 'desc'
-  const sortedDocuments = [...documents.value]
-
-  const normalizeText = (value) => String(value ?? '').toLowerCase()
-  const getTimestamp = (doc) => {
-    const directValue = doc?.created_at ?? doc?.timestamp
-
-    if (typeof directValue === 'number' && Number.isFinite(directValue)) {
-      return directValue
-    }
-
-    const parsed = Date.parse(String(directValue || ''))
-    return Number.isFinite(parsed) ? parsed : 0
-  }
-
-  sortedDocuments.sort((a, b) => {
-    if (field === 'created_at') {
-      const left = getTimestamp(a)
-      const right = getTimestamp(b)
-
-      if (left !== right) {
-        return descending ? right - left : left - right
-      }
-
-      return normalizeText(a?.id).localeCompare(normalizeText(b?.id))
-    }
-
-    if (field === 'title') {
-      const left = normalizeText(a?.title ?? a?.name ?? a?.id)
-      const right = normalizeText(b?.title ?? b?.name ?? b?.id)
-      const comparison = left.localeCompare(right)
-
-      if (comparison !== 0) {
-        return descending ? -comparison : comparison
-      }
-
-      return normalizeText(a?.id).localeCompare(normalizeText(b?.id))
-    }
-
-    return 0
-  })
-
-  documents.value = sortedDocuments
-  return true
-}
-
 const setQuickSort = async (sortValue) => {
   quickSortBy.value = sortValue
   sortBy.value = sortValue
@@ -3058,9 +3016,10 @@ const setQuickSort = async (sortValue) => {
     // Filter-only search, can apply sort
     await handleSearch()
   } else {
-    // For the regular documents view, sort the loaded data locally to avoid
-    // re-fetching the entire collection in sorted backend batches.
-    sortDocumentsLocally(sortValue)
+    const effectiveSort = sortValue || 'id:asc'
+    if (collectionName.value) {
+      await loadDocuments(collectionName.value, { page: 1, perPage: itemsPerPage.value, sortBy: effectiveSort })
+    }
   }
 }
 
@@ -3272,15 +3231,7 @@ const paginatedSearchResults = computed(() => {
 })
 
 const paginatedDocuments = computed(() => {
-  if (!documents.value || documents.value.length === 0) {
-    return []
-  }
-  
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  const result = documents.value.slice(start, end)
-  
-  return result
+  return Array.isArray(documents.value) ? documents.value : []
 })
 
 const totalPagesSearch = computed(() => {
@@ -3304,11 +3255,12 @@ const paginationInfo = computed(() => {
     }
   } else {
     const start = (currentPage.value - 1) * itemsPerPage.value + 1
-    const end = Math.min(currentPage.value * itemsPerPage.value, documents.value.length)
+    const total = totalDocuments.value > 0 ? totalDocuments.value : documents.value.length
+    const end = Math.min(((currentPage.value - 1) * itemsPerPage.value) + documents.value.length, total)
     return {
       start,
       end,
-      total: totalDocuments.value > 0 ? totalDocuments.value : documents.value.length,
+      total,
       totalPages: totalPagesDocuments.value
     }
   }
@@ -3337,6 +3289,10 @@ const onItemsPerPageChange = (newValue) => {
   itemsPerPage.value = newValue
   currentPage.value = 1
   expandedRows.value = []
+
+  if (!searchPerformed.value && collectionName.value) {
+    loadDocuments(collectionName.value, { page: 1, perPage: newValue })
+  }
 }
 
 // Bulk operations
@@ -4147,6 +4103,14 @@ watch(() => route.params.page, (newPage) => {
   const nextPage = parseRoutePage(newPage)
   if (currentPage.value !== nextPage) {
     currentPage.value = nextPage
+  }
+
+  if (!searchPerformed.value && collectionName.value && !isLoadingDocuments.value) {
+    isLoadingDocuments.value = true
+    loadDocuments(collectionName.value, { page: nextPage, perPage: itemsPerPage.value })
+      .finally(() => {
+        isLoadingDocuments.value = false
+      })
   }
 }, { immediate: false })
 
@@ -5255,6 +5219,9 @@ onUnmounted(() => {
   flex-shrink: 0;
   min-height: 44px;
   padding: 0 8px;
+  margin-right: 12px;
+  position: relative;
+  top: -6px;
 }
 
 .collection-search-usage-card {
@@ -8131,6 +8098,8 @@ body :deep([role="tooltip"]) {
   .collection-search-help-link--tabs {
     align-self: flex-end;
     min-height: 36px;
+    margin-right: 0;
+    top: 0;
   }
 
   .collection-tabs :deep(.v-slide-group__content) {

@@ -1,15 +1,6 @@
 <template>
   <div class="collections-view">
     <div class="collections-header" v-if="!loading && collections.length > 0">
-      <div class="collections-title-section">
-        <div>
-          <h1 class="collections-title-text">Collections</h1>
-          <div class="collections-total-text">
-            <v-icon icon="mdi-folder" size="16" class="collections-dir-icon"></v-icon>
-            Showing {{ filteredCollections.length }} out of {{ collections.length }}
-          </div>
-        </div>
-      </div>
       <!-- Action Buttons - Top Right -->
       <div class="collections-header-actions">
         <v-menu
@@ -51,6 +42,38 @@
           Create Collection
         </v-btn>
       </div>
+    </div>
+
+    <div v-if="!loading && collections.length > 0" class="collections-list-search-shell">
+      <v-card class="collections-list-search-card" elevation="0">
+        <div class="collections-list-search-copy">
+          <div class="collections-title-section">
+            <div>
+              <h1 class="collections-title-text">Collections</h1>
+              <div class="collections-total-text">
+                <v-icon icon="mdi-folder" size="16" class="collections-dir-icon"></v-icon>
+                Showing {{ filteredCollections.length }} out of {{ collections.length }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="collections-list-search-field-wrap">
+          <v-text-field
+            ref="collectionFilterInputRef"
+            v-model="collectionFilterQuery"
+            :placeholder="isCollectionFilterFocused ? '' : 'Search collection'"
+            variant="outlined"
+            density="comfortable"
+            hide-details
+            clearable
+            class="collections-list-search-input"
+            prepend-inner-icon="mdi-magnify"
+            @click:clear="handleCollectionFilterClear"
+            @focus="isCollectionFilterFocused = true"
+            @blur="isCollectionFilterFocused = false"
+          ></v-text-field>
+        </div>
+      </v-card>
     </div>
 
     <!-- Collections View -->
@@ -296,14 +319,14 @@
     </div>
     
     <!-- No collections match search -->
-    <v-card v-else-if="!loading && headerSearchQuery && headerSearchQuery.trim() !== ''" class="mb-card mt-4 card-premium">
+    <v-card v-else-if="!loading && collectionFilterQuery && collectionFilterQuery.trim() !== ''" class="mb-card mt-4 card-premium">
       <v-card-text class="empty-state-premium">
         <div class="empty-state-premium-icon">
           <v-icon icon="mdi-magnify" size="40" color="#94a3b8"></v-icon>
         </div>
         <div class="empty-state-premium-title">No Matching Collections</div>
         <div class="empty-state-premium-subtitle">
-          No collections match "<strong>{{ headerSearchQuery }}</strong>". Try adjusting your search terms or create a new collection.
+          No collections match "<strong>{{ collectionFilterQuery }}</strong>". Try adjusting your search terms or create a new collection.
         </div>
       </v-card-text>
     </v-card>
@@ -754,9 +777,9 @@ const { aliases, loading: aliasesLoading, error: aliasesError, loadAliases, dele
 const loading = computed(() => collectionsLoading.value || aliasesLoading.value)
 const error = computed(() => collectionsError.value || aliasesError.value)
 
-const loadCollections = async (showLoading = true) => {
+const loadCollections = async (showLoading = true, searchValue = null, sortByValue = null, sortOrderValue = null) => {
   await Promise.all([
-    fetchCollections(showLoading),
+    fetchCollections(showLoading, searchValue, sortByValue, sortOrderValue),
     loadAliases(showLoading)
   ])
 }
@@ -794,7 +817,9 @@ useKeyboardShortcuts([
     handler: (e) => {
       // Only focus search if not already in an input
       if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA' && !e.target.isContentEditable) {
-        if (searchInputRef.value) {
+        if (collectionFilterInputRef.value) {
+          collectionFilterInputRef.value.focus()
+        } else if (searchInputRef.value) {
           searchInputRef.value.focus()
         }
       }
@@ -1026,6 +1051,9 @@ const formatNumber = (num) => {
 
 const { searchResults, loading: searchLoading, error: searchError, searchTime, indexingInProgress, performSearch } = useSearch(baseUrl)
 const selectedCollection = ref(null)
+const collectionFilterInputRef = ref(null)
+const collectionFilterQuery = ref('')
+const isCollectionFilterFocused = ref(false)
 const searchQuery = ref('')
 const searchLimit = ref(10)
 const searchPerformed = ref(false)
@@ -1089,9 +1117,6 @@ const createdSortDirection = computed(() => {
   return isDesc ? 'desc' : 'asc'
 })
 
-// Get search query from header (injected)
-const headerSearchQuery = inject('headerSearchQuery', ref(''))
-
 // Current sort state for server-side sorting
 const currentSortBy = ref(null)
 const currentSortOrder = ref(null)
@@ -1131,11 +1156,11 @@ const getWildcardRegex = (pattern) => {
 const filteredCollections = computed(() => {
   const all = mergedCollections.value
   
-  if (!headerSearchQuery.value || !headerSearchQuery.value.trim()) {
+  if (!collectionFilterQuery.value || !collectionFilterQuery.value.trim()) {
     return all
   }
   
-  const queryRaw = headerSearchQuery.value.trim()
+  const queryRaw = collectionFilterQuery.value.trim()
   const query = queryRaw.toLowerCase()
   const hasWildcard = /[\*\?]/.test(queryRaw)
   const wildcardRegex = hasWildcard ? getWildcardRegex(queryRaw) : null
@@ -1182,6 +1207,10 @@ const onPageChange = (page) => {
 const onItemsPerPageChange = (newValue) => {
   itemsPerPage.value = newValue
   currentPage.value = 1
+}
+
+const handleCollectionFilterClear = () => {
+  collectionFilterQuery.value = ''
 }
 
 // Search results pagination
@@ -1489,7 +1518,7 @@ const closeSearch = () => {
   }
   reloadTimer = setTimeout(() => {
     const { sortBy: sb, sortOrder: so } = getCurrentSort()
-    loadCollections(true, searchQuery.value || headerSearchQuery.value, sb, so)
+    loadCollections(true, collectionFilterQuery.value, sb, so)
     reloadTimer = null
   }, 100)
 }
@@ -1604,7 +1633,7 @@ const toggleSort = (columnKey) => {
   currentSortOrder.value = newSortOrder
   
   // Reload collections with new sort parameters (server-side sorting)
-  loadCollections(true, searchQuery.value || headerSearchQuery.value, apiSortBy, newSortOrder)
+  loadCollections(true, collectionFilterQuery.value, apiSortBy, newSortOrder)
 }
 
 
@@ -1660,7 +1689,7 @@ const handleDeleteCollection = async () => {
     
     // Reload collections
     const { sortBy: sb, sortOrder: so } = getCurrentSort()
-    await loadCollections(true, searchQuery.value || headerSearchQuery.value, sb, so)
+    await loadCollections(true, collectionFilterQuery.value, sb, so)
   } catch (err) {
     const errorMsg = extractSafeErrorMessage(err, 'Failed to delete collection')
     deleteError.value = errorMsg
@@ -1674,9 +1703,13 @@ const handleDeleteCollection = async () => {
 onMounted(() => {
   // Load in background without blocking
   const { sortBy: sb, sortOrder: so } = getCurrentSort()
-  loadCollectionsAsync(null, sb, so).catch((err) => {
+  loadCollections(false, null, sb, so).catch((err) => {
     console.error('CollectionsView: Error loading collections:', err)
   })
+})
+
+watch(collectionFilterQuery, () => {
+  currentPage.value = 1
 })
 
 // Cleanup on unmount
@@ -1699,6 +1732,88 @@ onUnmounted(() => {
   -webkit-user-select: auto !important;
   -moz-user-select: auto !important;
   user-select: auto !important;
+}
+
+.collections-list-search-shell {
+  margin: 0 0 20px;
+}
+
+.collections-list-search-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+  gap: 20px;
+  align-items: center;
+  padding: 22px 24px;
+  border-radius: 18px !important;
+  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+  background: #f1f5f9 !important;
+  box-shadow:
+    0 10px 24px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+}
+
+.collections-list-search-copy {
+  min-width: 0;
+}
+
+.collections-list-search-field-wrap {
+  min-width: 0;
+}
+
+.collections-list-search-input :deep(.v-field) {
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  border: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
+}
+
+.collections-list-search-input :deep(.v-field__outline) {
+  --v-field-border-opacity: 1;
+  color: transparent !important;
+  display: none !important;
+}
+
+.collections-list-search-input :deep(.v-field--focused) {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
+}
+
+.collections-list-search-input :deep(.v-field--focused .v-field__outline) {
+  color: transparent !important;
+}
+
+.collections-list-search-input :deep(.v-field:hover) {
+  border-color: transparent !important;
+}
+
+.collections-list-search-input :deep(input:focus),
+.collections-list-search-input :deep(input:focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.collections-list-search-input :deep(.v-field__prepend-inner .v-icon) {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+.collections-list-search-input :deep(.v-field__prepend-inner) {
+  padding-left: 10px !important;
+  padding-right: 8px !important;
+}
+
+.collections-list-search-input :deep(.v-field__input),
+.collections-list-search-input :deep(input) {
+  color: #111827 !important;
+  font-size: 13px !important;
+}
+
+.collections-list-search-input :deep(.v-field__input) {
+  padding-left: 4px !important;
+}
+
+.collections-list-search-input :deep(input::placeholder) {
+  color: #111827 !important;
+  font-size: 12px !important;
 }
 
 .collections-card {
@@ -3138,6 +3253,11 @@ onUnmounted(() => {
 /* Responsive adjustments for header actions */
 
 @media (max-width: 960px) {
+  .collections-list-search-card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
   .collections-header {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -3158,6 +3278,15 @@ onUnmounted(() => {
 }
 
 @media (max-width: 600px) {
+  .collections-list-search-shell {
+    margin-bottom: 16px;
+  }
+
+  .collections-list-search-card {
+    padding: 16px;
+    border-radius: 16px !important;
+  }
+
   .collections-header-actions {
     flex-direction: column !important;
     width: 100% !important;

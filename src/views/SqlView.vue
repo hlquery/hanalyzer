@@ -767,13 +767,11 @@ watch(
   gap: 2px;
   min-width: 168px;
   padding: 9px 14px;
-  background: #f8fbff;
-  border-color: #cddbef;
 }
 
 .sql-example-chip--action:hover {
-  background: #f3f8ff;
-  border-color: #9db7db;
+  background: #ffffff;
+  border-color: #9cb7d6;
 }
 
 .sql-example-chip-title {
@@ -979,6 +977,25 @@ watch(
 @media (max-width: 960px) {
   .sql-query-toolbar {
     align-items: flex-start;
+  }
+
+  .sql-query-examples {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .sql-example-label {
+    display: block;
+    width: 100%;
+  }
+
+  .sql-example-chip,
+  .sql-example-chip--action {
+    width: 100%;
+    border-radius: 14px;
+    text-align: left;
   }
 
   .sql-query-actions {

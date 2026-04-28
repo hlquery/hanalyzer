@@ -29,68 +29,82 @@ export function useDocuments(baseUrl) {
       const useProxy = shouldUseProxy(baseUrlValue)
       const encodedCollection = encodeURIComponent(collectionName.trim())
       const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents`)
-      
-      // Fetch all documents by paginating through all pages
-      // API max limit is 1000, so we'll fetch in batches of 1000
-      const allDocuments = []
-      let offset = 0
-      const limit = 1000 // Max allowed by API
-      let hasMore = true
-      
-      // Reset total before loading
-      total.value = 0
-      
-      // Get sort_by from options if provided
+
       const sortBy = options?.sortBy || null
-      
-      while (hasMore) {
+      const page = Math.max(1, Number(options?.page) || 1)
+      const requestedLimit = Number(options?.limit ?? options?.perPage)
+      const pageLimit = Number.isFinite(requestedLimit) && requestedLimit > 0
+        ? Math.min(Math.trunc(requestedLimit), 1000)
+        : 1000
+      const fetchAll = options?.fetchAll === true
+
+      if (!fetchAll) {
         const params = {
           include_created_at: true,
-          offset: offset,
-          limit: limit
+          offset: (page - 1) * pageLimit,
+          limit: pageLimit
         }
-        
-        // Add sort_by if provided
+
         if (sortBy) {
           params.sort_by = sortBy
         }
-        
+
         const response = await axios.get(url, { params })
-        
-        // Server always returns {documents: [...], total: N} format
+
         if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
-          // Get total count from first response
+          documents.value = response.data.documents
+          total.value = Number(response.data.total ?? response.data.documents.length ?? 0)
+        } else if (Array.isArray(response.data)) {
+          documents.value = response.data
+          total.value = response.data.length
+        } else {
+          documents.value = []
+          total.value = 0
+        }
+
+        return
+      }
+
+      const allDocuments = []
+      let offset = 0
+      let hasMore = true
+
+      while (hasMore) {
+        const params = {
+          include_created_at: true,
+          offset,
+          limit: pageLimit
+        }
+
+        if (sortBy) {
+          params.sort_by = sortBy
+        }
+
+        const response = await axios.get(url, { params })
+
+        if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
           if (total.value === 0 && response.data.total !== undefined) {
             total.value = response.data.total
           }
-          
-          // Add documents from this batch
+
           allDocuments.push(...response.data.documents)
 
-          // Check if we need to fetch more
-          if (response.data.documents.length < limit) {
-            // Got fewer documents than requested, we're done
+          if (response.data.documents.length < pageLimit) {
             hasMore = false
           } else if (total.value > 0 && allDocuments.length >= total.value) {
-            // We've fetched all documents according to total count
             hasMore = false
           } else {
-            // Continue to next batch
-            offset += limit
+            offset += pageLimit
           }
         } else if (Array.isArray(response.data)) {
-          // Fallback: if server ever returns array directly (shouldn't happen)
           allDocuments.push(...response.data)
           hasMore = false
         } else {
           hasMore = false
         }
       }
-      
-      // Assign all collected documents
+
       documents.value = allDocuments
-      
-      // Force Vue to recognize the change
       await new Promise(resolve => setTimeout(resolve, 0))
       
     } catch (err) {

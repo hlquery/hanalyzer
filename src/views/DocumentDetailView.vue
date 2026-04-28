@@ -715,6 +715,9 @@ onMounted(async () => {
   .collection-link-wrapper {
     min-width: 0;
     flex: 1 1 auto;
+    width: 100%;
+    padding-left: 26px;
+    box-sizing: border-box;
   }
 
   .collection-link-btn {
@@ -750,7 +753,7 @@ onMounted(async () => {
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #64748b;
+    color: #0f172a;
     line-height: 1.3;
   }
 
@@ -769,15 +772,18 @@ onMounted(async () => {
 
   .document-header-actions {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
     gap: 8px;
     padding-top: 0;
   }
 
   .document-header-actions .collections-action-btn,
   .document-header-actions .delete-action-btn {
-    width: 100% !important;
+    flex: 0 1 auto !important;
+    width: auto !important;
     min-width: 0 !important;
   }
 
@@ -1328,8 +1334,12 @@ onMounted(async () => {
   align-items: center;
   margin-top: 8px;
   font-size: 13px;
-  color: #64748b;
+  color: #0f172a;
   font-weight: 500;
+}
+
+.fields-count-header :deep(.v-icon) {
+  color: #0f172a !important;
 }
 
 .json-editor-wrapper-modern {
