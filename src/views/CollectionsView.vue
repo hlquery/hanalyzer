@@ -31,16 +31,6 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn
-          @click.stop="goToCreateCollection"
-          variant="flat"
-          size="small"
-          prepend-icon="mdi-plus"
-          class="collections-action-btn create-collection-header-btn"
-          style="pointer-events: auto !important; z-index: 10 !important;"
-        >
-          Create Collection
-        </v-btn>
       </div>
     </div>
 
@@ -138,6 +128,19 @@
 
       <!-- Collections Table -->
       <v-card v-if="!loading && collections.length > 0" class="collections-card collections-card-top card-premium animate-fade-in">
+        <div class="collections-table-card-header">
+          <div class="collections-table-card-spacer"></div>
+          <v-btn
+            @click.stop="goToCreateCollection"
+            variant="flat"
+            size="small"
+            prepend-icon="mdi-plus"
+            class="collections-action-btn create-collection-header-btn"
+            style="pointer-events: auto !important; z-index: 10 !important;"
+          >
+            Create Collection
+          </v-btn>
+        </div>
         <!-- Debug info -->
         <div v-if="false" style="padding: 10px; background: #f0f0f0; font-size: 12px;">
           Debug: loading={{ loading }}, collections.length={{ collections.length }}, 
@@ -1830,6 +1833,18 @@ onUnmounted(() => {
   transition: all 0.2s ease !important;
   position: relative;
   width: 100%;
+}
+
+.collections-table-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 0 10px 0;
+}
+
+.collections-table-card-spacer {
+  flex: 1;
 }
 
 .collections-card :deep(.v-card) {

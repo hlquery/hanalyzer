@@ -666,19 +666,24 @@
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
             >
               <!-- Title on top - CLICKABLE -->
-              <h3 
+              <router-link
+                :to="getDocumentRoute(doc)"
                 class="document-title-link"
-                @click="handleDocumentClick(doc, $event)"
-                @mouseenter="$event.target.style.textDecoration = 'underline'"
-                @mouseleave="$event.target.style.textDecoration = 'none'"
+                style="display: inline-block; text-decoration: none;"
               >
-                {{ getBestTitle(doc) }}
-              </h3>
+                <h3
+                  style="margin: 0;"
+                  @mouseenter="$event.target.style.textDecoration = 'underline'"
+                  @mouseleave="$event.target.style.textDecoration = 'none'"
+                >
+                  {{ getBestTitle(doc) }}
+                </h3>
+              </router-link>
               
               <!-- Date - Document name on same line - CLICKABLE -->
-              <div 
-                @click="handleDocumentClick(doc, $event)"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
+              <router-link
+                :to="getDocumentRoute(doc)"
+                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text; text-decoration: none;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -686,7 +691,7 @@
                 <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
                 <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
                 <span v-if="doc._text_match !== undefined" style="color: #70757a; font-size: 12px; margin-left: 8px;">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
-              </div>
+              </router-link>
               
               <!-- Snippet/Description (Google style) with BOLD highlights - SELECTABLE TEXT -->
               <div style="color: #000000; font-size: 14px; line-height: 1.58; margin: 10px 0 0 0; user-select: text; -webkit-user-select: text; cursor: text; font-weight: normal !important;">
@@ -736,26 +741,31 @@
               @mouseleave="$event.target.style.backgroundColor = 'transparent'"
             >
               <!-- Title on top - CLICKABLE -->
-              <h3 
+              <router-link
+                :to="getDocumentRoute(doc)"
                 class="document-title-link"
-                @click="handleDocumentClick(doc, $event)"
-                @mouseenter="$event.target.style.textDecoration = 'underline'"
-                @mouseleave="$event.target.style.textDecoration = 'none'"
+                style="display: inline-block; text-decoration: none;"
               >
-                {{ getBestTitle(doc) }}
-              </h3>
+                <h3
+                  style="margin: 0;"
+                  @mouseenter="$event.target.style.textDecoration = 'underline'"
+                  @mouseleave="$event.target.style.textDecoration = 'none'"
+                >
+                  {{ getBestTitle(doc) }}
+                </h3>
+              </router-link>
               
               <!-- Date - Document name on same line - CLICKABLE -->
-              <div 
-                @click="handleDocumentClick(doc, $event)"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
+              <router-link
+                :to="getDocumentRoute(doc)"
+                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text; text-decoration: none;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
                 <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
                 <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
                 <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
-              </div>
+              </router-link>
               
               <!-- Snippet/Description (Google style) with bold searched words - SELECTABLE TEXT -->
               <div style="color: #000000; font-size: 14px; line-height: 1.58; margin: 10px 0 0 0; user-select: text; -webkit-user-select: text; cursor: text; font-weight: normal !important;">
