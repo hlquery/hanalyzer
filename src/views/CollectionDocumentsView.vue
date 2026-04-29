@@ -662,7 +662,7 @@
               v-for="(doc, index) in paginatedSearchResults" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 18px 0 4px 0; margin: 0 0 48px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 40px 0 4px 0; margin: 0 0 40px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -736,7 +736,7 @@
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 18px 0 4px 0; margin: 0 0 48px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 40px 0 4px 0; margin: 0 0 40px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -5185,7 +5185,7 @@ onUnmounted(() => {
 
 /* Compact Search Bar - Small and white */
 .collection-search-shell {
-  margin-bottom: 16px;
+  margin-bottom: 4px;
   background: #ffffff !important;
   background-color: #ffffff !important;
 }
@@ -6557,6 +6557,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 2px;
   margin: 0 !important;
+  margin-top: -10px !important;
   padding: 0 !important;
   margin-left: 0 !important;
   padding-left: 0 !important;
@@ -6566,7 +6567,7 @@ onUnmounted(() => {
   border: none;
   -webkit-tap-highlight-color: transparent;
   text-align: left;
-  transform: translateY(-12px);
+  transform: none !important;
 }
 
 .document-result-item,
@@ -6601,8 +6602,8 @@ onUnmounted(() => {
 .document-snippet {
   color: #000000;
   font-size: 14px;
-  line-height: 1.58;
-  margin: -6px 0 0 0;
+  line-height: 1.42;
+  margin: -14px 0 0 0;
   cursor: text;
   font-weight: normal !important;
   user-select: text;
@@ -7138,8 +7139,8 @@ body :deep([role="tooltip"]) {
 }
 
 .collection-results-toolbar {
-  padding: 6px 0 !important;
-  margin: 0 0 1px 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -9316,7 +9317,7 @@ body :deep([role="tooltip"]) {
   font-family: arial, sans-serif;
   font-size: 14px;
   color: #70757a;
-  line-height: 43px;
+  line-height: 32px;
 }
 
 .google-toolbar-right {
@@ -9776,6 +9777,7 @@ body :deep([role="tooltip"]) {
 /* Move results more to top */
 .documents-results-container {
   margin-top: 0;
+  padding-top: 0 !important;
 }
 
 .documents-cards-container {

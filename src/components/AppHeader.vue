@@ -69,9 +69,11 @@
             size="default"
             class="hlquery-nav-button header-action-btn header-action-btn--light nav-menu-btn"
             title="Manage"
-            prepend-icon="mdi-menu"
+            :aria-label="display.xs.value ? 'Open navigation menu' : 'Manage'"
+            :prepend-icon="display.xs.value ? undefined : 'mdi-menu'"
           >
-            <span class="nav-button-text">Manage</span>
+            <v-icon v-if="display.xs.value" icon="mdi-menu" />
+            <span v-else class="nav-button-text">Manage</span>
           </v-btn>
         </template>
         <v-list class="nav-menu-list">
