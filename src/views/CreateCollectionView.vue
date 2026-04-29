@@ -517,18 +517,20 @@ const createCollection = async () => {
 .create-collection-view {
   width: 100%;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 8px auto 0;
 }
 
 /* Form Card */
 .form-card {
   border: 1px solid #e2e8f0 !important;
   border-radius: 12px !important;
+  background: #f6f7f9 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
 }
 
 .form-card-content {
   padding: 32px !important;
+  background: #f6f7f9 !important;
 }
 
 /* Form Sections */
