@@ -661,15 +661,13 @@
             <div 
               v-for="(doc, index) in paginatedSearchResults" 
               :key="doc.id || index"
+              class="document-result-item"
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
-              @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
-              @mouseleave="$event.target.style.backgroundColor = 'transparent'"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-result-link"
-                style="display: inline-block; text-decoration: none;"
+                class="document-result-link document-title-route"
               >
                 <h3 
                   class="document-title-link"
@@ -684,7 +682,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
-                style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: text; -webkit-user-select: text;"
+                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -737,13 +735,13 @@
             <div 
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
+              class="document-result-item"
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-result-link"
-                style="display: inline-block; text-decoration: none;"
+                class="document-result-link document-title-route"
               >
                 <h3 
                   class="document-title-link"
@@ -758,7 +756,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
-                style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: text; -webkit-user-select: text;"
+                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -6508,6 +6506,12 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
+.document-title-route {
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
 .document-result-link:focus,
 .document-result-link:focus-visible,
 .document-result-link:active,
@@ -6522,8 +6526,8 @@ onUnmounted(() => {
   color: #1a0dab;
   font-size: 20px;
   font-weight: 700;
-  margin: 0 0 -14px 0;
-  line-height: 1.2;
+  margin: 0;
+  line-height: 1.08;
   cursor: pointer;
   user-select: text;
   -webkit-user-select: text;
@@ -6549,17 +6553,56 @@ onUnmounted(() => {
 }
 
 .document-meta-link {
-  margin: -24px 0 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 2px;
+  margin: 0 !important;
+  padding: 0 !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  line-height: 1;
+  padding-right: 0 !important;
   outline: none;
   border: none;
   -webkit-tap-highlight-color: transparent;
+  text-align: left;
+  transform: translateY(-12px);
+}
+
+.document-result-item,
+.document-result-item:hover,
+.document-result-item:focus,
+.document-result-item:focus-within,
+.document-result-link,
+.document-result-link:hover,
+.document-result-link:focus,
+.document-result-link:focus-visible,
+.document-result-link:active,
+.document-title-route,
+.document-title-route:hover,
+.document-title-route:focus,
+.document-title-route:focus-visible,
+.document-meta-link,
+.document-meta-link:hover,
+.document-meta-link:focus,
+.document-meta-link:focus-visible {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.document-result-item::before,
+.document-result-item::after,
+.document-result-link::before,
+.document-result-link::after {
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 .document-snippet {
   color: #000000;
   font-size: 14px;
   line-height: 1.58;
-  margin: 6px 0 0 0;
+  margin: -6px 0 0 0;
   cursor: text;
   font-weight: normal !important;
   user-select: text;
