@@ -662,7 +662,7 @@
               v-for="(doc, index) in paginatedSearchResults" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 18px 0 4px 0; margin: 0 0 48px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -736,7 +736,7 @@
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 18px 0 4px 0; margin: 0 0 48px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -7138,8 +7138,8 @@ body :deep([role="tooltip"]) {
 }
 
 .collection-results-toolbar {
-  padding: 12px 0 !important;
-  margin: 8px 0 24px 0 !important;
+  padding: 6px 0 !important;
+  margin: 0 0 1px 0 !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;

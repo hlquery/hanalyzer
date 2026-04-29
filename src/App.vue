@@ -339,7 +339,7 @@ html {
   max-width: 1360px;
   margin: 0 auto;
   padding: 28px 24px 40px;
-  padding-top: 112px !important;
+  padding-top: 96px !important;
   min-width: 0;
   overflow-x: clip;
 }
@@ -766,7 +766,7 @@ html {
 @media (max-width: 600px) {
   .fullscreen-content {
     padding: 16px 12px 16px 12px;
-    padding-top: 84px !important; /* Extra separation from the mobile header */
+    padding-top: 76px !important;
     overflow-x: hidden;
   }
   
@@ -802,7 +802,7 @@ html {
 
   .fullscreen-content {
     padding: 24px 18px 40px !important;
-    padding-top: 84px !important;
+    padding-top: 76px !important;
     overflow-x: hidden !important;
   }
 }
