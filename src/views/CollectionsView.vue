@@ -225,7 +225,7 @@
           </template>
           
           <template v-slot:header.created_at="{ column }">
-            <div class="d-flex align-center column-header-clickable" @click.stop="toggleSort('created_at')" :title="createdSortDirection ? ('Sorted ' + (createdSortDirection === 'asc' ? 'Oldest First' : 'Newest First') + '. Click to change.') : 'Click to sort'">
+            <div class="d-flex align-center column-header-clickable created-column-header" @click.stop="toggleSort('created_at')" :title="createdSortDirection ? ('Sorted ' + (createdSortDirection === 'asc' ? 'Oldest First' : 'Newest First') + '. Click to change.') : 'Click to sort'">
               <v-icon icon="mdi-calendar" size="18" class="mr-2 header-icon"></v-icon>
               <span>{{ column.title }}</span>
               <div class="ml-2 sort-icon-container">
@@ -291,7 +291,7 @@
       <template v-slot:item.created_at="{ item }">
         <router-link
           :to="{ name: 'collection-documents', params: { name: item.name } }"
-          class="d-flex align-center created-at-link"
+          class="d-flex align-center created-at-link created-at-link--right"
           style="text-decoration: none; cursor: pointer; display: block; background: transparent !important; background-color: transparent !important;"
         >
           <span class="created-at-text">
@@ -2039,6 +2039,11 @@ onUnmounted(() => {
   width: 100% !important;
 }
 
+.created-column-header {
+  justify-content: flex-end !important;
+  text-align: right !important;
+}
+
 .column-header-clickable:hover {
   opacity: 0.8 !important;
 }
@@ -2878,6 +2883,12 @@ onUnmounted(() => {
   color: #1e293b !important;
   padding: 0;
   background: transparent;
+}
+
+.created-at-link--right {
+  width: 100% !important;
+  justify-content: flex-end !important;
+  text-align: right !important;
 }
 
 .action-btn {

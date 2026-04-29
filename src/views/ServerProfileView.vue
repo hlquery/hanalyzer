@@ -2937,10 +2937,10 @@ onUnmounted(() => {
     justify-content: center !important;
     position: relative !important;
     box-sizing: border-box !important;
-    padding: 0 22px !important;
+    padding: 0 !important;
     border-radius: 12px !important;
     font-size: 17px !important;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     line-height: 1 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -2954,10 +2954,12 @@ onUnmounted(() => {
     align-items: center !important;
     justify-content: center !important;
     width: 100% !important;
+    height: 100% !important;
     min-width: 0 !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
+    position: relative !important;
   }
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
@@ -2965,7 +2967,7 @@ onUnmounted(() => {
   .dashboard-view .dashboard-actions .action-button :deep(.v-icon),
   .dashboard-view .dashboard-actions .action-button :deep(svg) {
     position: absolute !important;
-    left: 22px !important;
+    left: 18px !important;
     margin: 0 !important;
     font-size: 20px !important;
   }
@@ -2973,8 +2975,9 @@ onUnmounted(() => {
   .dashboard-view .dashboard-actions .dashboard-header-btn-label,
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
     display: block !important;
-    width: 100% !important;
+    width: fit-content !important;
     min-width: 0 !important;
+    margin: 0 auto !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;

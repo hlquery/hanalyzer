@@ -4270,17 +4270,33 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     justify-content: space-between !important;
   }
 
+  .app-navbar :deep(.v-app-bar__content) {
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+  }
+
+  .hlquery-nav-logo,
+  .app-navbar .v-app-bar-title,
+  .header-right-actions,
+  .connection-buttons-container {
+    display: flex !important;
+    align-items: center !important;
+  }
+
   .hlquery-logo-container {
     padding: 0 !important;
-    min-height: 28px !important;
-    height: 28px !important;
+    min-height: 100% !important;
+    height: 100% !important;
     margin: 0 !important;
     justify-content: flex-start !important;
+    align-items: center !important;
   }
 
   .logo-image {
     width: 28px !important;
     height: 28px !important;
+    display: block !important;
+    margin: 0 !important;
   }
 
   .header-right-actions {
@@ -4305,6 +4321,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     min-height: 44px !important;
     border-radius: 12px !important;
     padding: 0 !important;
+    margin-top: 0 !important;
+    top: 0 !important;
+    position: relative !important;
     box-shadow: 0 4px 10px rgba(15, 23, 42, 0.10) !important;
   }
 
