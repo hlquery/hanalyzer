@@ -1,39 +1,5 @@
 <template>
   <div class="collections-view">
-    <div class="collections-header" v-if="!loading && collections.length > 0">
-      <!-- Action Buttons - Top Right -->
-      <div class="collections-header-actions">
-        <v-menu
-          v-model="showItemsPerPageMenu"
-          location="bottom start"
-          :close-on-content-click="true"
-        >
-          <template v-slot:activator="{ props }">
-            <button
-              v-bind="props"
-              class="google-toolbar-btn items-per-page-btn"
-              :class="{ 'active': showItemsPerPageMenu }"
-              :aria-label="`${itemsPerPage} results per page`"
-            >
-              <v-icon size="16">mdi-format-list-numbered</v-icon>
-              <span>{{ itemsPerPage }} per page</span>
-            </button>
-          </template>
-          <v-list class="google-menu">
-            <v-list-subheader>Results per page</v-list-subheader>
-            <v-list-item
-              v-for="option in itemsPerPageOptions"
-              :key="option"
-              @click="itemsPerPage = option; onItemsPerPageChange(option); showItemsPerPageMenu = false"
-              :class="['google-menu-item', { 'active': itemsPerPage === option }]"
-            >
-              <v-list-item-title>{{ option }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </div>
-    </div>
-
     <div v-if="!loading && collections.length > 0" class="collections-list-search-shell">
       <v-card class="collections-list-search-card" elevation="0">
         <div class="collections-list-search-copy">
@@ -130,6 +96,35 @@
       <v-card v-if="!loading && collections.length > 0" class="collections-card collections-card-top card-premium animate-fade-in">
         <div class="collections-table-card-header">
           <div class="collections-table-card-spacer"></div>
+          <div class="collections-table-card-actions">
+            <v-menu
+              v-model="showItemsPerPageMenu"
+              location="bottom start"
+              :close-on-content-click="true"
+            >
+              <template v-slot:activator="{ props }">
+                <button
+                  v-bind="props"
+                  class="google-toolbar-btn items-per-page-btn"
+                  :class="{ 'active': showItemsPerPageMenu }"
+                  :aria-label="`${itemsPerPage} results per page`"
+                >
+                  <v-icon size="16">mdi-format-list-numbered</v-icon>
+                  <span>{{ itemsPerPage }} per page</span>
+                </button>
+              </template>
+              <v-list class="google-menu">
+                <v-list-subheader>Results per page</v-list-subheader>
+                <v-list-item
+                  v-for="option in itemsPerPageOptions"
+                  :key="option"
+                  @click="itemsPerPage = option; onItemsPerPageChange(option); showItemsPerPageMenu = false"
+                  :class="['google-menu-item', { 'active': itemsPerPage === option }]"
+                >
+                  <v-list-item-title>{{ option }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
           <v-btn
             @click.stop="goToCreateCollection"
             variant="flat"
@@ -140,6 +135,7 @@
           >
             Create Collection
           </v-btn>
+          </div>
         </div>
         <!-- Debug info -->
         <div v-if="false" style="padding: 10px; background: #f0f0f0; font-size: 12px;">
@@ -1843,6 +1839,33 @@ onUnmounted(() => {
   padding: 0 0 10px 0;
 }
 
+.collections-table-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.collections-table-card-actions .items-per-page-btn,
+.collections-table-card-actions .items-per-page-btn:hover,
+.collections-table-card-actions .items-per-page-btn:focus,
+.collections-table-card-actions .items-per-page-btn:focus-visible,
+.collections-table-card-actions .items-per-page-btn:active,
+.collections-table-card-actions .items-per-page-btn.active {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.collections-table-card-actions .create-collection-header-btn,
+.collections-table-card-actions .create-collection-header-btn:hover,
+.collections-table-card-actions .create-collection-header-btn:focus,
+.collections-table-card-actions .create-collection-header-btn:focus-visible,
+.collections-table-card-actions .create-collection-header-btn:active {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
 .collections-table-card-spacer {
   flex: 1;
 }
@@ -1940,7 +1963,7 @@ onUnmounted(() => {
 }
 
 .collections-card:hover {
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  box-shadow: none !important;
 }
 
 /* Override global design-system.css styles - ensure #1e293b background */
@@ -5052,7 +5075,13 @@ onUnmounted(() => {
 .collections-header-actions .items-per-page-btn:focus,
 .collections-header-actions .items-per-page-btn:focus-visible,
 .collections-header-actions .items-per-page-btn:active,
-.collections-header-actions .items-per-page-btn.active {
+.collections-header-actions .items-per-page-btn.active,
+.collections-table-card-actions .items-per-page-btn,
+.collections-table-card-actions .items-per-page-btn:hover,
+.collections-table-card-actions .items-per-page-btn:focus,
+.collections-table-card-actions .items-per-page-btn:focus-visible,
+.collections-table-card-actions .items-per-page-btn:active,
+.collections-table-card-actions .items-per-page-btn.active {
   background: #f3f4f6 !important;
   background-color: #f3f4f6 !important;
   border: none !important;
@@ -5062,14 +5091,20 @@ onUnmounted(() => {
 
 .collections-header-actions .items-per-page-btn:hover,
 .collections-header-actions .items-per-page-btn:focus,
-.collections-header-actions .items-per-page-btn:focus-visible {
+.collections-header-actions .items-per-page-btn:focus-visible,
+.collections-table-card-actions .items-per-page-btn:hover,
+.collections-table-card-actions .items-per-page-btn:focus,
+.collections-table-card-actions .items-per-page-btn:focus-visible {
   background: #e5e7eb !important;
   background-color: #e5e7eb !important;
 }
 
 .collections-header-actions .items-per-page-btn,
 .collections-header-actions .items-per-page-btn span,
-.collections-header-actions .items-per-page-btn :deep(.v-icon) {
+.collections-header-actions .items-per-page-btn :deep(.v-icon),
+.collections-table-card-actions .items-per-page-btn,
+.collections-table-card-actions .items-per-page-btn span,
+.collections-table-card-actions .items-per-page-btn :deep(.v-icon) {
   color: #1f2937 !important;
   font-weight: 700 !important;
 }
