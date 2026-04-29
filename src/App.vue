@@ -276,6 +276,19 @@ provide('toast', { success, error, warning, info })
   --hl-radius-xl: 20px;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
+
 body,
 .v-application,
 html {
@@ -770,6 +783,27 @@ html {
     right: 16px !important;
     top: 72px !important; /* Adjusted for smaller mobile header */
     gap: 6px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .fullscreen-main,
+  .fullscreen-content {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
+  .fullscreen-content {
+    padding: 24px 18px 40px !important;
+    padding-top: 84px !important;
+    overflow-x: hidden !important;
   }
 }
 

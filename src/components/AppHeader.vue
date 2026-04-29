@@ -4229,6 +4229,91 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   }
 }
 
+@media (max-width: 768px) {
+  .app-header-shell,
+  .app-navbar,
+  .app-navbar :deep(.v-app-bar__content) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
+  .app-navbar {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .header-search-container,
+  .header-right-actions,
+  .connection-buttons-container {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+  }
+
+  .app-navbar,
+  .v-app-bar,
+  .app-navbar :deep(.v-app-bar__content) {
+    height: 64px !important;
+    min-height: 64px !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .hlquery-logo-container {
+    padding: 0 !important;
+    min-height: 28px !important;
+    height: 28px !important;
+    margin: 0 !important;
+    justify-content: flex-start !important;
+  }
+
+  .logo-image {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .header-right-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+  }
+
+  .nav-menu-btn,
+  .connection-status-btn,
+  .app-navbar .nav-menu-btn,
+  .app-navbar .connection-status-btn,
+  .app-navbar .connection-status-btn.v-btn,
+  .app-navbar .connection-status-btn.v-btn--variant-flat,
+  .app-navbar .connection-status-btn.header-action-btn--light,
+  .app-navbar .connection-status-btn.header-action-btn--light.v-btn,
+  .app-navbar .connection-status-btn.header-action-btn--light.v-btn--variant-flat {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 12px !important;
+    padding: 0 !important;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.10) !important;
+  }
+
+  .nav-menu-btn :deep(.v-icon),
+  .connection-status-btn :deep(.v-icon) {
+    font-size: 20px !important;
+  }
+}
+
 /* Auth Status Banner Styles - Make them very prominent */
 .auth-status-banner-required {
   background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%) !important;

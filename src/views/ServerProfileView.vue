@@ -1,38 +1,5 @@
 <template>
   <div class="dashboard-view">
-    <!-- Dashboard Header -->
-    <div class="collections-header">
-      <div class="collections-title-section">
-        <div>
-          <h1 class="collections-title-text">Server Dashboard</h1>
-        </div>
-      </div>
-      <div class="collections-header-actions">
-        <v-btn
-          @click="loadStats"
-          :disabled="loading"
-          variant="flat"
-          size="small"
-          prepend-icon="mdi-refresh"
-          class="collections-action-btn refresh-header-btn"
-        >
-          Refresh
-        </v-btn>
-        <v-btn
-          @click="showFlushDialog = true"
-          :disabled="!isConnected || flushing"
-          variant="flat"
-          size="small"
-          color="error"
-          prepend-icon="mdi-trash-can"
-          class="collections-action-btn flush-header-btn"
-        >
-          <span v-if="flushing">Flushing...</span>
-          <span v-else>Flush All</span>
-        </v-btn>
-      </div>
-    </div>
-
     <!-- Loading State -->
     <LoadingSkeleton v-if="loading" variant="card" :lines="6" />
 
@@ -64,21 +31,54 @@
 
     <!-- Dashboard Content -->
     <div v-if="stats && !loading" class="dashboard-content">
-      <div class="critical-status-bar">
-        <div class="critical-status-item">
-          <span class="status-dot" :class="isConnected ? 'status-dot-online' : 'status-dot-offline'"></span>
-          <span class="critical-status-label">Server</span>
-          <span class="critical-status-value">{{ isConnected ? 'Online' : 'Offline' }}</span>
+      <div class="content-inner">
+        <div class="collections-header">
+          <div class="collections-title-section">
+            <div>
+              <h1 class="collections-title-text dashboard-title">Server Dashboard</h1>
+            </div>
+          </div>
+          <div class="collections-header-actions dashboard-actions">
+            <v-btn
+              @click="loadStats"
+              :disabled="loading"
+              variant="flat"
+              size="small"
+              prepend-icon="mdi-refresh"
+              class="collections-action-btn action-button refresh-header-btn"
+            >
+              <span class="dashboard-header-btn-label">Refresh</span>
+            </v-btn>
+            <v-btn
+              @click="showFlushDialog = true"
+              :disabled="!isConnected || flushing"
+              variant="flat"
+              size="small"
+              color="error"
+              prepend-icon="mdi-trash-can"
+              class="collections-action-btn action-button flush-header-btn"
+            >
+              <span class="dashboard-header-btn-label" v-if="flushing">Flushing...</span>
+              <span class="dashboard-header-btn-label" v-else>Flush All</span>
+            </v-btn>
+          </div>
         </div>
-        <div class="critical-status-item">
-          <span class="critical-status-label">Ping</span>
-          <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
-        </div>
-      </div>
 
-      <div class="section-label">Operational Metrics</div>
-      <div class="dashboard-six-grid metrics-block">
-        <v-card class="dashboard-kpi-card">
+        <div class="critical-status-bar status-grid">
+          <div class="critical-status-item status-card">
+            <span class="status-dot" :class="isConnected ? 'status-dot-online' : 'status-dot-offline'"></span>
+            <span class="critical-status-label">Server</span>
+            <span class="critical-status-value">{{ isConnected ? 'Online' : 'Offline' }}</span>
+          </div>
+          <div class="critical-status-item status-card">
+            <span class="critical-status-label">Ping</span>
+            <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
+          </div>
+        </div>
+
+        <div class="section-label section-title">Operational Metrics</div>
+        <div class="dashboard-six-grid metrics-block metrics-section">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -98,7 +98,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -113,7 +113,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -128,7 +128,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -144,9 +144,9 @@
         </v-card>
       </div>
 
-      <div class="section-label">Storage & Index</div>
-      <div class="dashboard-six-grid metrics-block">
-        <v-card class="dashboard-kpi-card">
+        <div class="section-label section-title">Storage & Index</div>
+        <div class="dashboard-six-grid metrics-block metrics-section">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -161,7 +161,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -176,7 +176,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -191,7 +191,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -206,7 +206,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -227,7 +227,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card class="dashboard-kpi-card">
+        <v-card class="dashboard-kpi-card metric-card">
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
@@ -243,10 +243,10 @@
         </v-card>
       </div>
 
-      <!-- Detailed Stats Cards -->
-      <v-row class="detail-grid-row">
+        <!-- Detailed Stats Cards -->
+        <v-row class="detail-grid-row">
         <v-col cols="12" md="6">
-          <v-card class="dashboard-detail-card">
+          <v-card class="dashboard-detail-card metric-card">
             <v-card-title class="d-flex align-center pa-4 detail-card-header">
               <v-icon class="detail-card-icon">mdi-server</v-icon>
               <span class="detail-card-title">Server Information</span>
@@ -301,7 +301,7 @@
         </v-col>
 
         <v-col cols="12" md="6">
-          <v-card class="dashboard-detail-card">
+          <v-card class="dashboard-detail-card metric-card">
             <v-card-title class="d-flex align-center pa-4 detail-card-header">
               <v-icon class="detail-card-icon">mdi-database</v-icon>
               <span class="detail-card-title">Database Statistics</span>
@@ -336,12 +336,12 @@
             </v-card-text>
           </v-card>
         </v-col>
-      </v-row>
+        </v-row>
 
-      <!-- Search Configuration Settings as Table -->
-      <v-row class="detail-grid-row detail-grid-row-single">
+        <!-- Search Configuration Settings as Table -->
+        <v-row class="detail-grid-row detail-grid-row-single">
         <v-col cols="12">
-          <section class="dashboard-settings-section">
+          <section class="dashboard-settings-section metric-card">
             <div class="dashboard-settings-header">
               <v-icon class="detail-card-icon">mdi-magnify</v-icon>
               <span class="detail-card-title">Search Engine Settings</span>
@@ -570,8 +570,8 @@
             </div>
           </section>
         </v-col>
-      </v-row>
-
+        </v-row>
+      </div>
     </div>
 
     <!-- Flush All Data Confirmation Dialog -->
@@ -1335,13 +1335,27 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+:global(*) {
+  box-sizing: border-box;
+}
+
+:global(html),
+:global(body) {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* Dashboard View */
 .dashboard-view {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 0;
   background: transparent;
   border: none;
   box-shadow: none;
+  overflow-x: clip;
 }
 
 /* Dashboard Header */
@@ -1403,7 +1417,7 @@ onUnmounted(() => {
     0 2px 4px rgba(220, 38, 38, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
     inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
-  transform: translateY(-2px) scale(1.01) !important;
+  transform: none !important;
   outline: none !important;
 }
 
@@ -1419,7 +1433,7 @@ onUnmounted(() => {
     0 2px 6px rgba(220, 38, 38, 0.3),
     inset 0 2px 4px rgba(0, 0, 0, 0.15),
     inset 0 1px 2px rgba(0, 0, 0, 0.1) !important;
-  transform: translateY(0) scale(0.99) !important;
+  transform: none !important;
   outline: none !important;
 }
 
@@ -1652,15 +1666,38 @@ onUnmounted(() => {
 /* Dashboard Content */
 .dashboard-content {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 28px 24px;
+}
+
+.content-inner {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+@media (min-width: 769px) {
+  .content-inner {
+    max-width: 560px;
+    margin: 0 auto;
+  }
 }
 
 .dashboard-content :deep(.v-row) {
   margin-bottom: 0 !important;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .dashboard-content :deep(.v-col) {
   display: flex;
   margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .detail-grid-row {
@@ -1683,10 +1720,21 @@ onUnmounted(() => {
   margin-bottom: 28px;
 }
 
+.dashboard-actions,
+.status-card,
+.metric-card {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
 .dashboard-six-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .critical-status-bar {
@@ -1694,6 +1742,9 @@ onUnmounted(() => {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 28px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .critical-status-item {
@@ -1706,6 +1757,18 @@ onUnmounted(() => {
   border: 1px solid #d8e1eb;
   background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
   box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.dashboard-view :deep(.v-card),
+.dashboard-view :deep(.v-card-text),
+.dashboard-view :deep(.v-table),
+.dashboard-view :deep(.v-table__wrapper) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .status-dot {
@@ -2251,10 +2314,44 @@ onUnmounted(() => {
 
   .collections-header-actions {
     width: 100%;
+    flex-direction: column !important;
+    align-items: stretch !important;
   }
 
   .collections-action-btn {
     flex: 1 1 0;
+    width: 100% !important;
+    justify-content: flex-start !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .collections-action-btn :deep(.v-btn__content) {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+  }
+
+  .collections-action-btn.refresh-header-btn :deep(.v-btn__prepend),
+  .collections-action-btn.refresh-header-btn :deep(.v-btn__prepend-inner),
+  .collections-action-btn.flush-header-btn :deep(.v-btn__prepend),
+  .collections-action-btn.flush-header-btn :deep(.v-btn__prepend-inner) {
+    margin-right: 10px !important;
+    margin-left: 0 !important;
+  }
+
+  .collections-action-btn.refresh-header-btn :deep(.v-icon),
+  .collections-action-btn.flush-header-btn :deep(.v-icon) {
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .collections-action-btn.flush-header-btn :deep(.v-btn__content),
+  .collections-action-btn.flush-header-btn :deep(.v-btn__content span),
+  .collections-action-btn.refresh-header-btn :deep(.v-btn__content),
+  .collections-action-btn.refresh-header-btn :deep(.v-btn__content span) {
+    justify-content: flex-start !important;
+    text-align: left !important;
   }
 
   .stats-item {
@@ -2724,5 +2821,225 @@ onUnmounted(() => {
 
 .flush-btn-left :deep(.v-ripple__container) {
   display: none !important;
+}
+
+@media (max-width: 768px) {
+  .dashboard-view {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
+  .dashboard-view .collections-header,
+  .dashboard-view .collections-title-section,
+  .dashboard-view .content-inner,
+  .dashboard-view .dashboard-content,
+  .dashboard-view .dashboard-six-grid,
+  .dashboard-view .critical-status-bar,
+  .dashboard-view .detail-grid-row,
+  .dashboard-view .detail-grid-row-single {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-view .dashboard-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 26px 18px 40px 18px !important;
+  }
+
+  .dashboard-view .content-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .dashboard-view .collections-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    margin-bottom: 14px !important;
+    gap: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .dashboard-view .collections-title-section {
+    display: block !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .dashboard-view .dashboard-title,
+  .dashboard-view .collections-title-text.dashboard-title {
+    margin: 0 0 22px 0 !important;
+    font-size: 30px !important;
+    line-height: 1.15 !important;
+  }
+
+  .dashboard-view .dashboard-actions {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    align-items: stretch !important;
+    margin-top: 0 !important;
+    margin-bottom: 34px !important;
+    padding: 0 !important;
+    z-index: auto !important;
+  }
+
+  .dashboard-view .critical-status-bar,
+  .dashboard-view .status-grid,
+  .dashboard-view .dashboard-six-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .dashboard-view .status-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .dashboard-view .detail-grid-row,
+  .dashboard-view .detail-grid-row-single {
+    margin: 0 0 28px !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: 52px !important;
+    min-height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    padding: 0 22px !important;
+    border-radius: 12px !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    transform: none !important;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+    flex: 0 0 auto !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner),
+  .dashboard-view .dashboard-actions .action-button :deep(.v-icon),
+  .dashboard-view .dashboard-actions .action-button :deep(svg) {
+    position: absolute !important;
+    left: 22px !important;
+    margin: 0 !important;
+    font-size: 20px !important;
+  }
+
+  .dashboard-view .dashboard-actions .dashboard-header-btn-label,
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    line-height: 1.2 !important;
+  }
+
+  .dashboard-view .flush-header-btn {
+    box-shadow: 0 8px 16px rgba(180, 0, 0, 0.16) !important;
+  }
+
+  .dashboard-view .status-card,
+  .dashboard-view .metric-card,
+  .dashboard-view .dashboard-settings-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    border-radius: 14px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .dashboard-view .status-card {
+    height: auto !important;
+    min-height: 56px !important;
+  }
+
+  .dashboard-view .section-title,
+  .dashboard-view .section-label.section-title {
+    margin: 0 0 18px !important;
+  }
+
+  .dashboard-view .metric-card {
+    border-radius: 16px !important;
+    margin-bottom: 22px !important;
+  }
+
+  .dashboard-view .metric-card :deep(.v-card-text) {
+    padding: 28px 24px !important;
+  }
+
+  .dashboard-view .metrics-section {
+    width: 100% !important;
+    margin-bottom: 14px !important;
+  }
+
+  .dashboard-view :deep(.v-row),
+  .dashboard-view :deep(.v-col),
+  .dashboard-view :deep(.v-card),
+  .dashboard-view :deep(.v-card-text),
+  .dashboard-view :deep(.v-table),
+  .dashboard-view :deep(.v-table__wrapper) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-view :deep(.v-row) {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .dashboard-view :deep(.v-col) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
 }
 </style>
