@@ -684,7 +684,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
+                style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: text; -webkit-user-select: text;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -695,7 +695,7 @@
               </router-link>
               
               <!-- Snippet/Description (Google style) with BOLD highlights - SELECTABLE TEXT -->
-              <div style="color: #000000; font-size: 14px; line-height: 1.58; margin: 10px 0 0 0; user-select: text; -webkit-user-select: text; cursor: text; font-weight: normal !important;">
+              <div class="document-snippet">
                 <span v-if="doc.highlights && doc.highlights.content" v-html="formatServerHighlights(String(doc.highlights.content))"></span>
                 <span v-else-if="getBestContent(doc)">
                   <span v-if="searchQuery && searchQuery.trim()" v-html="makeSearchedWordsBold(String(getBestContent(doc)))"></span>
@@ -738,8 +738,6 @@
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
               style="background: transparent; border: none; border-radius: 0; padding: 4px 0; margin: 0 0 32px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
-              @mouseenter="$event.target.style.backgroundColor = '#f8f9fa'"
-              @mouseleave="$event.target.style.backgroundColor = 'transparent'"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -760,7 +758,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
-                style="display: flex; align-items: center; gap: 8px; margin: -2px 0 0 0; cursor: pointer; user-select: text; -webkit-user-select: text;"
+                style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: text; -webkit-user-select: text;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
@@ -770,7 +768,7 @@
               </router-link>
               
               <!-- Snippet/Description (Google style) with bold searched words - SELECTABLE TEXT -->
-              <div style="color: #000000; font-size: 14px; line-height: 1.58; margin: 10px 0 0 0; user-select: text; -webkit-user-select: text; cursor: text; font-weight: normal !important;">
+              <div class="document-snippet">
                 <template v-if="doc.highlights && Object.keys(doc.highlights).length > 0">
                   <div v-for="(highlight, field) in doc.highlights" :key="field">
                     <span v-if="field !== 'title' && field !== 'name'" v-html="formatServerHighlights(Array.isArray(highlight) ? highlight.join(' ... ') : (highlight || ''))"></span>
@@ -799,13 +797,13 @@
               v-for="(doc, index) in paginatedDocuments"
               :key="doc.id || `doc-${index}`"
               :to="getDocumentRoute(doc)"
-              style="text-decoration: none !important; display: block !important; visibility: visible !important; opacity: 1 !important; cursor: text !important; user-select: text !important; pointer-events: auto !important; margin-bottom: 24px !important;"
+              style="text-decoration: none !important; display: block !important; visibility: visible !important; opacity: 1 !important; cursor: text !important; user-select: text !important; pointer-events: auto !important; margin-bottom: 14px !important;"
               @click.stop
               class="no-tooltip document-link"
             >
             <v-card
               class="mb-3 document-card-clickable no-tooltip-card"
-              style="cursor: text !important; pointer-events: auto !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: white !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 16px !important;"
+              style="cursor: text !important; pointer-events: auto !important; display: block !important; visibility: visible !important; opacity: 1 !important; background: white !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 9px 14px 12px !important;"
               :title="null"
               :hover="false"
               :ripple="false"
@@ -813,10 +811,9 @@
             >
               <v-card-text class="google-result-card">
                 <div class="google-result-content">
-                  <!-- Title (Google style - blue, clickable) with creation date -->
+                  <!-- Title (Google style - blue, clickable) -->
                   <h3 class="google-result-title">
                     <span>{{ getBestTitle(doc) }}</span>
-                    <span v-if="doc.created_at" class="document-created-date"> — {{ formatDocumentDateFromISO(doc.created_at) }}</span>
                   </h3>
                   <!-- URL/ID (Google style - green, smaller) - right below title -->
                   <div class="google-result-url">
@@ -825,6 +822,9 @@
                   
                   <!-- Snippet/Description (Google style) -->
                   <div class="google-result-snippet">
+                    <div v-if="getGoogleResultDate(doc)" class="google-result-meta">
+                      <span class="google-result-date">{{ getGoogleResultDate(doc) }}</span>
+                    </div>
                     <!-- Highlights Preview -->
                     <template v-if="doc.highlights && Object.keys(doc.highlights).length > 0">
                       <div v-for="(highlight, field) in doc.highlights" :key="field" class="google-highlight-field">
@@ -835,7 +835,7 @@
                     <div v-else-if="getContentPreview(doc)" v-html="cleanHighlightText(getContentPreview(doc))"></div>
                     <!-- Fallback if no highlights or preview -->
                     <div v-else class="google-result-fallback">
-                      <span v-if="getDocumentDate(doc)" class="google-result-date">{{ formatDocumentDate(doc) }}</span>
+                      <span v-if="!getGoogleResultDate(doc) && getDocumentDate(doc)" class="google-result-date">{{ formatDocumentDate(doc) }}</span>
                     </div>
                   </div>
                 </div>
@@ -3652,6 +3652,19 @@ const formatDocumentDateFromISO = (isoString) => {
   } catch (e) {
     return ''
   }
+}
+
+const getGoogleResultDate = (doc) => {
+  if (!doc || typeof doc !== 'object') return ''
+
+  if (doc.created_at) {
+    const createdDate = formatDocumentDateFromISO(doc.created_at)
+    if (createdDate) {
+      return createdDate
+    }
+  }
+
+  return formatDocumentDate(doc)
 }
 
 // Get document date from common date fields
@@ -6509,7 +6522,7 @@ onUnmounted(() => {
   color: #1a0dab;
   font-size: 20px;
   font-weight: 700;
-  margin: 0 0 -2px 0;
+  margin: 0 0 -14px 0;
   line-height: 1.2;
   cursor: pointer;
   user-select: text;
@@ -6536,9 +6549,21 @@ onUnmounted(() => {
 }
 
 .document-meta-link {
+  margin: -24px 0 0 0;
   outline: none;
   border: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.document-snippet {
+  color: #000000;
+  font-size: 14px;
+  line-height: 1.58;
+  margin: 6px 0 0 0;
+  cursor: text;
+  font-weight: normal !important;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Disable ALL tooltips on document cards - be VERY aggressive */
@@ -10378,6 +10403,7 @@ body :deep([role="tooltip"]) {
 .google-result-content {
   max-width: 100%;
   padding: 0;
+  margin-top: -1px;
   user-select: text !important;
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
@@ -10388,18 +10414,15 @@ body :deep([role="tooltip"]) {
 /* Google-style Title */
 .google-result-title {
   font-size: 20px !important;
-  line-height: 1.3 !important;
+  line-height: 1.25 !important;
   font-weight: 700 !important;
   color: #1a0dab !important;
-  margin: 0 0 0 0 !important;
+  margin: 0 0 1px 0 !important;
   padding: 0 !important;
   cursor: pointer !important;
   font-family: arial, sans-serif !important;
   text-decoration: none !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  flex-wrap: wrap !important;
+  display: block !important;
   user-select: text !important;
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
@@ -10440,7 +10463,7 @@ body :deep([role="tooltip"]) {
 .google-result-url {
   display: flex !important;
   align-items: center !important;
-  margin-bottom: 8px !important;
+  margin-bottom: 3px !important;
   margin-top: 0 !important;
   padding-top: 0 !important;
   flex-wrap: wrap !important;
@@ -10466,9 +10489,9 @@ body :deep([role="tooltip"]) {
 /* Google-style Snippet */
 .google-result-snippet {
   font-size: 14px !important;
-  line-height: 1.58 !important;
+  line-height: 1.45 !important;
   color: #000000 !important;
-  margin-top: 10px !important;
+  margin-top: 0 !important;
   font-family: arial, sans-serif !important;
   display: block !important;
   user-select: text !important;
@@ -10481,6 +10504,11 @@ body :deep([role="tooltip"]) {
   -moz-user-select: text !important;
   -ms-user-select: text !important;
   cursor: text !important;
+}
+
+.google-result-meta {
+  margin-bottom: 1px !important;
+  line-height: 1.25 !important;
 }
 
 .google-result-snippet :deep(em),
@@ -10499,7 +10527,7 @@ body :deep([role="tooltip"]) {
 }
 
 .google-highlight-field {
-  margin-bottom: 4px !important;
+  margin-bottom: 2px !important;
   user-select: text !important;
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
@@ -10525,8 +10553,9 @@ body :deep([role="tooltip"]) {
 }
 
 .google-result-date {
-  color: #70757a !important;
-  font-size: 14px !important;
+  color: #5f6368 !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
 }
 
 /* Remove icon styles */
