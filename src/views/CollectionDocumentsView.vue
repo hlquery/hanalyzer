@@ -662,40 +662,50 @@
               v-for="(doc, index) in paginatedSearchResults" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 40px 0 4px 0; margin: 0 0 40px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 28px 0 4px 0; margin: 0 0 24px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
+              <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-result-link document-result-link-card"
-                @click="handleDocumentClick(doc, $event)"
+                class="document-result-link document-title-route"
               >
-                <h3 class="document-title-link">
+                <h3 
+                  class="document-title-link"
+                  @mouseenter="$event.target.style.textDecoration = 'underline'"
+                  @mouseleave="$event.target.style.textDecoration = 'none'"
+                >
                   {{ getBestTitle(doc) }}
                 </h3>
-                <div
-                  class="document-meta-link"
-                  style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
-                >
-                  <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
-                  <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
-                  <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
-                  <span v-if="doc._text_match !== undefined" style="color: #70757a; font-size: 12px; margin-left: 8px;">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
-                </div>
-
-                <div class="document-snippet">
-                  <span v-if="doc.highlights && doc.highlights.content" v-html="formatServerHighlights(String(doc.highlights.content))"></span>
-                  <span v-else-if="getBestContent(doc)">
-                    <span v-if="searchQuery && searchQuery.trim()" v-html="makeSearchedWordsBold(String(getBestContent(doc)))"></span>
-                    <span v-else>{{ getBestContent(doc) }}</span>
-                  </span>
-                  <span v-else-if="doc.highlights && Object.keys(doc.highlights).length > 0">
-                    <span v-for="(highlight, field) in doc.highlights" :key="field">
-                      <span v-if="field !== 'title' && field !== 'name' && field !== 'id'" v-html="formatServerHighlights(String(Array.isArray(highlight) ? highlight.join(' ... ') : highlight))"></span>
-                    </span>
-                  </span>
-                  <span v-else style="color: #70757a;">No preview available</span>
-                </div>
               </router-link>
+              
+              <!-- Date - Document name on same line - CLICKABLE -->
+              <router-link
+                :to="getDocumentRoute(doc)"
+                class="document-result-link document-meta-link"
+                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
+                @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
+                @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
+              >
+                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
+                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
+                <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
+                <span v-if="doc._text_match !== undefined" style="color: #70757a; font-size: 12px; margin-left: 8px;">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
+              </router-link>
+              
+              <!-- Snippet/Description (Google style) with BOLD highlights - SELECTABLE TEXT -->
+              <div class="document-snippet">
+                <span v-if="doc.highlights && doc.highlights.content" v-html="formatServerHighlights(String(doc.highlights.content))"></span>
+                <span v-else-if="getBestContent(doc)">
+                  <span v-if="searchQuery && searchQuery.trim()" v-html="makeSearchedWordsBold(String(getBestContent(doc)))"></span>
+                  <span v-else>{{ getBestContent(doc) }}</span>
+                </span>
+                <span v-else-if="doc.highlights && Object.keys(doc.highlights).length > 0">
+                  <span v-for="(highlight, field) in doc.highlights" :key="field">
+                    <span v-if="field !== 'title' && field !== 'name' && field !== 'id'" v-html="formatServerHighlights(String(Array.isArray(highlight) ? highlight.join(' ... ') : highlight))"></span>
+                  </span>
+                </span>
+                <span v-else style="color: #70757a;">No preview available</span>
+              </div>
             </div>
           </div>
           
@@ -726,35 +736,45 @@
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 40px 0 4px 0; margin: 0 0 40px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
+              style="background: transparent; border: none; border-radius: 0; padding: 28px 0 4px 0; margin: 0 0 24px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
+              <!-- Title on top - CLICKABLE -->
               <router-link
                 :to="getDocumentRoute(doc)"
-                class="document-result-link document-result-link-card"
-                @click="handleDocumentClick(doc, $event)"
+                class="document-result-link document-title-route"
               >
-                <h3 class="document-title-link">
+                <h3 
+                  class="document-title-link"
+                  @mouseenter="$event.target.style.textDecoration = 'underline'"
+                  @mouseleave="$event.target.style.textDecoration = 'none'"
+                >
                   {{ getBestTitle(doc) }}
                 </h3>
-                <div
-                  class="document-meta-link"
-                  style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
-                >
-                  <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
-                  <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
-                  <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
-                </div>
-
-                <div class="document-snippet">
-                  <template v-if="doc.highlights && Object.keys(doc.highlights).length > 0">
-                    <div v-for="(highlight, field) in doc.highlights" :key="field">
-                      <span v-if="field !== 'title' && field !== 'name'" v-html="formatServerHighlights(Array.isArray(highlight) ? highlight.join(' ... ') : (highlight || ''))"></span>
-                    </div>
-                  </template>
-                  <span v-else-if="getBestContent(doc)" v-html="makeSearchedWordsBold(cleanHighlightText(getBestContent(doc)))"></span>
-                  <span v-else style="color: #70757a;">No preview available</span>
-                </div>
               </router-link>
+              
+              <!-- Date - Document name on same line - CLICKABLE -->
+              <router-link
+                :to="getDocumentRoute(doc)"
+                class="document-result-link document-meta-link"
+                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
+                @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
+                @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
+              >
+                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
+                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
+                <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
+              </router-link>
+              
+              <!-- Snippet/Description (Google style) with bold searched words - SELECTABLE TEXT -->
+              <div class="document-snippet">
+                <template v-if="doc.highlights && Object.keys(doc.highlights).length > 0">
+                  <div v-for="(highlight, field) in doc.highlights" :key="field">
+                    <span v-if="field !== 'title' && field !== 'name'" v-html="formatServerHighlights(Array.isArray(highlight) ? highlight.join(' ... ') : (highlight || ''))"></span>
+                  </div>
+                </template>
+                <span v-else-if="getBestContent(doc)" v-html="makeSearchedWordsBold(cleanHighlightText(getBestContent(doc)))"></span>
+                <span v-else style="color: #70757a;">No preview available</span>
+              </div>
             </div>
           </div>
           
@@ -3415,22 +3435,21 @@ const handleDocumentClick = (doc, event) => {
   // Check if user is selecting text
   const selection = window.getSelection()
   if (selection && selection.toString().trim().length > 0) {
-    event?.preventDefault?.()
+    // User is selecting text, don't navigate
+    return
+  }
+  
+  // Check if click was on a link or button
+  if (event.target.tagName === 'A' || event.target.tagName === 'BUTTON' || event.target.closest('a') || event.target.closest('button')) {
     return
   }
 
-  // Let the browser handle right click, middle click, and modifier-assisted navigation.
-  if (
-    !event ||
-    event.defaultPrevented ||
-    event.button !== 0 ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey
-  ) {
-    return
+  if (event?.currentTarget && typeof event.currentTarget.blur === 'function') {
+    event.currentTarget.blur()
   }
+  
+  // Only navigate if it's a simple click without text selection
+  router.push(getDocumentRoute(doc))
 }
 
 // Delete document functionality
@@ -6487,13 +6506,6 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
-.document-result-link-card {
-  display: block;
-  width: 100%;
-  user-select: text;
-  -webkit-user-select: text;
-}
-
 .document-title-route {
   display: block;
   margin: 0;
@@ -6524,10 +6536,7 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
-.document-title-link:hover,
-.document-result-link-card:hover .document-title-link,
-.document-result-link-card:focus .document-title-link,
-.document-result-link-card:focus-visible .document-title-link {
+.document-title-link:hover {
   text-decoration: underline;
 }
 
@@ -6548,7 +6557,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 2px;
   margin: 0 !important;
-  margin-top: -10px !important;
+  margin-top: -12px !important;
   padding: 0 !important;
   margin-left: 0 !important;
   padding-left: 0 !important;
