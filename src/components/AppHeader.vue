@@ -35,7 +35,7 @@
       color="#111827"
       elevation="0"
       :class="['app-navbar', { 'app-navbar--scrolled': isScrolled }]"
-      height="68"
+      height="62"
       @contextmenu="handleHeaderContextMenu"
     >
     <!-- Logo - Left -->
@@ -1445,8 +1445,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .demo-mode-banner__inner {
-  min-height: 44px;
-  padding: 10px 20px;
+  min-height: 40px;
+  padding: 8px 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1532,7 +1532,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   z-index: 100 !important;
   display: flex !important;
   align-items: center !important;
-  height: 68px !important;
+  height: 62px !important;
 }
 
 .app-navbar .v-app-bar-title {
@@ -1551,11 +1551,11 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   user-select: none;
   text-decoration: none;
   color: inherit;
-  padding: 5px 6px 5px 9px;
+  padding: 4px 6px 4px 8px;
   border-radius: 10px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .hlquery-logo-container::before {
@@ -1583,7 +1583,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .logo-image {
-  height: 29px;
+  height: 27px;
   width: auto;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 0 transparent);
@@ -1601,13 +1601,13 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .hlquery-nav-title {
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
-  font-size: 18px !important;
-  line-height: 26px !important;
+  font-size: 17px !important;
+  line-height: 24px !important;
   color: #ffffff !important;
   letter-spacing: -0.02em;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 4px 4px;
+  padding: 3px 4px;
   border-radius: 6px;
   position: relative;
 }
@@ -2583,9 +2583,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .header-action-btn.v-btn--variant-flat,
 .header-action-btn.v-btn--variant-text {
   min-width: 0 !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  padding: 0 12px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 11px !important;
   border-radius: 7px !important;
   text-transform: none !important;
   letter-spacing: -0.01em !important;
@@ -2624,9 +2624,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
   color: #0f172a !important;
   border-radius: 10px !important;
-  min-height: 34px !important;
-  height: 34px !important;
-  padding-inline: 12px !important;
+  min-height: 32px !important;
+  height: 32px !important;
+  padding-inline: 11px !important;
   border: 1px solid rgba(148, 163, 184, 0.22) !important;
 }
 
@@ -2694,12 +2694,12 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .nav-menu-btn {
-  min-width: 140px !important;
+  min-width: 132px !important;
   justify-content: center !important;
   margin-right: 6px !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  padding-inline: 12px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding-inline: 11px !important;
   border-radius: 10px !important;
   border: 1px solid rgba(148, 163, 184, 0.22) !important;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
@@ -2964,9 +2964,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   font-weight: 600 !important;
   font-size: 13px !important;
   line-height: 1 !important;
-  height: 34px !important;
-  min-height: 34px !important;
-  max-height: 34px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
   min-width: 140px !important;
   padding: 0 12px !important;
   text-transform: none !important;
@@ -3082,7 +3082,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .connection-status-btn {
-  min-height: 34px !important;
+  min-height: 32px !important;
   padding: 0 12px !important;
 }
 
