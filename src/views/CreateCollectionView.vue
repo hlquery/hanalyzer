@@ -604,7 +604,7 @@ const createCollection = async () => {
 
 .collection-name-input :deep(.v-field),
 .collection-name-input :deep(.v-field__input) {
-  background-color: #f4f5f7 !important;
+  background-color: #ffffff !important;
   font-size: 14px !important;
   min-height: 34px !important;
   padding-top: 10px !important;
@@ -619,6 +619,16 @@ const createCollection = async () => {
 .collection-name-input :deep(.v-field__input) {
   padding-left: 14px !important;
   padding-right: 14px !important;
+  color: #0f172a !important;
+}
+
+.collection-name-input :deep(.v-field__input input) {
+  color: #0f172a !important;
+}
+
+.collection-name-input :deep(.v-field__input input::placeholder) {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
 }
 
 .form-input :deep(.v-field__prepend-inner),

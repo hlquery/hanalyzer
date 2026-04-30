@@ -35,7 +35,7 @@
       color="#111827"
       elevation="0"
       :class="['app-navbar', { 'app-navbar--scrolled': isScrolled }]"
-      height="76"
+      height="68"
       @contextmenu="handleHeaderContextMenu"
     >
     <!-- Logo - Left -->
@@ -1532,7 +1532,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   z-index: 100 !important;
   display: flex !important;
   align-items: center !important;
-  height: 76px !important;
+  height: 68px !important;
 }
 
 .app-navbar .v-app-bar-title {
@@ -1551,7 +1551,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   user-select: none;
   text-decoration: none;
   color: inherit;
-  padding: 6px 6px 6px 10px;
+  padding: 5px 6px 5px 9px;
   border-radius: 10px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -1583,7 +1583,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .logo-image {
-  height: 32px;
+  height: 29px;
   width: auto;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 0 transparent);
@@ -1698,9 +1698,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   border-radius: 14px !important;
   box-shadow: none !important;
   transition: all 0.2s ease !important;
-  min-height: 40px !important;
-  max-height: 40px !important;
-  height: 40px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  height: 36px !important;
 }
 
 .header-search-input-improved :deep(.v-field:hover),
@@ -1737,9 +1737,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 /* Input wrapper - clean */
 .header-search-input-improved :deep(.v-field__wrapper),
 .header-search-input :deep(.v-field__wrapper) {
-  min-height: 40px !important;
-  max-height: 40px !important;
-  height: 40px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  height: 36px !important;
 }
 
 .header-search-input :deep(.v-field--focused .v-field__wrapper),
@@ -1772,9 +1772,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   padding-left: 10px !important;
   font-size: 13px !important;
   line-height: 18px !important;
-  min-height: 40px !important;
-  max-height: 40px !important;
-  height: 40px !important;
+  min-height: 36px !important;
+  max-height: 36px !important;
+  height: 36px !important;
   color: #0f172a !important;
   text-align: left !important;
   text-align-last: left !important;
@@ -1850,7 +1850,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .header-search-input :deep(.v-field__input input),
 .header-search-input-improved :deep(.v-field__input input[type="text"]),
 .header-search-input :deep(.v-field__input input[type="text"]) {
-  height: 40px !important;
+  height: 36px !important;
   line-height: 18px !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -1882,7 +1882,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .header-search-input :deep(.v-field__input input[type="text"]:hover),
 .header-search-input :deep(.v-field__input input:active),
 .header-search-input :deep(.v-field__input input[type="text"]:active) {
-  height: 40px !important;
+  height: 36px !important;
   line-height: 18px !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -2074,7 +2074,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   align-items: center !important;
   justify-content: center !important;
   display: flex !important;
-  height: 40px !important;
+  height: 36px !important;
   width: auto !important;
   flex-shrink: 0 !important;
   background: transparent !important;
@@ -3679,9 +3679,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
   font-size: 13px !important;
-  line-height: 32px !important;
-  height: 32px !important;
-  padding: 0 14px !important;
+  line-height: 29px !important;
+  height: 29px !important;
+  padding: 0 12px !important;
   text-transform: none !important;
   border: none !important;
   letter-spacing: normal !important;
@@ -3880,8 +3880,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 
   .app-navbar {
     padding: 0 8px !important;
-    height: 56px !important;
-    min-height: 56px !important;
+    height: 50px !important;
+    min-height: 50px !important;
   }
 
   .mobile-hide {
@@ -3904,8 +3904,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     justify-content: space-between !important;
     align-items: center !important;
     padding: 0 8px !important;
-    height: 56px !important;
-    min-height: 56px !important;
+    height: 50px !important;
+    min-height: 50px !important;
   }
 
   .app-navbar :deep(.v-app-bar__content) {
@@ -3917,8 +3917,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     flex-direction: row !important;
     gap: 8px !important;
     flex-wrap: nowrap !important;
-    height: 56px !important;
-    min-height: 56px !important;
+    height: 50px !important;
+    min-height: 50px !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
@@ -4264,8 +4264,8 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   .app-navbar,
   .v-app-bar,
   .app-navbar :deep(.v-app-bar__content) {
-    height: 64px !important;
-    min-height: 64px !important;
+    height: 58px !important;
+    min-height: 58px !important;
     padding: 0 16px !important;
     display: flex !important;
     align-items: center !important;

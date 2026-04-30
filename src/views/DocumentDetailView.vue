@@ -114,7 +114,7 @@
                 </div>
               </th>
               <th class="field-value-col" @click="toggleSort('value')">
-                <div class="sortable-header">
+                <div class="sortable-header sortable-header--right">
                   Value
                   <div class="sort-icon-container">
                     <v-icon 
@@ -164,12 +164,12 @@
               <td class="field-value-cell">
                 <pre v-if="typeof value === 'object'" class="field-json">{{ JSON.stringify(value, null, 2) }}</pre>
                 <template v-else-if="isDateField(key, value)">
-                  <div class="field-date">
+                  <div class="field-date field-date--right">
                     <div class="date-display">{{ formatDate(value) }}</div>
                     <div class="date-raw-text">{{ value }}</div>
                   </div>
                 </template>
-                <span v-else class="field-text">{{ value }}</span>
+                <span v-else class="field-text field-text--right">{{ value }}</span>
               </td>
             </tr>
           </tbody>
@@ -1099,6 +1099,10 @@ onMounted(async () => {
   user-select: none;
 }
 
+.sortable-header--right {
+  justify-content: flex-end;
+}
+
 .sortable-header:hover {
   color: rgba(255, 255, 255, 0.92);
 }
@@ -1149,19 +1153,19 @@ onMounted(async () => {
 }
 
 .sort-icon-active {
-  color: #64748b !important;
+  color: #ffffff !important;
   opacity: 1 !important;
   font-weight: bold !important;
 }
 
 .sort-icon-inactive {
-  color: #64748b !important;
+  color: #ffffff !important;
   opacity: 0.6 !important;
   transition: all 0.2s ease !important;
 }
 
 .sortable-header:hover .sort-icon-inactive {
-  color: #cbd5e1 !important;
+  color: #ffffff !important;
   opacity: 0.9 !important;
   transform: scale(1.1) !important;
 }
@@ -1225,7 +1229,7 @@ onMounted(async () => {
   padding: 14px 20px !important;
   vertical-align: top !important;
   background: inherit;
-  text-align: left !important;
+  text-align: right !important;
 }
 
 .field-name-wrapper {
@@ -1288,8 +1292,13 @@ onMounted(async () => {
   display: block;
 }
 
+.field-text--right {
+  text-align: right;
+}
+
 .field-json {
   margin: 0;
+  margin-left: auto;
   padding: 12px;
   font-family: 'SF Mono', 'Monaco', 'Consolas', 'Courier New', monospace;
   font-size: 11px;
@@ -1313,6 +1322,11 @@ onMounted(async () => {
   flex-direction: column;
   gap: 4px;
   text-align: left;
+}
+
+.field-date--right {
+  align-items: flex-end;
+  text-align: right;
 }
 
 .date-display {

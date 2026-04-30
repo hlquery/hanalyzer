@@ -498,6 +498,7 @@ watch(
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 0 32px;
+  color: #0f172a;
 }
 
 .sql-header {
@@ -698,6 +699,7 @@ watch(
   align-items: flex-start !important;
   min-height: 120px !important;
   padding: 22px 24px !important;
+  color: #0f172a !important;
 }
 
 .sql-query-input :deep(textarea) {
@@ -713,6 +715,11 @@ watch(
   min-height: 0 !important;
   padding: 0 !important;
   resize: none !important;
+}
+
+.sql-query-input :deep(textarea::placeholder) {
+  color: #64748b !important;
+  opacity: 1 !important;
 }
 
 .sql-query-examples {
@@ -790,6 +797,12 @@ watch(
 
 .sql-alert {
   margin-top: 16px;
+}
+
+.sql-alert :deep(.v-alert__content),
+.sql-alert :deep(.v-alert__content .font-weight-bold),
+.sql-alert :deep(.v-alert__content div) {
+  color: #0f172a !important;
 }
 
 .sql-results-card {
@@ -916,6 +929,8 @@ watch(
   cursor: pointer;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
+  color: inherit;
+  text-decoration: none;
 }
 
 .sql-cell-link:focus,
@@ -943,6 +958,13 @@ watch(
   display: flex;
   justify-content: center;
   padding-top: 18px;
+}
+
+.sql-pagination :deep(.v-btn),
+.sql-pagination :deep(.v-pagination__item),
+.sql-pagination :deep(.v-pagination__next),
+.sql-pagination :deep(.v-pagination__prev) {
+  color: #0f172a !important;
 }
 
 .sql-state-card {
