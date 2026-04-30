@@ -339,9 +339,15 @@ html {
   max-width: 1360px;
   margin: 0 auto;
   padding: 28px 24px 40px;
-  padding-top: 96px !important;
+  padding-top: 120px !important;
   min-width: 0;
   overflow-x: clip;
+}
+
+@media (max-width: 960px) {
+  .fullscreen-content {
+    padding-top: 108px !important;
+  }
 }
 
 /* Font Awesome Icons - Modern styling */
