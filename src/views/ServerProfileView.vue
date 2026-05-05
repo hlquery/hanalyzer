@@ -1059,6 +1059,60 @@ const getServerStatsFromStatusPayload = (payload) => {
   return null
 }
 
+const hasUsableServerStats = (payload) => {
+  const statsObj = payload && typeof payload === 'object' ? payload : null
+  if (!statsObj) return false
+
+  const directUptime = Number(statsObj?.uptime_seconds)
+  if (Number.isFinite(directUptime) && directUptime > 0) {
+    return true
+  }
+
+  const nestedUptime = Number(statsObj?.server?.uptime_seconds)
+  if (Number.isFinite(nestedUptime) && nestedUptime > 0) {
+    return true
+  }
+
+  return false
+}
+
+const fetchStatsSnapshot = async (baseUrlValue, useProxy) => {
+  const statsUrl = buildApiUrl(baseUrlValue, useProxy, '/stats')
+  const response = await axios.get(statsUrl, { timeout: 3000 })
+  return response.data || {}
+}
+
+const buildMergedStatsPayload = async (statusPayload, baseUrlValue, useProxy) => {
+  const mergedPayload = (statusPayload && typeof statusPayload === 'object')
+    ? { ...statusPayload }
+    : {}
+
+  const statusStats = (mergedPayload.stats && typeof mergedPayload.stats === 'object')
+    ? mergedPayload.stats
+    : {}
+
+  if (hasUsableServerStats(statusStats)) {
+    mergedPayload.stats = statusStats
+    return mergedPayload
+  }
+
+  try {
+    const statsSnapshot = await fetchStatsSnapshot(baseUrlValue, useProxy)
+    mergedPayload.stats = {
+      ...statsSnapshot,
+      ...statusStats,
+      io: {
+        ...(statsSnapshot?.io || {}),
+        ...(statusStats?.io || {})
+      }
+    }
+  } catch (e) {
+    mergedPayload.stats = statusStats
+  }
+
+  return mergedPayload
+}
+
 const fetchHealthSnapshot = async (baseUrlValue, useProxy) => {
   const healthUrl = buildApiUrl(baseUrlValue, useProxy, '/health')
   const response = await axios.get(healthUrl, { timeout: 3000 })
@@ -1154,10 +1208,11 @@ const updateStatsSilently = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, '/status')
     
     const response = await axios.get(url, { timeout: 5000 })
-    
-    if (response.data) {
+    const payload = await buildMergedStatsPayload(response.data, baseUrlValue, useProxy)
+
+    if (payload) {
       // Update stats silently without triggering loading state
-      let normalizedHealth = mergeHealthWithEngineFallback(response.data)
+      let normalizedHealth = mergeHealthWithEngineFallback(payload)
       if (!getSocketEngine(normalizedHealth)) {
         try {
           normalizedHealth = await fetchHealthSnapshot(baseUrlValue, useProxy)
@@ -1166,20 +1221,20 @@ const updateStatsSilently = async () => {
         }
       }
 
-      if (response.data.stats) {
+      if (payload.stats) {
         stats.value = {
-          ...response.data.stats,
+          ...payload.stats,
           health: normalizedHealth
         }
       } else {
         // Fallback: if stats is not nested, use root level data
         stats.value = {
-          ...response.data,
+          ...payload,
           health: normalizedHealth
         }
       }
       
-      const serverStats = getServerStatsFromStatusPayload(response.data)
+      const serverStats = getServerStatsFromStatusPayload(payload)
 
       // Update base uptime values to keep it ticking continuously
       if (serverStats?.uptime_seconds !== undefined) {
@@ -1226,13 +1281,14 @@ const loadStats = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, '/status')
     
     const response = await axios.get(url, { timeout: 5000 })
-    
-    if (response.data) {
+    const payload = await buildMergedStatsPayload(response.data, baseUrlValue, useProxy)
+
+    if (payload) {
       // /status returns { health: {...}, stats: {...} }
       // The stats object contains: server, collections, cache, rocksdb, io
       // /status returns { health: {...}, stats: {...} }
       // The stats object contains: server, collections, cache, rocksdb, io
-      let normalizedHealth = mergeHealthWithEngineFallback(response.data)
+      let normalizedHealth = mergeHealthWithEngineFallback(payload)
       if (!getSocketEngine(normalizedHealth)) {
         try {
           normalizedHealth = await fetchHealthSnapshot(baseUrlValue, useProxy)
@@ -1241,15 +1297,15 @@ const loadStats = async () => {
         }
       }
 
-      if (response.data.stats) {
+      if (payload.stats) {
         stats.value = {
-          ...response.data.stats,
+          ...payload.stats,
           health: normalizedHealth
         }
       } else {
         // Fallback: if stats is not nested, use root level data
         stats.value = {
-          ...response.data,
+          ...payload,
           health: normalizedHealth
         }
       }
@@ -1259,7 +1315,7 @@ const loadStats = async () => {
         console.warn('RocksDB stats missing or zero:', stats.value.rocksdb)
       }
       
-      const serverStats = getServerStatsFromStatusPayload(response.data)
+      const serverStats = getServerStatsFromStatusPayload(payload)
 
       // Update base uptime values to keep it ticking continuously
       // Store the server's uptime value and timestamp, then increment client-side
