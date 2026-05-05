@@ -1680,8 +1680,8 @@ onUnmounted(() => {
 
 @media (min-width: 769px) {
   .content-inner {
-    max-width: 560px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
   }
 }
 
@@ -1720,7 +1720,6 @@ onUnmounted(() => {
   margin-bottom: 28px;
 }
 
-.dashboard-actions,
 .status-card,
 .metric-card {
   width: 100%;
@@ -2247,7 +2246,7 @@ onUnmounted(() => {
   padding: 0 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: space-between !important;
   visibility: visible !important;
   opacity: 1 !important;
   flex-wrap: wrap;
@@ -2283,7 +2282,7 @@ onUnmounted(() => {
   display: flex !important;
   gap: 12px !important;
   align-items: center !important;
-  margin-left: 0 !important;
+  margin-left: auto !important;
   flex-shrink: 0 !important;
 }
 
