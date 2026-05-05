@@ -211,14 +211,14 @@
             <div class="kpi-topline">
               <div class="flex-grow-1">
                 <div class="kpi-label">UPTIME</div>
-                <v-tooltip location="top" v-if="stats?.server?.startup_time && (currentUptime > 0 || (stats?.server?.uptime_seconds && stats.server.uptime_seconds > 0))">
+                <v-tooltip location="top" v-if="stats?.server?.startup_time && resolvedUptimeSeconds > 0">
                   <template v-slot:activator="{ props }">
-                    <div v-bind="props" class="kpi-value-large">{{ formatUptime(currentUptime || stats?.server?.uptime_seconds) }}</div>
+                    <div v-bind="props" class="kpi-value-large">{{ formatUptime(resolvedUptimeSeconds) }}</div>
                   </template>
                   <span>Started: {{ formatStartTime(stats.server.startup_time) }}</span>
                 </v-tooltip>
-                <div v-else-if="currentUptime > 0 || (stats?.server?.uptime_seconds && stats.server.uptime_seconds > 0)" class="kpi-value-large">{{ formatUptime(currentUptime || stats?.server?.uptime_seconds) }}</div>
-                <div class="kpi-context">{{ displayServerLabel }}</div>
+                <div v-else-if="resolvedUptimeSeconds > 0" class="kpi-value-large">{{ formatUptime(resolvedUptimeSeconds) }}</div>
+                <div class="kpi-context">{{ uptimeContextLabel }}</div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#0f766e">mdi-server</v-icon>
@@ -750,6 +750,33 @@ const displayServerLabel = computed(() => {
   }
 })
 
+const resolvedUptimeSeconds = computed(() => {
+  const liveUptime = Number(currentUptime.value)
+  if (Number.isFinite(liveUptime) && liveUptime > 0) {
+    return liveUptime
+  }
+
+  const serverUptime = Number(stats.value?.server?.uptime_seconds)
+  if (Number.isFinite(serverUptime) && serverUptime > 0) {
+    return serverUptime
+  }
+
+  const rootUptime = Number(stats.value?.uptime_seconds)
+  if (Number.isFinite(rootUptime) && rootUptime > 0) {
+    return rootUptime
+  }
+
+  return 0
+})
+
+const uptimeContextLabel = computed(() => {
+  if (resolvedUptimeSeconds.value > 0) {
+    return 'Live server runtime'
+  }
+
+  return displayServerLabel.value
+})
+
 const stats = ref(null)
 const loading = ref(false)
 const error = ref(null)
@@ -1027,6 +1054,7 @@ const mergeHealthWithEngineFallback = (payload, healthOverride = null) => {
 const getServerStatsFromStatusPayload = (payload) => {
   if (!payload || typeof payload !== 'object') return null
   if (payload.stats?.server && typeof payload.stats.server === 'object') return payload.stats.server
+  if (payload.stats && typeof payload.stats === 'object') return payload.stats
   if (payload.server && typeof payload.server === 'object') return payload.server
   return null
 }
