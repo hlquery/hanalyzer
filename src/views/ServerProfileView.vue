@@ -218,7 +218,7 @@
                   <span>Started: {{ formatStartTime(stats.server.startup_time) }}</span>
                 </v-tooltip>
                 <div v-else-if="currentUptime > 0 || (stats?.server?.uptime_seconds && stats.server.uptime_seconds > 0)" class="kpi-value-large">{{ formatUptime(currentUptime || stats?.server?.uptime_seconds) }}</div>
-                <div class="kpi-context">{{ baseUrl?.value || baseUrl }}</div>
+                <div class="kpi-context">{{ displayServerLabel }}</div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#0f766e">mdi-server</v-icon>
@@ -255,8 +255,8 @@
               <div class="stats-list">
                 <div class="stats-item stats-item-first">
                   <div class="stats-item-label">Server URL</div>
-                  <div class="stats-item-value text-truncate" style="max-width: 200px;" :title="baseUrl?.value || baseUrl">
-                    {{ baseUrl?.value || baseUrl }}
+                  <div class="stats-item-value text-truncate" style="max-width: 200px;" :title="displayServerUrl">
+                    {{ displayServerUrl }}
                   </div>
                 </div>
                 <v-divider class="my-3"></v-divider>
@@ -712,6 +712,42 @@ const hasAuth = computed(() => {
   const url = baseUrl?.value || baseUrl
   const auth = getAuthForServer(url) || loadAuthFromStorage(url)
   return !!(auth && (auth.token || auth.apiKey))
+})
+
+const getDisplayServerUrl = () => {
+  const rawBaseUrl = getBaseUrlValue(baseUrl)
+  if (!rawBaseUrl) return 'http://localhost:9200'
+
+  if (!rawBaseUrl.startsWith('/')) {
+    return rawBaseUrl.replace(/\/+$/, '')
+  }
+
+  if (typeof window === 'undefined') {
+    return rawBaseUrl
+  }
+
+  const runtimeBaseUrl = typeof window.__HLQUERY_BASE_URL__ === 'string'
+    ? window.__HLQUERY_BASE_URL__.trim()
+    : ''
+
+  if (runtimeBaseUrl && runtimeBaseUrl !== rawBaseUrl && !runtimeBaseUrl.startsWith('/')) {
+    return runtimeBaseUrl.replace(/\/+$/, '')
+  }
+
+  return window.location.origin || rawBaseUrl
+}
+
+const displayServerUrl = computed(() => getDisplayServerUrl())
+
+const displayServerLabel = computed(() => {
+  const resolvedUrl = displayServerUrl.value
+
+  try {
+    const parsed = new URL(resolvedUrl)
+    return parsed.host || resolvedUrl
+  } catch {
+    return resolvedUrl.replace(/^https?:\/\//, '')
+  }
 })
 
 const stats = ref(null)
