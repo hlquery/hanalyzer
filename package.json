@@ -31,6 +31,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
+    "test": "npm run build",
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "preview": "vite preview",

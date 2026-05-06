@@ -255,7 +255,23 @@
               <div class="stats-list">
                 <div class="stats-item stats-item-first">
                   <div class="stats-item-label">Server URL</div>
-                  <div class="stats-item-value text-truncate" style="max-width: 200px;" :title="displayServerUrl">
+                  <a
+                    v-if="serverUrlHref"
+                    :href="serverUrlHref"
+                    class="stats-item-value stats-item-link text-truncate"
+                    style="max-width: 200px;"
+                    :title="displayServerUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {{ displayServerUrl }}
+                  </a>
+                  <div
+                    v-else
+                    class="stats-item-value text-truncate"
+                    style="max-width: 200px;"
+                    :title="displayServerUrl"
+                  >
                     {{ displayServerUrl }}
                   </div>
                 </div>
@@ -738,6 +754,16 @@ const getDisplayServerUrl = () => {
 }
 
 const displayServerUrl = computed(() => getDisplayServerUrl())
+const serverUrlHref = computed(() => {
+  const resolvedUrl = displayServerUrl.value
+
+  try {
+    const parsed = new URL(resolvedUrl)
+    return /^https?:$/.test(parsed.protocol) ? parsed.href : ''
+  } catch {
+    return ''
+  }
+})
 
 const displayServerLabel = computed(() => {
   const resolvedUrl = displayServerUrl.value
@@ -2080,6 +2106,18 @@ onUnmounted(() => {
   font-weight: 600;
   text-align: right;
   word-break: break-word;
+}
+
+.stats-item-link {
+  display: inline-block;
+  color: #0f766e;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.stats-item-link:hover,
+.stats-item-link:focus-visible {
+  color: #115e59;
 }
 
 /* Detail Cards */

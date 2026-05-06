@@ -281,6 +281,17 @@
                 @mousedown.stop
                 class="server-url-input-modern"
               ></v-text-field>
+              <a
+                v-if="clickableServerUrl"
+                :href="clickableServerUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="server-url-link"
+                @click.stop
+                @mousedown.stop
+              >
+                {{ clickableServerUrl }}
+              </a>
               <label
                 class="mt-2 ssl-checkbox"
                 @click.stop
@@ -1166,6 +1177,11 @@ const activeSessionToken = computed(() => {
 })
 
 const activeTokenMasked = computed(() => maskToken(activeSessionToken.value))
+
+const clickableServerUrl = computed(() => {
+  const normalizedUrl = applyProtocolToUrl(serverUrl.value, sslEnabled.value)
+  return normalizedUrl || ''
+})
 
 const useActiveToken = () => {
   if (activeSessionToken.value) {
@@ -3293,6 +3309,23 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .server-url-input-modern :deep(.v-field--variant-outlined .v-field__outline__notch::after),
 .server-url-input-modern :deep(.v-field--variant-outlined .v-field__outline__end) {
   border: none !important;
+}
+
+.server-url-link {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.server-url-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }
 
 .ssl-checkbox {
