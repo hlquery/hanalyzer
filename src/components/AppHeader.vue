@@ -193,7 +193,7 @@
               <div class="connection-menu-header-row">
                 <div class="connection-menu-host-group">
                   <v-icon icon="mdi-server-network" class="mr-2" size="20" color="primary"></v-icon>
-                  <div class="connection-host-display">{{ baseUrl.value || 'http://localhost:9200' }}</div>
+                  <div class="connection-host-display">{{ serverHost }}</div>
                 </div>
               </div>
             </div>
