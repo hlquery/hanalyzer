@@ -21,13 +21,31 @@ hanalyzer is a modern web dashboard for HLQuery, built with Vue 3 and Vuetify. I
 
 It connects to the HLQuery API for indexing, querying, monitoring, and administration, and includes a local CLI wrapper for development, preview, and production builds.
 
+### What is hanalyzer?
+
+hanalyzer is the browser-based control surface for HLQuery. It gives you a visual way to work with collections, documents, search behavior, health data, and operational settings without manually stitching together API calls, JSON payloads, or ad hoc scripts.
+
+Instead of treating HLQuery like a set of disconnected endpoints, hanalyzer organizes the server into one interface for search operations, collection administration, document inspection, diagnostics, and monitoring.
+
+### Why use it?
+
+Use hanalyzer when you want HLQuery management to feel operational and readable instead of repetitive. It is useful when you need to inspect data quickly, verify behavior during development, watch server health live, or hand a teammate a UI instead of a folder full of `curl` examples.
+
+### Why choose it over raw HTTP?
+
+- Less boilerplate for common admin and debugging tasks.
+- One place to browse collections, inspect documents, and run searches.
+- Better visibility into server health, modules, caches, links, and runtime activity.
+- Faster feedback when validating search behavior, auth setup, or SAM state.
+- Useful for demos, local development, support workflows, and day-to-day operations.
+
 ### Quick Start
 
 Clone the repository normally:
 
 ```bash
 $ git clone https://github.com/hlquery/hlquery.git
-$ cd hanalyzer/
+$ cd hlquery/etc/hanalyzer
 ```
 
 Install dependencies and start the dashboard:
@@ -45,6 +63,8 @@ By default, hanalyzer runs on `http://localhost:8080` and connects to HLQuery at
 - **Document Browser**: Browse, search, and inspect documents with full JSON editing capabilities
 - **Advanced Search Interface**: Powerful search UI with query syntax highlighting and result visualization
 - **Server Dashboard**: Real-time monitoring of server health, performance metrics, and statistics
+- **Operational Visibility**: Inspect loaded modules, connection state, search configuration, and live server behavior
+- **SAM Awareness**: View SAM availability and status directly from the dashboard
 - **Cache Monitoring**: View and manage cache statistics and performance
 - **Connection Monitoring**: Track active connections and network activity
 - **RocksDB Statistics**: Visualize RocksDB tree statistics with 3D dashboard
@@ -175,4 +195,3 @@ http://localhost:8080
 ```
 
 You should see the hanalyzer dashboard with connection status to your HLQuery server.
-

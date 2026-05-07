@@ -748,7 +748,7 @@ import { useTimeSeries } from '../composables/useTimeSeries'
 import { useToast } from '../composables/useToast'
 import { useConnectionStatus } from '../composables/useConnectionStatus'
 import { useCollections } from '../composables/useCollections'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, isSamAvailable } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
@@ -1299,21 +1299,24 @@ const loadTotalDocuments = async (baseUrlValue, useProxy) => {
   }
 }
 
-const loadSamOverview = async (baseUrlValue, useProxy) => {
+const resetSamOverview = () => {
+  samRunningCollections.value = []
+  samKnownCount.value = 0
+  samIndexedDocs.value = 0
+  samPendingDocs.value = 0
+  samFailedDocs.value = 0
+}
+
+const loadSamOverview = async (baseUrlValue, useProxy, statsPayload = null) => {
   try {
-    const statsUrl = buildApiUrl(baseUrlValue, useProxy, '/stats')
-    const statsResponse = await axios.get(statsUrl, { timeout: 3000 })
-    const statsPayload = statsResponse?.data || {}
-    const samInfo = statsPayload?.sam && typeof statsPayload.sam === 'object' ? statsPayload.sam : {}
-    const enabledValue = samInfo.available ?? samInfo.enabled ?? statsPayload.sam_available ?? statsPayload.sam_enabled
-    samEnabled.value = enabledValue === true
+    const resolvedStatsPayload = statsPayload && typeof statsPayload === 'object'
+      ? statsPayload
+      : await fetchStatsSnapshot(baseUrlValue, useProxy)
+
+    samEnabled.value = isSamAvailable(resolvedStatsPayload)
 
     if (!samEnabled.value) {
-      samRunningCollections.value = []
-      samKnownCount.value = 0
-      samIndexedDocs.value = 0
-      samPendingDocs.value = 0
-      samFailedDocs.value = 0
+      resetSamOverview()
       samLoaded.value = true
       return
     }
@@ -1343,19 +1346,10 @@ const loadSamOverview = async (baseUrlValue, useProxy) => {
         samCollections.reduce((sum, entry) => sum + Number(entry?.failed || 0), 0)
       )
     } else {
-      samRunningCollections.value = []
-      samKnownCount.value = 0
-      samIndexedDocs.value = 0
-      samPendingDocs.value = 0
-      samFailedDocs.value = 0
+      resetSamOverview()
     }
   } catch (err) {
-    samEnabled.value = false
-    samRunningCollections.value = []
-    samKnownCount.value = 0
-    samIndexedDocs.value = 0
-    samPendingDocs.value = 0
-    samFailedDocs.value = 0
+    resetSamOverview()
   } finally {
     samLoaded.value = true
   }
@@ -1427,7 +1421,7 @@ const updateStatsSilently = async () => {
     
     // Silently update total documents
     await loadTotalDocuments(baseUrlValue, useProxy)
-    await loadSamOverview(baseUrlValue, useProxy)
+    await loadSamOverview(baseUrlValue, useProxy, payload?.stats || stats.value)
     
     await loadSearchConfig(baseUrlValue, useProxy, { silent: true })
   } catch (err) {
@@ -1509,7 +1503,7 @@ const loadStats = async () => {
     }
     
     await loadTotalDocuments(baseUrlValue, useProxy)
-    await loadSamOverview(baseUrlValue, useProxy)
+    await loadSamOverview(baseUrlValue, useProxy, payload?.stats || stats.value)
     
     await loadSearchConfig(baseUrlValue, useProxy)
   } catch (err) {

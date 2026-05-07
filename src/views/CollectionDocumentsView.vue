@@ -1527,7 +1527,7 @@ import { useLocalStorage } from '../composables/useLocalStorage'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
 import StopwordChip from '../components/StopwordChip.vue'
 import { extractSafeErrorMessage } from '../utils/sanitize'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl, getBestTitle, getBestContent, formatServerHighlights } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, getBestTitle, getBestContent, formatServerHighlights, isSamAvailable } from '../utils/apiHelpers'
 import axios from 'axios'
 
 const props = defineProps({
@@ -2371,10 +2371,7 @@ const loadSamAvailability = async () => {
     const useProxy = shouldUseProxy(baseUrlValue)
     const url = buildApiUrl(baseUrlValue, useProxy, '/stats')
     const response = await axios.get(url, { timeout: 5000 })
-    const payload = response?.data || {}
-    const samInfo = payload?.sam && typeof payload.sam === 'object' ? payload.sam : {}
-    const enabledValue = samInfo.available ?? samInfo.enabled ?? payload.sam_available ?? payload.sam_enabled
-    serverSamEnabled.value = enabledValue === true
+    serverSamEnabled.value = isSamAvailable(response?.data || {})
   } catch (err) {
     serverSamEnabled.value = false
   } finally {

@@ -184,6 +184,21 @@ export function getDemoModeErrorMessage(err) {
 }
 
 /**
+ * Detect whether SAM is available from a stats or status payload.
+ * @param {Object} payload - API payload that may contain SAM metadata
+ * @returns {boolean} - True when SAM is reported as available/enabled
+ */
+export function isSamAvailable(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return false
+  }
+
+  const samInfo = payload.sam && typeof payload.sam === 'object' ? payload.sam : {}
+  const enabledValue = samInfo.available ?? samInfo.enabled ?? payload.sam_available ?? payload.sam_enabled
+  return enabledValue === true
+}
+
+/**
  * Get best title for a document
  * @param {Object} doc - Document object
  * @returns {string} - Best title found
