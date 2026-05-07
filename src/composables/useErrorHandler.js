@@ -1,4 +1,5 @@
 import { inject } from 'vue'
+import { getDemoModeErrorMessage } from '../utils/apiHelpers'
 
 /**
  * Professional error handling composable
@@ -12,9 +13,14 @@ export function useErrorHandler() {
     let technicalMessage = error?.message || 'Unknown error'
     let protocolCode = null
     let protocolCodeText = null
+
+    const normalizedDemoModeMessage = getDemoModeErrorMessage(error)
+    if (normalizedDemoModeMessage) {
+      userMessage = normalizedDemoModeMessage
+    }
     
     // Handle different error types
-    if (error?.response) {
+    if (error?.response && !normalizedDemoModeMessage) {
       // HTTP error response
       const status = error.response.status
       const data = error.response.data
@@ -108,7 +114,7 @@ export function useErrorHandler() {
       // Network error
       userMessage = 'Network error. Please check your connection and try again.'
       technicalMessage = 'Network request failed'
-    } else if (error?.message) {
+    } else if (error?.message && !normalizedDemoModeMessage) {
       // JavaScript error
       userMessage = error.message
       technicalMessage = error.message

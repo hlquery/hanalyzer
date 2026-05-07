@@ -1,3 +1,5 @@
+import { getDemoModeErrorMessage } from './apiHelpers'
+
 /**
  * Sanitize error messages and user input to prevent XSS attacks
  * Removes HTML tags and escapes special characters
@@ -38,6 +40,11 @@ export function sanitizeError(error) {
  */
 export function extractSafeErrorMessage(err, defaultMessage = 'An error occurred') {
   if (!err) return defaultMessage
+
+  const normalizedDemoModeMessage = getDemoModeErrorMessage(err)
+  if (normalizedDemoModeMessage) {
+    return sanitizeError(normalizedDemoModeMessage)
+  }
   
   // Try to get error message from response
   let errorMsg = err.response?.data?.error || 

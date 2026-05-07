@@ -112,6 +112,11 @@ export function buildApiUrl(baseUrlValue, useProxy, path, params = {}) {
  */
 export function getErrorMessage(err, defaultMessage = 'An error occurred') {
   if (!err) return defaultMessage
+
+  const normalizedDemoModeMessage = getDemoModeErrorMessage(err)
+  if (normalizedDemoModeMessage) {
+    return normalizedDemoModeMessage
+  }
   
   // Try response data first
   if (err.response?.data) {
@@ -142,6 +147,40 @@ export function getProtocolCode(err) {
 export function getProtocolCodeText(err) {
   if (!err?.response?.data?.code_text) return null
   return err.response.data.code_text
+}
+
+/**
+ * Normalize demo mode API errors so UI surfaces one consistent message.
+ * @param {Error} err - Error object
+ * @returns {string|null} - Normalized demo mode message or null
+ */
+export function getDemoModeErrorMessage(err) {
+  if (!err) return null
+
+  const data = err.response?.data || {}
+  const protocolCode = data.code
+  const message = typeof data.message === 'string' ? data.message.trim() : ''
+  const error = typeof data.error === 'string' ? data.error.trim() : ''
+  const details = typeof data.details === 'string' ? data.details.trim() : ''
+  const fallbackMessage = typeof err.message === 'string' ? err.message.trim() : ''
+
+  const looksLikeDemoMode =
+    protocolCode === 26004 ||
+    [message, error, details, fallbackMessage].some(value => /demo mode is enabled/i.test(value))
+
+  if (!looksLikeDemoMode) {
+    return null
+  }
+
+  if (details) {
+    return `Demo mode is enabled. ${details}`
+  }
+
+  if (message && !/^demo mode is enabled$/i.test(message)) {
+    return `Demo mode is enabled. ${message}`
+  }
+
+  return 'Demo mode is enabled. Search and browsing are enabled. Write and admin actions are blocked in demo mode.'
 }
 
 /**

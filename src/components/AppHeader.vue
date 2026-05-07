@@ -493,7 +493,7 @@ const isHovered = ref(false)
 const distributedMode = ref('auto')
 const demoModeEnabled = ref(false)
 const demoModeMessage = ref('')
-const defaultDemoModeMessage = 'Search and browsing are enabled. Write and admin actions are blocked while demo mode is active.'
+const defaultDemoModeMessage = 'Search and browsing are enabled. Write and admin actions are blocked in demo mode.'
 const distributedModeOptions = [
   { title: 'Auto (Server Default)', value: 'auto' },
   { title: 'Force On (distributed=on)', value: 'on' },
@@ -967,7 +967,7 @@ onUnmounted(() => {
     clearInterval(demoModeCheckTimer)
     demoModeCheckTimer = null
   }
-  
+
   // Remove server settings open event listener
   if (window.__hlquery_open_server_settings_handler__) {
     window.removeEventListener('hlquery-open-server-settings', window.__hlquery_open_server_settings_handler__)
@@ -2793,6 +2793,15 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   line-height: 1.15 !important;
 }
 
+.nav-menu-item :deep(.v-list-item-subtitle) {
+  margin-top: 2px !important;
+  font-size: 11.5px !important;
+  font-weight: 500;
+  color: #64748b !important;
+  opacity: 1 !important;
+  line-height: 1.1 !important;
+}
+
 .nav-menu-item :deep(.v-list-item__prepend) {
   margin-right: 6px !important;
   min-width: 16px !important;
@@ -2866,6 +2875,10 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 
 .nav-menu-item.nav-menu-item--active :deep(.v-list-item-title) {
   color: #ffffff !important;
+}
+
+.nav-menu-item.nav-menu-item--active :deep(.v-list-item-subtitle) {
+  color: rgba(255, 255, 255, 0.82) !important;
 }
 
 .nav-menu-item.nav-menu-item--active :deep(.v-icon) {

@@ -464,6 +464,7 @@
 import { ref, onMounted, inject, computed } from 'vue'
 import axios from 'axios'
 import { getBaseUrlValue, buildApiUrl, shouldUseProxy } from '../utils/apiHelpers'
+import { extractSafeErrorMessage } from '../utils/sanitize'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
 const baseUrl = inject('baseUrl', ref('http://localhost:9200'))
@@ -707,7 +708,7 @@ const saveKey = async () => {
     }
   } catch (err) {
     console.error('Failed to save key:', err)
-    toast.error(err.response?.data?.error || 'Failed to save API key')
+    toast.error(extractSafeErrorMessage(err, 'Failed to save API key'))
   } finally {
     saving.value = false
   }
@@ -730,7 +731,7 @@ const deleteKey = async () => {
     deleteDialog.value = false
   } catch (err) {
     console.error('Failed to delete key:', err)
-    toast.error('Failed to delete API key')
+    toast.error(extractSafeErrorMessage(err, 'Failed to delete API key'))
   } finally {
     deleting.value = false
   }

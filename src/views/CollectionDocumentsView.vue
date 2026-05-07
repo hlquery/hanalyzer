@@ -276,6 +276,7 @@
             </v-menu>
 
             <v-menu
+              v-if="serverSamLoaded && serverSamEnabled"
               v-model="showSamMenu"
               attach="body"
               location="bottom end"
@@ -289,7 +290,6 @@
                   v-bind="props"
                   class="google-toolbar-btn quick-sort-btn collection-toolbar-segment-btn"
                   :class="{ 'active': showSamMenu || samSearchEnabled }"
-                  :disabled="!serverSamLoaded || !serverSamEnabled"
                   :aria-label="`SAM search ${samAvailabilityLabel}`"
                   style="height: 40px; border-radius: 8px;"
                 >
@@ -302,7 +302,6 @@
                 <v-list-subheader>SAM search</v-list-subheader>
                 <v-list-item
                   @click="setSamPreference(true)"
-                  :disabled="!serverSamEnabled"
                   :class="['google-menu-item', { 'active': samSearchEnabled }]"
                 >
                   <v-list-item-title>Enable SAM</v-list-item-title>
