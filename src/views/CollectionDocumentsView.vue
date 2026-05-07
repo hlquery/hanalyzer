@@ -169,7 +169,7 @@
               scroll-strategy="close"
               :close-on-content-click="false"
               offset="10"
-              @update:model-value="(val) => { if (val) { showItemsPerPageMenu = false; showQuickSortMenu = false } }"
+              @update:model-value="(val) => { if (val) { showItemsPerPageMenu = false; showSamMenu = false; showQuickSortMenu = false } }"
             >
               <template v-slot:activator="{ props }">
                 <button
@@ -248,7 +248,7 @@
               location-strategy="connected"
               scroll-strategy="close"
               :close-on-content-click="true"
-              @update:model-value="(val) => { if (val) showQuickSortMenu = false }"
+              @update:model-value="(val) => { if (val) { showSamMenu = false; showQuickSortMenu = false } }"
             >
               <template v-slot:activator="{ props }">
                 <button
@@ -274,6 +274,47 @@
                 </v-list-item>
               </v-list>
             </v-menu>
+
+            <v-menu
+              v-model="showSamMenu"
+              attach="body"
+              location="bottom end"
+              location-strategy="connected"
+              scroll-strategy="close"
+              :close-on-content-click="true"
+              @update:model-value="(val) => { if (val) { showItemsPerPageMenu = false; showQuickSortMenu = false } }"
+            >
+              <template v-slot:activator="{ props }">
+                <button
+                  v-bind="props"
+                  class="google-toolbar-btn quick-sort-btn collection-toolbar-segment-btn"
+                  :class="{ 'active': showSamMenu || samSearchEnabled }"
+                  :disabled="!serverSamLoaded || !serverSamEnabled"
+                  :aria-label="`SAM search ${samAvailabilityLabel}`"
+                  style="height: 40px; border-radius: 8px;"
+                >
+                  <v-icon size="16">mdi-robot-outline</v-icon>
+                  <span class="collection-toolbar-label collection-toolbar-label--desktop">{{ samStatusLabel }}</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--mobile">SAM</span>
+                </button>
+              </template>
+              <v-list class="google-menu">
+                <v-list-subheader>SAM search</v-list-subheader>
+                <v-list-item
+                  @click="setSamPreference(true)"
+                  :disabled="!serverSamEnabled"
+                  :class="['google-menu-item', { 'active': samSearchEnabled }]"
+                >
+                  <v-list-item-title>Enable SAM</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  @click="setSamPreference(false)"
+                  :class="['google-menu-item', { 'active': !samSearchEnabled }]"
+                >
+                  <v-list-item-title>Disable SAM</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
             
             <v-menu
               v-model="showQuickSortMenu"
@@ -282,7 +323,7 @@
               location-strategy="connected"
               scroll-strategy="close"
               :close-on-content-click="true"
-              @update:model-value="(val) => { if (val) showItemsPerPageMenu = false }"
+              @update:model-value="(val) => { if (val) { showItemsPerPageMenu = false; showSamMenu = false } }"
             >
               <template v-slot:activator="{ props }">
                 <button
@@ -1483,6 +1524,7 @@ import { useExport } from '../composables/useExport'
 import { useCopy } from '../composables/useCopy'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { useCollections } from '../composables/useCollections'
+import { useLocalStorage } from '../composables/useLocalStorage'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
 import StopwordChip from '../components/StopwordChip.vue'
 import { extractSafeErrorMessage } from '../utils/sanitize'
@@ -1522,6 +1564,7 @@ const showDocumentDialog = ref(false)
 const documentJson = ref('')
 const showAdvancedFilters = ref(false)
 const showItemsPerPageMenu = ref(false)
+const showSamMenu = ref(false)
 const showQuickSortMenu = ref(false)
 const showDateRangeMenu = ref(false)
 const quickSortBy = ref(null)
@@ -1539,6 +1582,9 @@ const itemsPerPage = ref(100)
 const expandedRows = ref([])
 const itemsPerPageOptions = [10, 25, 50, 100]
 const collectionSchema = ref(null)
+const samPreference = useLocalStorage('hlquery_hanalyzer_sam_preference', null)
+const serverSamEnabled = ref(false)
+const serverSamLoaded = ref(false)
 const hasHandledInitialMount = ref(false)
 const isLoadingDocuments = ref(false)
 const searchFieldItems = computed(() => {
@@ -1570,9 +1616,29 @@ const dateRangeSummary = computed(() => {
 const dateRangeButtonLabel = computed(() => {
   return hasDateRange.value ? dateRangeSummary.value : 'Date'
 })
+const samSearchEnabled = computed(() => {
+  if (!serverSamEnabled.value) {
+    return false
+  }
+
+  return samPreference.value !== false
+})
+const samStatusLabel = computed(() => samSearchEnabled.value ? 'SAM' : 'SAM Off')
+const samAvailabilityLabel = computed(() => {
+  if (!serverSamLoaded.value) {
+    return 'Checking SAM'
+  }
+
+  if (!serverSamEnabled.value) {
+    return 'Unavailable'
+  }
+
+  return samSearchEnabled.value ? 'Enabled' : 'Disabled'
+})
 
 const closeToolbarMenus = () => {
   showItemsPerPageMenu.value = false
+  showSamMenu.value = false
   showQuickSortMenu.value = false
   showDateRangeMenu.value = false
 }
@@ -2300,6 +2366,23 @@ const goBack = () => {
   })
 }
 
+const loadSamAvailability = async () => {
+  try {
+    const baseUrlValue = getBaseUrlValue(baseUrl)
+    const useProxy = shouldUseProxy(baseUrlValue)
+    const url = buildApiUrl(baseUrlValue, useProxy, '/stats')
+    const response = await axios.get(url, { timeout: 5000 })
+    const payload = response?.data || {}
+    const samInfo = payload?.sam && typeof payload.sam === 'object' ? payload.sam : {}
+    const enabledValue = samInfo.available ?? samInfo.enabled ?? payload.sam_available ?? payload.sam_enabled
+    serverSamEnabled.value = enabledValue === true
+  } catch (err) {
+    serverSamEnabled.value = false
+  } finally {
+    serverSamLoaded.value = true
+  }
+}
+
 // Fetch collection schema to get available fields
 const loadCollectionSchema = async (showLoading = false) => {
   try {
@@ -2941,6 +3024,7 @@ const handleSearch = async () => {
   options.includeMaybe = options.caseSensitive ? false : true
   options.maybeMin = 3
   options.maybeLimit = 1
+  options.useSam = samSearchEnabled.value && hasQuery
   try {
     await performSearch(collectionName.value, effectiveQuery, resultLimit, options)
     // Enforce scoped field behavior in the UI so the results reflect the chosen scope.
@@ -2995,6 +3079,15 @@ const applyMaybeSuggestion = async (item) => {
 
   searchQuery.value = suggestedQuery
   await handleSearch()
+}
+
+const setSamPreference = async (enabled) => {
+  samPreference.value = enabled
+  showSamMenu.value = false
+
+  if (searchPerformed.value && searchQuery.value && searchQuery.value.trim()) {
+    await handleSearch()
+  }
 }
 
 const getQuickSortLabel = () => {
@@ -4273,6 +4366,7 @@ onMounted(async () => {
   // Use computed collectionName which already handles all fallbacks
   const nameToLoad = collectionName.value
   currentPage.value = parseRoutePage(route.params.page)
+  await loadSamAvailability()
   
   // Check if there's a search query in URL - if so, perform search instead of loading documents
   const hasSearchQuery = route.query.q && typeof route.query.q === 'string' && route.query.q.trim()

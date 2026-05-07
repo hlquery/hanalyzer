@@ -19,6 +19,26 @@ const normalizeQueryBy = (queryBy) => {
   return String(queryBy || '').trim()
 }
 
+const normalizeSearchDocument = (doc, score = 0) => {
+  if (!doc || typeof doc !== 'object') {
+    return {
+      id: '',
+      _text_match: Number(score) || 0,
+      highlights: {}
+    }
+  }
+
+  return {
+    id: doc.id || '',
+    title: doc.title || doc.name,
+    content: doc.content || doc.description || doc.text,
+    ...doc,
+    _text_match: Number(score) || 0,
+    highlights: doc.highlights || {},
+    created_at: doc.created_at || doc.timestamp
+  }
+}
+
 export function useSearch(baseUrl) {
   const searchResults = ref([])
   const loading = ref(false)
@@ -83,6 +103,61 @@ export function useSearch(baseUrl) {
       // Preserve quotes in query for exact phrase search
       
       const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/search`)
+      const canUseSam = !!options.useSam && !!trimmedQuery && !hasFilter && !hasVectorQuery
+
+      const fetchDocumentById = async (documentId) => {
+        const encodedDocumentId = encodeURIComponent(String(documentId || '').trim())
+        const documentUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/${encodedDocumentId}`)
+        return axios.get(documentUrl, { timeout: 10000 })
+      }
+
+      if (canUseSam) {
+        const samUrl = buildApiUrl(baseUrlValue, useProxy, '/sam/search')
+
+        try {
+          const samResponse = await axios.get(samUrl, {
+            params: {
+              collection: collectionName.trim(),
+              q: trimmedQuery,
+              limit: limit
+            },
+            timeout: 10000
+          })
+
+          const samHits = Array.isArray(samResponse?.data?.hits) ? samResponse.data.hits : []
+          const hydratedResults = await Promise.all(samHits.map(async (hit) => {
+            const fallbackDoc = {
+              id: hit?.id || '',
+              title: hit?.title || '',
+              collection: hit?.collection || collectionName.trim(),
+              _sam_term: hit?.term || '',
+              _sam_kind: hit?.kind || '',
+              _sam_source: hit?.source || '',
+              _sam_matched_path: hit?.matched_path || '',
+              _sam_signal: hit?.signal ?? 0,
+              _sam_evidence_count: hit?.evidence_count ?? 0
+            }
+
+            try {
+              const documentResponse = await fetchDocumentById(hit?.id)
+              return normalizeSearchDocument(documentResponse?.data, hit?.score)
+            } catch (documentError) {
+              return normalizeSearchDocument(fallbackDoc, hit?.score)
+            }
+          }))
+
+          searchResults.value = hydratedResults
+          totalFound.value = samResponse?.data?.count !== undefined
+            ? Number(samResponse.data.count) || hydratedResults.length
+            : hydratedResults.length
+          searchTime.value = ((performance.now() - startTime) / 1000).toFixed(3)
+          return
+        } catch (samError) {
+          if (DEBUG_SEARCH) {
+            console.warn('SAM search failed, falling back to standard search:', samError)
+          }
+        }
+      }
       
       const params = {
         limit: limit,
