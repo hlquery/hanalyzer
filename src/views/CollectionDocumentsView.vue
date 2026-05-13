@@ -6617,7 +6617,7 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 700;
   margin: 0;
-  line-height: 1.08;
+  line-height: 1.04;
   cursor: pointer;
   user-select: text;
   -webkit-user-select: text;
@@ -6647,7 +6647,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 2px;
   margin: 0 !important;
-  margin-top: -12px !important;
+  margin-top: -14px !important;
   padding: 0 !important;
   margin-left: 0 !important;
   padding-left: 0 !important;

@@ -88,6 +88,7 @@ import { useConnectionStatus } from './composables/useConnectionStatus'
 const router = useRouter()
 const route = useRoute()
 const baseUrl = ref('/api')
+const deploymentDemoMode = ref(false)
 const connectionState = useConnectionStatus(baseUrl)
 const { isConnected } = connectionState
 const commandPaletteOpen = ref(false)
@@ -113,9 +114,18 @@ const { success, error, warning, info } = useToast()
 const applyRuntimeConfig = (config) => {
   if (!config || typeof config !== 'object') return
 
+  if (config.deploymentDemoMode === true) {
+    deploymentDemoMode.value = true
+  }
+
   const configuredBaseUrl = typeof config.defaultBaseUrl === 'string'
     ? config.defaultBaseUrl.trim()
     : ''
+
+  if (deploymentDemoMode.value) {
+    baseUrl.value = '/api'
+    return
+  }
 
   if (configuredBaseUrl) {
     baseUrl.value = configuredBaseUrl
@@ -251,6 +261,7 @@ const handleCommandPaletteSelect = (item) => {
 
 // Provide toast functions to all components
 provide('baseUrl', baseUrl)
+provide('deploymentDemoMode', deploymentDemoMode)
 provide('connectionState', connectionState)
 provide('toast', { success, error, warning, info })
 </script>

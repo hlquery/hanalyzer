@@ -152,15 +152,29 @@
 
       <!-- Connection Status - Far Right -->
       <div class="d-flex align-center connection-buttons-container">
-      <!-- Connection Status Button - Opens server settings menu -->
-      <v-menu 
-        v-model="showServerMenu" 
-        location="bottom end"
-        :close-on-content-click="false"
-        :offset="8"
-        persistent
-        @update:modelValue="handleServerMenuToggle"
-      >
+        <v-btn
+          v-if="deploymentDemoMode"
+          variant="flat"
+          size="default"
+          prepend-icon="mdi-server-network"
+          :title="`Demo server: ${serverHost}`"
+          :aria-label="`Demo server ${serverHost}`"
+          class="connection-status-btn header-action-btn header-action-btn--light"
+          :class="{ disconnected: !isEffectivelyConnected }"
+          @click="attemptReconnect"
+        >
+          <span v-if="!isCompactHostButton" class="connection-host-text">{{ serverHost }}</span>
+        </v-btn>
+        <!-- Connection Status Button - Opens server settings menu -->
+        <v-menu 
+          v-else
+          v-model="showServerMenu" 
+          location="bottom end"
+          :close-on-content-click="false"
+          :offset="8"
+          persistent
+          @update:modelValue="handleServerMenuToggle"
+        >
         <template v-slot:activator="{ props }">
           <v-btn
             v-if="isEffectivelyConnected"
@@ -451,6 +465,7 @@ const display = useDisplay()
 const router = useRouter()
 const route = useRoute()
 const baseUrl = inject('baseUrl')
+const deploymentDemoMode = inject('deploymentDemoMode', ref(false))
 const logoSrc = `${import.meta.env.BASE_URL || './'}logo.png`
 const emit = defineEmits(['open-command-palette'])
 
@@ -603,6 +618,10 @@ const { collections, loading: collectionsLoading, loadCollectionsAsync } = useCo
 
 // Get server host from baseUrl
 const serverHost = computed(() => {
+  if (deploymentDemoMode.value) {
+    return 'localhost:9200'
+  }
+
   const rawBaseUrl = (baseUrl.value || '').trim()
   if (!rawBaseUrl) return 'localhost:9200'
 
@@ -1190,6 +1209,10 @@ const useActiveToken = () => {
 }
 
 const openServerMenu = () => {
+  if (deploymentDemoMode.value) {
+    return
+  }
+
   // Sync serverUrl with current baseUrl when opening menu
   serverUrl.value = baseUrl.value
   sslEnabled.value = serverUrl.value.startsWith('https://')
@@ -1279,6 +1302,14 @@ const attemptReconnect = async () => {
 }
 
 const updateBaseUrl = () => {
+  if (deploymentDemoMode.value) {
+    baseUrl.value = '/api'
+    serverUrl.value = '/api'
+    showServerMenu.value = false
+    checkConnection()
+    return
+  }
+
   console.log('[UPDATE BASE URL] Starting...', { serverUrl: serverUrl.value, authToken: authToken.value ? `[${authToken.value.length} chars]` : 'EMPTY' })
   
   if (!serverUrl.value || serverUrl.value.trim() === '') {

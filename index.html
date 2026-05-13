@@ -94,6 +94,18 @@
           return
         }
 
+        const applyHanalyzerConfig = (config) => {
+          if (config && typeof config === 'object') {
+            window.HANALYZER_CONFIG = {
+              ...(window.HANALYZER_CONFIG || {}),
+              ...config
+            }
+            window.dispatchEvent(new CustomEvent('hanalyzer-config-loaded', {
+              detail: window.HANALYZER_CONFIG
+            }))
+          }
+        }
+
         fetch('%BASE_URL%hanalyzer.config.json', { cache: 'no-store' })
           .then((response) => {
             if (!response.ok) {
@@ -101,19 +113,28 @@
             }
             return response.json()
           })
-          .then((config) => {
-            if (config && typeof config === 'object') {
-              window.HANALYZER_CONFIG = {
-                ...(window.HANALYZER_CONFIG || {}),
-                ...config
-              }
-              window.dispatchEvent(new CustomEvent('hanalyzer-config-loaded', {
-                detail: window.HANALYZER_CONFIG
-              }))
-            }
-          })
+          .then(applyHanalyzerConfig)
           .catch(() => {
             // Optional runtime config: ignore missing or invalid deployment-specific file.
+          })
+
+        fetch('%BASE_URL%.demo', { cache: 'no-store' })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`demo marker load failed: ${response.status}`)
+            }
+            const contentType = response.headers.get('content-type') || ''
+            if (contentType.toLowerCase().includes('text/html')) {
+              throw new Error('demo marker resolved to html fallback')
+            }
+            applyHanalyzerConfig({
+              deploymentDemoMode: true,
+              defaultBaseUrl: '/api',
+              useProxy: true
+            })
+          })
+          .catch(() => {
+            // Optional marker: when absent, hanalyzer keeps the normal connection controls.
           })
       })()
     </script>
