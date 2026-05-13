@@ -46,9 +46,16 @@ export function useSearch(baseUrl) {
   const totalFound = ref(0)
   const searchTime = ref(null) // Time in seconds
   const indexingInProgress = ref(false)
+  const directSearchExecuted = ref(false)
+  const samSearchStatus = ref(null)
   const maybeResult = ref(null)
 
   const performSearch = async (collectionName, query, limit = 10, options = {}) => {
+    indexingInProgress.value = false
+    directSearchExecuted.value = false
+    samSearchStatus.value = null
+    maybeResult.value = null
+
     // Validate inputs
     if (!collectionName || !collectionName.trim()) {
       error.value = 'Collection name is required for search'
@@ -72,8 +79,6 @@ export function useSearch(baseUrl) {
     // Standardized loading state: always set before try
     loading.value = true
     error.value = null
-    indexingInProgress.value = false
-    maybeResult.value = null
     
     // Start timing
     const startTime = performance.now()
@@ -104,6 +109,7 @@ export function useSearch(baseUrl) {
       
       const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/search`)
       const canUseSam = !!options.useSam && !!trimmedQuery && !hasFilter && !hasVectorQuery
+      let samIndexingActive = false
 
       const fetchDocumentById = async (documentId) => {
         const encodedDocumentId = encodeURIComponent(String(documentId || '').trim())
@@ -125,33 +131,46 @@ export function useSearch(baseUrl) {
           })
 
           const samHits = Array.isArray(samResponse?.data?.hits) ? samResponse.data.hits : []
-          const hydratedResults = await Promise.all(samHits.map(async (hit) => {
-            const fallbackDoc = {
-              id: hit?.id || '',
-              title: hit?.title || '',
-              collection: hit?.collection || collectionName.trim(),
-              _sam_term: hit?.term || '',
-              _sam_kind: hit?.kind || '',
-              _sam_source: hit?.source || '',
-              _sam_matched_path: hit?.matched_path || '',
-              _sam_signal: hit?.signal ?? 0,
-              _sam_evidence_count: hit?.evidence_count ?? 0
-            }
+          samIndexingActive = samResponse?.data?.indexing_in_progress === true ||
+            samResponse?.data?.sam_indexing?.running === true ||
+            samResponse?.data?.sam_indexing?.retry_scheduled === true
+          indexingInProgress.value = samIndexingActive
+          samSearchStatus.value = samResponse?.data?.sam_indexing || null
 
-            try {
-              const documentResponse = await fetchDocumentById(hit?.id)
-              return normalizeSearchDocument(documentResponse?.data, hit?.score)
-            } catch (documentError) {
-              return normalizeSearchDocument(fallbackDoc, hit?.score)
+          if (samIndexingActive || samHits.length === 0) {
+            directSearchExecuted.value = true
+            if (DEBUG_SEARCH) {
+              console.warn('SAM search is indexing or empty, falling back to standard search:', samResponse?.data)
             }
-          }))
+          } else {
+            const hydratedResults = await Promise.all(samHits.map(async (hit) => {
+              const fallbackDoc = {
+                id: hit?.id || '',
+                title: hit?.title || '',
+                collection: hit?.collection || collectionName.trim(),
+                _sam_term: hit?.term || '',
+                _sam_kind: hit?.kind || '',
+                _sam_source: hit?.source || '',
+                _sam_matched_path: hit?.matched_path || '',
+                _sam_signal: hit?.signal ?? 0,
+                _sam_evidence_count: hit?.evidence_count ?? 0
+              }
 
-          searchResults.value = hydratedResults
-          totalFound.value = samResponse?.data?.count !== undefined
-            ? Number(samResponse.data.count) || hydratedResults.length
-            : hydratedResults.length
-          searchTime.value = ((performance.now() - startTime) / 1000).toFixed(3)
-          return
+              try {
+                const documentResponse = await fetchDocumentById(hit?.id)
+                return normalizeSearchDocument(documentResponse?.data, hit?.score)
+              } catch (documentError) {
+                return normalizeSearchDocument(fallbackDoc, hit?.score)
+              }
+            }))
+
+            searchResults.value = hydratedResults
+            totalFound.value = samResponse?.data?.count !== undefined
+              ? Number(samResponse.data.count) || hydratedResults.length
+              : hydratedResults.length
+            searchTime.value = ((performance.now() - startTime) / 1000).toFixed(3)
+            return
+          }
         } catch (samError) {
           if (DEBUG_SEARCH) {
             console.warn('SAM search failed, falling back to standard search:', samError)
@@ -300,6 +319,7 @@ export function useSearch(baseUrl) {
       }
       
       let response
+      directSearchExecuted.value = true
       try {
         response = await axios.post(url, params, {
           headers: {
@@ -328,7 +348,7 @@ export function useSearch(baseUrl) {
       
       // Handle response structure: { hits: [...], found: number } or { results: [...] }
       if (response.data) {
-        indexingInProgress.value = response.data.indexing_in_progress === true
+        indexingInProgress.value = samIndexingActive || response.data.indexing_in_progress === true
         maybeResult.value = response.data.maybe || null
         // Handle standard search response format
         if (response.data.hits && Array.isArray(response.data.hits)) {
@@ -393,6 +413,7 @@ export function useSearch(baseUrl) {
         searchResults.value = []
         totalFound.value = 0
         indexingInProgress.value = false
+        directSearchExecuted.value = false
         maybeResult.value = null
       }
       
@@ -441,6 +462,7 @@ export function useSearch(baseUrl) {
       const errorMsg = extractSafeErrorMessage(err, 'Search failed')
       error.value = errorMsg
       indexingInProgress.value = false
+      directSearchExecuted.value = false
       maybeResult.value = null
     } finally {
       loading.value = false
@@ -454,6 +476,8 @@ export function useSearch(baseUrl) {
     totalFound,
     searchTime,
     indexingInProgress,
+    directSearchExecuted,
+    samSearchStatus,
     maybeResult,
     performSearch
   }
