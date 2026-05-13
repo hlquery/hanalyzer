@@ -74,14 +74,6 @@
             <span class="critical-status-label">Ping</span>
             <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
           </div>
-          <div class="critical-status-item status-card">
-            <span class="critical-status-label">SAM</span>
-            <span class="critical-status-value">{{ samStatusLabel }}</span>
-          </div>
-          <div class="critical-status-item status-card">
-            <span class="critical-status-label">SAM Indexed Docs</span>
-            <span class="critical-status-value">{{ samIndexedLabel }}</span>
-          </div>
         </div>
 
         <div class="section-label section-title">Operational Metrics</div>
@@ -748,7 +740,7 @@ import { useTimeSeries } from '../composables/useTimeSeries'
 import { useToast } from '../composables/useToast'
 import { useConnectionStatus } from '../composables/useConnectionStatus'
 import { useCollections } from '../composables/useCollections'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl, isSamAvailable } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
@@ -856,33 +848,6 @@ const error = ref(null)
 const totalDocuments = ref(0)
 const searchConfig = ref(null)
 const searchConfigUnavailable = ref(false)
-const samEnabled = ref(false)
-const samLoaded = ref(false)
-const samRunningCollections = ref([])
-const samKnownCount = ref(0)
-const samIndexedDocs = ref(0)
-const samPendingDocs = ref(0)
-const samFailedDocs = ref(0)
-
-const samStatusLabel = computed(() => {
-  if (!samLoaded.value) return 'Checking'
-  if (!samEnabled.value) return 'SAM Disabled'
-  if (samRunningCollections.value.length > 0) return 'In Progress'
-  if (samKnownCount.value > 0) return 'Idle'
-  return 'Enabled'
-})
-
-const samIndexedLabel = computed(() => {
-  if (!samLoaded.value) return ''
-  if (!samEnabled.value) return ''
-  if (samRunningCollections.value.length > 0) return samRunningCollections.value.join(', ')
-  if (samKnownCount.value === 0) return 'No SAM indexes yet'
-  if (samFailedDocs.value > 0 || samPendingDocs.value > 0) {
-    return `${formatNumber(samIndexedDocs.value)} indexed, ${formatNumber(samPendingDocs.value)} pending, ${formatNumber(samFailedDocs.value)} failed`
-  }
-  return `${formatNumber(samIndexedDocs.value)} indexed`
-})
-
 const loadedModules = computed(() => {
   const names = stats.value?.health?.loaded_modules
   if (!Array.isArray(names)) {
@@ -1299,62 +1264,6 @@ const loadTotalDocuments = async (baseUrlValue, useProxy) => {
   }
 }
 
-const resetSamOverview = () => {
-  samRunningCollections.value = []
-  samKnownCount.value = 0
-  samIndexedDocs.value = 0
-  samPendingDocs.value = 0
-  samFailedDocs.value = 0
-}
-
-const loadSamOverview = async (baseUrlValue, useProxy, statsPayload = null) => {
-  try {
-    const resolvedStatsPayload = statsPayload && typeof statsPayload === 'object'
-      ? statsPayload
-      : await fetchStatsSnapshot(baseUrlValue, useProxy)
-
-    samEnabled.value = isSamAvailable(resolvedStatsPayload)
-
-    if (!samEnabled.value) {
-      resetSamOverview()
-      samLoaded.value = true
-      return
-    }
-
-    const samStatusUrl = buildApiUrl(baseUrlValue, useProxy, '/sam/status')
-    const samResponse = await axios.get(samStatusUrl, {
-      timeout: 4000,
-      validateStatus: () => true
-    })
-
-    if (samResponse.status === 200 && samResponse.data && typeof samResponse.data === 'object') {
-      samRunningCollections.value = Array.isArray(samResponse.data.running_collections)
-        ? samResponse.data.running_collections.filter((entry) => typeof entry === 'string' && entry.trim())
-        : []
-      samKnownCount.value = Number(samResponse.data.known_count || 0)
-      const samCollections = Array.isArray(samResponse.data.collections) ? samResponse.data.collections : []
-      samIndexedDocs.value = Number(
-        samResponse.data.indexed_total ??
-        samCollections.reduce((sum, entry) => sum + Number(entry?.indexed || 0), 0)
-      )
-      samPendingDocs.value = Number(
-        samResponse.data.pending_total ??
-        samCollections.reduce((sum, entry) => sum + Number(entry?.pending || 0), 0)
-      )
-      samFailedDocs.value = Number(
-        samResponse.data.failed_total ??
-        samCollections.reduce((sum, entry) => sum + Number(entry?.failed || 0), 0)
-      )
-    } else {
-      resetSamOverview()
-    }
-  } catch (err) {
-    resetSamOverview()
-  } finally {
-    samLoaded.value = true
-  }
-}
-
 // Silent background stats update - doesn't show loading or error states
 const updateStatsSilently = async () => {
   // Don't update if manual loading is in progress or if flushing
@@ -1421,7 +1330,6 @@ const updateStatsSilently = async () => {
     
     // Silently update total documents
     await loadTotalDocuments(baseUrlValue, useProxy)
-    await loadSamOverview(baseUrlValue, useProxy, payload?.stats || stats.value)
     
     await loadSearchConfig(baseUrlValue, useProxy, { silent: true })
   } catch (err) {
@@ -1503,7 +1411,6 @@ const loadStats = async () => {
     }
     
     await loadTotalDocuments(baseUrlValue, useProxy)
-    await loadSamOverview(baseUrlValue, useProxy, payload?.stats || stats.value)
     
     await loadSearchConfig(baseUrlValue, useProxy)
   } catch (err) {

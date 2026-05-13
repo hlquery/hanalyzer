@@ -8812,6 +8812,38 @@ body :deep([role="tooltip"]) {
   display: none !important;
 }
 
+/* Keep the collection delete header button free of inherited blue shadow/focus chrome. */
+.collections-header-actions .collections-action-btn.delete-header-btn,
+.collections-header-actions .collections-action-btn.delete-header-btn:hover,
+.collections-header-actions .collections-action-btn.delete-header-btn:active,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus-visible,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus-within {
+  box-shadow: none !important;
+  filter: none !important;
+  outline: none !important;
+}
+
+.collections-header-actions .collections-action-btn.delete-header-btn::before,
+.collections-header-actions .collections-action-btn.delete-header-btn:hover::before,
+.collections-header-actions .collections-action-btn.delete-header-btn:active::before,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus::before,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus-visible::before,
+.collections-header-actions .collections-action-btn.delete-header-btn:focus-within::before {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.collections-header-actions .collections-action-btn.delete-header-btn :deep(.v-btn__overlay),
+.collections-header-actions .collections-action-btn.delete-header-btn :deep(.v-btn__underlay),
+.collections-header-actions .collections-action-btn.delete-header-btn :deep(.v-ripple__container),
+.collections-header-actions .collections-action-btn.delete-header-btn :deep(.v-ripple__animation) {
+  display: none !important;
+  opacity: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 /* View Details Button */
 .view-details-btn {
   font-family: Inter, Helvetica, sans-serif !important;
