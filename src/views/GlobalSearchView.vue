@@ -549,6 +549,9 @@ watch(() => route.params.query, async (newQuery) => {
   font-family: arial, sans-serif !important;
   text-decoration: none !important;
   display: block !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
 }
 
 .google-result-title:hover {
@@ -559,11 +562,17 @@ watch(() => route.params.query, async (newQuery) => {
 .google-result-title :deep(span) {
   color: #1a0dab !important;
   text-decoration: none !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
 }
 
 .google-result-title :deep(em) {
   font-style: normal !important;
   font-weight: bold !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
 }
 
 /* Google-style URL */

@@ -128,7 +128,7 @@
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, extractSynonyms, normalizeStopwords, getStopwordText } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 
 const route = useRoute()
@@ -199,9 +199,7 @@ const parsedSynonyms = computed(() => {
 const existingStopwordSet = computed(() => new Set(
   existingStopwords.value
     .map(item => {
-      if (typeof item === 'string') return item.trim().toLowerCase()
-      if (item && typeof item === 'object') return String(item.word || item.text || '').trim().toLowerCase()
-      return ''
+      return getStopwordText(item).trim().toLowerCase()
     })
     .filter(Boolean)
 ))
@@ -267,7 +265,7 @@ const loadExistingSynonyms = async () => {
       ? buildApiUrl(baseUrlValue, useProxy, '/synonyms/global')
       : buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/synonyms`)
     const response = await axios.get(url, { timeout: 5000 })
-    existingSynonyms.value = Array.isArray(response.data?.synonyms) ? response.data.synonyms : []
+    existingSynonyms.value = extractSynonyms(response.data)
     return existingSynonyms.value
   } catch (err) {
     existingSynonyms.value = []
@@ -291,7 +289,7 @@ const loadExistingStopwords = async () => {
       ? buildApiUrl(baseUrlValue, useProxy, '/stopwords/global')
       : buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/stopwords`)
     const response = await axios.get(url, { timeout: 5000 })
-    existingStopwords.value = Array.isArray(response.data?.stopwords) ? response.data.stopwords : []
+    existingStopwords.value = normalizeStopwords(response.data)
     return existingStopwords.value
   } catch (err) {
     existingStopwords.value = []
@@ -352,7 +350,10 @@ const submitSynonym = async () => {
 
     const addedRoot = normalizedRoot.value
     const refreshedSynonyms = await loadExistingSynonyms()
-    const wasPersisted = refreshedSynonyms.some((item) => String(item?.id || '').trim() === synonymId)
+    const wasPersisted = refreshedSynonyms.some((item) =>
+      String(item?.id || '').trim() === synonymId ||
+      String(item?.root || '').trim().toLowerCase() === addedRoot.toLowerCase()
+    )
 
     if (!wasPersisted) {
       throw new Error('The server returned success, but the synonym was not found after refresh.')

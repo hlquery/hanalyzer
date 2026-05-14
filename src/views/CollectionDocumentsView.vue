@@ -1527,7 +1527,7 @@ import { useLocalStorage } from '../composables/useLocalStorage'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
 import StopwordChip from '../components/StopwordChip.vue'
 import { extractSafeErrorMessage } from '../utils/sanitize'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl, getBestTitle, getBestContent, formatServerHighlights, isSamAvailable } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, getBestTitle, getBestContent, formatServerHighlights, isSamAvailable, extractSynonyms, normalizeStopwords, getStopwordText } from '../utils/apiHelpers'
 import axios from 'axios'
 
 const props = defineProps({
@@ -3860,12 +3860,8 @@ const loadSynonyms = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/synonyms`)
     
     const response = await axios.get(url, { timeout: 5000 })
-    
-    if (response.data && response.data.synonyms) {
-      synonyms.value = Array.isArray(response.data.synonyms) ? response.data.synonyms : []
-    } else {
-      synonyms.value = []
-    }
+
+    synonyms.value = extractSynonyms(response.data)
   } catch (err) {
     console.error('Failed to load synonyms:', err)
     synonymsError.value = err.response?.data?.error || err.message || 'Failed to load synonyms'
@@ -3873,17 +3869,6 @@ const loadSynonyms = async () => {
   } finally {
     synonymsLoading.value = false
   }
-}
-
-// Helper function to extract stopword text (handles both string and object formats)
-const getStopwordText = (stopword) => {
-  if (typeof stopword === 'string') {
-    return stopword
-  } else if (stopword && typeof stopword === 'object') {
-    // Handle object format like { word: "the" }
-    return stopword.word || stopword.text || JSON.stringify(stopword)
-  }
-  return String(stopword)
 }
 
 // Load stopwords
@@ -3900,22 +3885,8 @@ const loadStopwords = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/stopwords`)
     
     const response = await axios.get(url, { timeout: 5000 })
-    
-    if (response.data && response.data.stopwords) {
-      // Ensure we have an array and preserve full objects with metadata
-      const rawStopwords = Array.isArray(response.data.stopwords) ? response.data.stopwords : []
-      // Preserve objects, or create objects from strings
-      stopwords.value = rawStopwords.map(sw => {
-        if (typeof sw === 'string') {
-          return { word: sw }
-        } else if (sw && typeof sw === 'object' && sw.word) {
-          return sw // Preserve full object with created_at/updated_at
-        }
-        return { word: String(sw) }
-      })
-    } else {
-      stopwords.value = []
-    }
+
+    stopwords.value = normalizeStopwords(response.data)
   } catch (err) {
     console.error('Failed to load stopwords:', err)
     stopwordsError.value = err.response?.data?.error || err.message || 'Failed to load stopwords'
@@ -3975,6 +3946,13 @@ const submitInlineSynonym = async () => {
       timeout: 10000
     })
     await loadSynonyms()
+    const wasPersisted = synonyms.value.some((item) =>
+      String(item?.id || '').trim() === synonymId ||
+      String(item?.root || '').trim().toLowerCase() === root.toLowerCase()
+    )
+    if (!wasPersisted) {
+      throw new Error('The server returned success, but the synonym was not found after refresh.')
+    }
     closeInlineSynonymForm()
   } catch (err) {
     inlineSynonymError.value = extractSafeErrorMessage(err, 'Failed to add synonym')
@@ -4009,6 +3987,10 @@ const submitInlineStopword = async () => {
       timeout: 10000
     })
     await loadStopwords()
+    const wasPersisted = stopwords.value.some((item) => getStopwordText(item).trim().toLowerCase() === word.toLowerCase())
+    if (!wasPersisted) {
+      throw new Error('The server returned success, but the stopword was not found after refresh.')
+    }
     closeInlineStopwordForm()
   } catch (err) {
     inlineStopwordError.value = extractSafeErrorMessage(err, 'Failed to add stopword')

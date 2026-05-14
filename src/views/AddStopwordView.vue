@@ -113,7 +113,7 @@
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, normalizeStopwords, getStopwordText } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 
 const route = useRoute()
@@ -153,9 +153,7 @@ const parsedStopwords = computed(() => {
 const existingStopwordSet = computed(() => new Set(
   existingStopwords.value
     .map(item => {
-      if (typeof item === 'string') return item.trim().toLowerCase()
-      if (item && typeof item === 'object') return String(item.word || item.text || '').trim().toLowerCase()
-      return ''
+      return getStopwordText(item).trim().toLowerCase()
     })
     .filter(Boolean)
 ))
@@ -196,7 +194,7 @@ const loadExistingStopwords = async () => {
       ? buildApiUrl(baseUrlValue, useProxy, '/stopwords/global')
       : buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/stopwords`)
     const response = await axios.get(url, { timeout: 5000 })
-    existingStopwords.value = Array.isArray(response.data?.stopwords) ? response.data.stopwords : []
+    existingStopwords.value = normalizeStopwords(response.data)
     return existingStopwords.value
   } catch (err) {
     existingStopwords.value = []
@@ -243,8 +241,9 @@ const submitStopwords = async () => {
     const url = isGlobalScope.value
       ? buildApiUrl(baseUrlValue, useProxy, '/stopwords/global')
       : buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/stopwords`)
+    const submittedWords = [...pendingStopwords.value]
 
-    for (const word of pendingStopwords.value) {
+    for (const word of submittedWords) {
       await axios.post(url, {
         word
       }, {
@@ -253,17 +252,15 @@ const submitStopwords = async () => {
       })
     }
 
-    const count = pendingStopwords.value.length
+    const count = submittedWords.length
     const refreshedStopwords = await loadExistingStopwords()
     const refreshedSet = new Set(
       refreshedStopwords
-        .map(item => typeof item === 'string'
-          ? item.trim().toLowerCase()
-          : String(item?.word || item?.text || '').trim().toLowerCase())
+        .map(item => getStopwordText(item).trim().toLowerCase())
         .filter(Boolean)
     )
 
-    const missingWords = pendingStopwords.value.filter(word => !refreshedSet.has(word.toLowerCase()))
+    const missingWords = submittedWords.filter(word => !refreshedSet.has(word.toLowerCase()))
     if (missingWords.length > 0) {
       throw new Error('The server returned success, but the stopwords were not found after refresh.')
     }

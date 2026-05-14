@@ -199,6 +199,70 @@ export function isSamAvailable(payload) {
 }
 
 /**
+ * Extract a list payload from common API response shapes.
+ * @param {unknown} payload - API response data
+ * @param {string} key - Preferred list key, such as "synonyms" or "stopwords"
+ * @returns {Array} - Extracted list or an empty array
+ */
+export function extractApiList(payload, key) {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return []
+  }
+
+  const candidates = [
+    payload[key],
+    payload.data,
+    payload.items,
+    payload.results,
+    payload.result,
+    payload.data?.[key],
+    payload.items?.[key],
+    payload.result?.[key]
+  ]
+
+  const list = candidates.find(Array.isArray)
+  return list || []
+}
+
+export function extractSynonyms(payload) {
+  return extractApiList(payload, 'synonyms')
+}
+
+export function getStopwordText(stopword) {
+  if (typeof stopword === 'string') {
+    return stopword
+  }
+
+  if (stopword && typeof stopword === 'object') {
+    return String(stopword.word ?? stopword.text ?? stopword.value ?? '')
+  }
+
+  return stopword == null ? '' : String(stopword)
+}
+
+export function normalizeStopwords(payload) {
+  return extractApiList(payload, 'stopwords')
+    .map(item => {
+      if (typeof item === 'string') {
+        return { word: item }
+      }
+
+      if (item && typeof item === 'object') {
+        const word = getStopwordText(item).trim()
+        return word ? { ...item, word } : null
+      }
+
+      const word = getStopwordText(item).trim()
+      return word ? { word } : null
+    })
+    .filter(Boolean)
+}
+
+/**
  * Get best title for a document
  * @param {Object} doc - Document object
  * @returns {string} - Best title found

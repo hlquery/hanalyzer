@@ -338,7 +338,7 @@
 import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, extractSynonyms, normalizeStopwords, getStopwordText } from '../utils/apiHelpers'
 
 const route = useRoute()
 const router = useRouter()
@@ -390,14 +390,6 @@ const getItemRow = (item) => {
   return item.raw || item
 }
 
-const getStopwordText = (stopword) => {
-  if (typeof stopword === 'string') return stopword
-  if (stopword && typeof stopword === 'object') {
-    return stopword.word || stopword.text || JSON.stringify(stopword)
-  }
-  return String(stopword)
-}
-
 const slugifySynonymId = (value) => String(value || '')
   .trim()
   .toLowerCase()
@@ -435,7 +427,7 @@ const loadSynonyms = async () => {
     const useProxy = shouldUseProxy(baseUrlValue)
     const url = buildApiUrl(baseUrlValue, useProxy, '/synonyms/global')
     const response = await axios.get(url, { timeout: 10000 })
-    synonyms.value = Array.isArray(response.data?.synonyms) ? response.data.synonyms : []
+    synonyms.value = extractSynonyms(response.data)
   } catch (err) {
     synonymsError.value = err.response?.data?.error || err.message || 'Failed to load global synonyms'
     synonyms.value = []
@@ -453,7 +445,7 @@ const loadStopwords = async () => {
     const useProxy = shouldUseProxy(baseUrlValue)
     const url = buildApiUrl(baseUrlValue, useProxy, '/stopwords/global')
     const response = await axios.get(url, { timeout: 10000 })
-    stopwords.value = Array.isArray(response.data?.stopwords) ? response.data.stopwords : []
+    stopwords.value = normalizeStopwords(response.data)
   } catch (err) {
     stopwordsError.value = err.response?.data?.error || err.message || 'Failed to load global stopwords'
     stopwords.value = []
@@ -502,6 +494,13 @@ const submitInlineSynonym = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, `/synonyms/global/${encodeURIComponent(synonymId)}`)
     await axios.post(url, { root, synonyms: parsedSynonyms }, { headers: { 'Content-Type': 'application/json' }, timeout: 10000 })
     await loadSynonyms()
+    const wasPersisted = synonyms.value.some((item) =>
+      String(item?.id || '').trim() === synonymId ||
+      String(item?.root || '').trim().toLowerCase() === root.toLowerCase()
+    )
+    if (!wasPersisted) {
+      throw new Error('The server returned success, but the synonym was not found after refresh.')
+    }
     closeInlineSynonymForm()
   } catch (err) {
     inlineSynonymError.value = err.response?.data?.error || err.message || 'Failed to add global synonym'
@@ -525,6 +524,10 @@ const submitInlineStopword = async () => {
     const url = buildApiUrl(baseUrlValue, useProxy, '/stopwords/global')
     await axios.post(url, { word }, { headers: { 'Content-Type': 'application/json' }, timeout: 10000 })
     await loadStopwords()
+    const wasPersisted = stopwords.value.some((item) => getStopwordText(item).trim().toLowerCase() === word.toLowerCase())
+    if (!wasPersisted) {
+      throw new Error('The server returned success, but the stopword was not found after refresh.')
+    }
     closeInlineStopwordForm()
   } catch (err) {
     inlineStopwordError.value = err.response?.data?.error || err.message || 'Failed to add global stopword'

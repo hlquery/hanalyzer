@@ -619,6 +619,9 @@ onMounted(async () => {
   cursor: pointer !important;
   text-decoration: none !important;
   transition: color 0.2s ease !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  user-select: text !important;
 }
 
 .document-title-google:hover {
@@ -795,6 +798,9 @@ onMounted(async () => {
   line-height: 1.4;
   cursor: pointer;
   text-decoration: none;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
 }
 
 .result-title:hover {
