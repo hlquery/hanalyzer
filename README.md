@@ -31,16 +31,6 @@ Instead of treating HLQuery like a set of disconnected endpoints, hanalyzer orga
 
 Use hanalyzer when you want HLQuery management to feel operational and readable instead of repetitive. It is useful when you need to inspect data quickly, verify behavior during development, watch server health live, or hand a teammate a UI instead of a folder full of `curl` examples.
 
-### Why choose it over raw HTTP?
-
-Raw HTTP is useful when you already know the exact endpoint, payload, and response shape you need. hanalyzer is for the work around those calls: exploring what exists, checking whether a collection has the documents you expect, comparing search behavior, watching health signals, and confirming that operational changes actually took effect.
-
-Instead of moving between `curl`, copied JSON, shell history, and separate notes, hanalyzer keeps the common workflow in one place. You can browse collections, inspect documents, run searches, review modules, check cache and RocksDB state, look at links, and verify SAM availability without rebuilding the same request context each time.
-
-It also gives more context than a raw response body. Search screens make it easier to compare query behavior, collection pages keep schema and document work close together, status views make server health, modules, caches, links, WAL activity, and RocksDB statistics easier to scan, and SAM-aware views help confirm whether semantic assistance is available and current. Raw HTTP remains the stable automation surface; hanalyzer gives humans a faster and more readable way to understand the server while they are working.
-
-For public demo deployments, hanalyzer supports a simple `.demo` marker file. When the browser can fetch `/.demo` from the built app and it is not served as the normal HTML fallback, hanalyzer treats the deployment as a demo instance, uses `/api` as the default HLQuery endpoint, enables proxy-style access, and keeps the connection controls out of the way. This pairs with HLQuery's `demo` runtime module, which allows browsing and searching while blocking write and admin actions, so a public instance can be explored without exposing mutation operations.
-
 ### Quick Start
 
 Clone the repository normally:
