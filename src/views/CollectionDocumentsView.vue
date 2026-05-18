@@ -2887,6 +2887,23 @@ const handleSearchInput = () => {
     searchPerformed.value = false
     searchResults.value = []
     searchError.value = null
+
+    // If we landed on this page with a URL query (e.g., via Search Syntax examples),
+    // the initial mount skips loading the default documents list. When the user clears
+    // the search, explicitly reload the unqueried documents view.
+    const nameToLoad = collectionName.value
+    if (nameToLoad && nameToLoad.trim() && !isLoadingDocuments.value) {
+      isLoadingDocuments.value = true
+      currentPage.value = 1
+      void loadDocuments(nameToLoad, { page: 1, perPage: itemsPerPage.value })
+        .catch((err) => {
+          console.error('CollectionDocumentsView: Error reloading documents after clearing search:', err)
+        })
+        .finally(() => {
+          isLoadingDocuments.value = false
+        })
+    }
+
     suppressRouteQuerySearch.value = true
     router.replace({
       path: route.path,
@@ -2955,6 +2972,21 @@ const handleSearch = async () => {
     searchPerformed.value = false
     searchResults.value = []
     searchError.value = null
+
+    // Ensure we restore the default documents list in cases where the initial mount
+    // performed a query-based search (route ?q=...) and never loaded the base list.
+    if (collectionName.value && collectionName.value.trim() && !isLoadingDocuments.value) {
+      isLoadingDocuments.value = true
+      currentPage.value = 1
+      try {
+        await loadDocuments(collectionName.value, { page: 1, perPage: itemsPerPage.value })
+      } catch (err) {
+        console.error('CollectionDocumentsView: Error loading documents when clearing search:', err)
+      } finally {
+        isLoadingDocuments.value = false
+      }
+    }
+
     // Update URL to remove query param
     suppressRouteQuerySearch.value = true
     router.replace({

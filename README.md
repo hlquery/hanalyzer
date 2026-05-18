@@ -7,6 +7,7 @@
 **A modern dashboard for managing, monitoring, and analyzing hlquery servers.**
 
 [![Follow hlquery](https://img.shields.io/badge/Follow-%40hlquery-blue?logo=x&logoColor=white&labelColor=000000)](https://x.com/hlquery)
+[![hanalyzer build](https://img.shields.io/badge/hanalyzer%20build-passing-brightgreen?logo=google-chrome&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer-api/actions/workflows/ci.yml)
 [![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-blue?logo=github&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer/stargazers)
 [![Demo](https://img.shields.io/badge/Demo-live-0ea5e9?logo=google-chrome&logoColor=white&labelColor=000000)](https://demo.hlquery.com/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-a35a0f?logo=open-source-initiative&logoColor=white&labelColor=000000)](https://opensource.org/licenses/BSD-3-Clause)
@@ -15,12 +16,6 @@
 </div>
 
 > **Development Status**: hanalyzer is currently in active development and should not be used in production environments. The software may contain bugs, incomplete features, and breaking changes may occur without notice.
-
-### Overview
-
-hanalyzer is a modern web dashboard for HLQuery, built with Vue 3 and Vuetify. It provides a practical interface for managing collections and documents, inspecting server state, and visualizing runtime activity from a browser.
-
-It connects to the HLQuery API for indexing, querying, monitoring, and administration, and includes a local CLI wrapper for development, preview, and production builds.
 
 ### What is hanalyzer?
 
