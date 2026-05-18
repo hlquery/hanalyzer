@@ -1737,19 +1737,19 @@ onUnmounted(() => {
   margin: 0 0 20px;
 }
 
-.collections-list-search-card {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
-  gap: 20px;
-  align-items: center;
-  padding: 22px 24px;
-  border-radius: 18px !important;
-  border: 1px solid rgba(203, 213, 225, 0.9) !important;
-  background: #f1f5f9 !important;
-  box-shadow:
-    0 10px 24px rgba(15, 23, 42, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
-}
+	.collections-list-search-card {
+	  display: grid;
+	  grid-template-columns: minmax(0, 1fr) minmax(320px, 460px);
+	  gap: 20px;
+	  align-items: center;
+	  padding: 22px 24px;
+	  border-radius: 18px !important;
+	  border: 1px solid rgba(203, 213, 225, 0.9) !important;
+	  background: #e8f1ff !important;
+	  box-shadow:
+	    0 10px 24px rgba(15, 23, 42, 0.05),
+	    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+	}
 
 .collections-list-search-copy {
   min-width: 0;
