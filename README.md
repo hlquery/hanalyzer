@@ -4,10 +4,10 @@
 
 <div align="center">
 
-**A modern dashboard for managing, monitoring, and analyzing HLQuery servers.**
+**A modern dashboard for managing, monitoring, and analyzing hlquery servers.**
 
 [![Follow hlquery](https://img.shields.io/badge/Follow-%40hlquery-blue?logo=x&logoColor=white&labelColor=000000)](https://x.com/hlquery)
-[![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-181717?logo=github&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer)
+[![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-blue?logo=github&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer/stargazers)
 [![Demo](https://img.shields.io/badge/Demo-live-0ea5e9?logo=google-chrome&logoColor=white&labelColor=000000)](https://demo.hlquery.com/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-a35a0f?logo=open-source-initiative&logoColor=white&labelColor=000000)](https://opensource.org/licenses/BSD-3-Clause)
 
@@ -58,30 +58,13 @@ By default, hanalyzer runs on `http://localhost:8080` and connects to HLQuery at
 - Node.js 18.0.0 or higher
 - npm 9.0.0 or higher
 
-**Installation:**
-
-**Using nvm (recommended):**
-```bash
-nvm install 18
-nvm use 18
-```
-
-**Or download from:**
-- [Node.js Official Website](https://nodejs.org/)
-
-**Verify installation:**
-```bash
-node -v  # Should show v18.0.0 or higher
-npm -v   # Should show 9.0.0 or higher
-```
-
-> **Note**: Make sure your HLQuery server is running and accessible. hanalyzer connects to the HLQuery API (default: `http://localhost:9200`).
+> **Note**: Make sure your hlquery server is running and accessible. hanalyzer connects to the HLQuery API (default: `http://localhost:9200`).
 
 ### Installation
 
 ```bash
-npm install
-npm run dev
+$ npm install
+$ npm run dev
 ```
 
 ### Configuration

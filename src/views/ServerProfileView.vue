@@ -218,7 +218,7 @@
                   <span>Started: {{ formatStartTime(stats.server.startup_time) }}</span>
                 </v-tooltip>
                 <div v-else-if="resolvedUptimeSeconds > 0" class="kpi-value-large">{{ formatUptime(resolvedUptimeSeconds) }}</div>
-                <div class="kpi-context">{{ uptimeContextLabel }}</div>
+                <div v-if="uptimeContextLabel" class="kpi-context">{{ uptimeContextLabel }}</div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#0f766e">mdi-server</v-icon>
@@ -369,11 +369,11 @@
                     <td class="text-right">{{ formatNumber(loadedModules.length) }}</td>
                   </tr>
                   <tr>
-                    <td>Module Names</td>
+                    <td>Core Modules</td>
                     <td class="text-right">
-                      <div v-if="loadedModules.length > 0" class="dashboard-module-chip-wrap">
+                      <div v-if="coreModules.length > 0" class="dashboard-module-chip-wrap">
                         <v-chip
-                          v-for="moduleName in loadedModules"
+                          v-for="moduleName in coreModules"
                           :key="moduleName"
                           size="small"
                           variant="flat"
@@ -383,7 +383,25 @@
                           {{ moduleName }}
                         </v-chip>
                       </div>
-                      <span v-else class="text-medium-emphasis">No loaded modules reported</span>
+                      <span v-else class="text-medium-emphasis">No core modules reported</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Optional Modules</td>
+                    <td class="text-right">
+                      <div v-if="optionalModules.length > 0" class="dashboard-module-chip-wrap">
+                        <v-chip
+                          v-for="moduleName in optionalModules"
+                          :key="moduleName"
+                          size="small"
+                          variant="flat"
+                          color="secondary"
+                          class="dashboard-module-chip"
+                        >
+                          {{ moduleName }}
+                        </v-chip>
+                      </div>
+                      <span v-else class="text-medium-emphasis">No optional modules loaded</span>
                     </td>
                   </tr>
                 </tbody>
@@ -836,7 +854,7 @@ const resolvedUptimeSeconds = computed(() => {
 
 const uptimeContextLabel = computed(() => {
   if (resolvedUptimeSeconds.value > 0) {
-    return 'Live server runtime'
+    return ''
   }
 
   return displayServerLabel.value
@@ -858,6 +876,9 @@ const loadedModules = computed(() => {
     .filter((entry) => typeof entry === 'string' && entry.trim())
     .map((entry) => entry.trim())
 })
+
+const coreModules = computed(() => loadedModules.value.filter((moduleName) => moduleName.startsWith('core_')))
+const optionalModules = computed(() => loadedModules.value.filter((moduleName) => !moduleName.startsWith('core_')))
 
 // Uptime tracking - store base value and timestamp to keep it ticking
 const baseUptimeSeconds = ref(0)
