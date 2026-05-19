@@ -566,8 +566,8 @@
           <v-chip color="primary" variant="tonal" size="small" class="results-count-chip">
             {{ totalFound || searchResults.length }} found
           </v-chip>
-          <span v-if="searchTime" class="text-caption text-harmony-muted">
-            in {{ searchTime }}s
+          <span v-if="(searchQuery || '').trim()" class="text-caption text-harmony-muted">
+            Hanalyzer can say {{ searchResults.length }} results for <strong>{{ searchQuery.trim() }}</strong><span v-if="searchTime"> ({{ searchTime }}s)</span>
           </span>
         </div>
         <v-spacer></v-spacer>

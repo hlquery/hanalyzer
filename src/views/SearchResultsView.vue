@@ -82,7 +82,7 @@
 
     <!-- Results -->
     <div v-if="searchPerformed">
-      <v-card class="mb-card">
+      <v-card class="mb-card mt-card">
         <v-card-title class="pa-4" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); border-radius: 16px 16px 0 0;">
           <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 16px;">
             <div class="d-flex align-center" style="gap: 16px;">
@@ -527,7 +527,7 @@ const handleSearch = async () => {
   expandedRows.value = []
   
   try {
-    await performSearch(selectedCollection.value, searchQuery.value.trim(), 100)
+    await performSearch(selectedCollection.value, searchQuery.value.trim(), 10)
     // Update URL
     router.replace({
       query: {

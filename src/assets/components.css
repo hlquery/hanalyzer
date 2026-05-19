@@ -2,6 +2,22 @@
    GLOBAL CUSTOM BUTTON STYLES
    ----------------------------------------------------------------===== */
 
+/* ---------------------------------------------------------------------
+   SELECTED/ACTIVE TOGGLE BUTTONS
+   Ensures the selected option (e.g. Node/Python/PHP/Go/Rust) is clearly
+   highlighted with a dark blue background.
+   --------------------------------------------------------------------- */
+
+.v-btn-toggle .v-btn.v-btn--active {
+  background-color: var(--primary-dark) !important;
+  color: #ffffff !important;
+}
+
+.v-btn-toggle .v-btn.v-btn--active .v-btn__content,
+.v-btn-toggle .v-btn.v-btn--active .v-icon {
+  color: #ffffff !important;
+}
+
 /* Base custom button - Blue by default */
 .custom-btn,
 .action-btn-blue {
