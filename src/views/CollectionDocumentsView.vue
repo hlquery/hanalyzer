@@ -3181,20 +3181,17 @@ const handleSortChange = async () => {
 }
 
 const clearSearchInput = () => {
-  searchInputPending.value = false
-  searchQuery.value = ''
-  searchResults.value = []
-  searchPerformed.value = false
-  searchError.value = null
   expandedRows.value = []
-  // Update URL to remove query param
-  suppressRouteQuerySearch.value = true
-  router.replace({
-    path: route.path,
-    query: buildSearchRouteQuery()
-  }).finally(() => {
-    suppressRouteQuerySearch.value = false
-  })
+
+  // Cancel pending debounced searches, then reuse the same "empty search" logic
+  // as typing-based clearing (reload base docs list or re-run filter-only search).
+  if (searchDebounceTimer.value) {
+    clearTimeout(searchDebounceTimer.value)
+    searchDebounceTimer.value = null
+  }
+
+  searchQuery.value = ''
+  handleSearchInput()
 }
 
 // Table helper functions
