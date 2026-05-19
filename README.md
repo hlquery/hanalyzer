@@ -19,13 +19,13 @@
 
 ### What is hanalyzer?
 
-hanalyzer is the browser-based control surface for HLQuery. It gives you a visual way to work with collections, documents, search behavior, health data, and operational settings without manually stitching together API calls, JSON payloads, or ad hoc scripts.
+hanalyzer is the browser-based control surface for hlquery. It gives you a visual way to work with collections, documents, search behavior, health data, and operational settings without manually stitching together API calls, JSON payloads, or ad hoc scripts.
 
-Instead of treating HLQuery like a set of disconnected endpoints, hanalyzer organizes the server into one interface for search operations, collection administration, document inspection, diagnostics, and monitoring.
+Instead of treating hlquery like a set of disconnected endpoints, hanalyzer organizes the server into one interface for search operations, collection administration, document inspection, diagnostics, and monitoring.
 
 ### Why use it?
 
-Use hanalyzer when you want HLQuery management to feel operational and readable instead of repetitive. It is useful when you need to inspect data quickly, verify behavior during development, watch server health live, or hand a teammate a UI instead of a folder full of `curl` examples.
+Use hanalyzer when you want hlquery management to feel operational and readable instead of repetitive. It is useful when you need to inspect data quickly, verify behavior during development, watch server health live, or hand a teammate a UI instead of a folder full of `curl` examples.
 
 ### Quick Start
 
