@@ -1902,8 +1902,9 @@ watch([searchResults, documents, isUnorganized, loading, searchLoading], ([newSe
     }
   }
   
-  // Reset pagination when data changes
-  currentPage.value = 1
+  // Data changes also happen after fetching a requested server-side page.
+  // Keep the selected page stable here; explicit actions that change the
+  // result set reset pagination themselves.
   expandedRows.value = []
   
   // Clean up any remaining tooltips
