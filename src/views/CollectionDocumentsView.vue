@@ -137,21 +137,10 @@
           </div>
         </div>
 
-        <div v-if="showPageSpinner" class="search-centered-loading" aria-live="polite" :aria-label="loading ? 'Loading collection' : 'Searching'">
-          <v-progress-circular
-            indeterminate
-            size="56"
-            width="3"
-            color="primary"
-            class="search-mini-spinner"
-          />
-        </div>
-        
-        
         <div class="google-toolbar collection-results-toolbar" v-if="documents.length > 0 || searchPerformed">
           <div class="google-toolbar-left" style="gap: 16px;">
             <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
-              {{ searchResults.length }} results ({{ searchTime }}s)
+              {{ searchResultsSummary }}
             </span>
             <span class="google-results-count" v-else-if="!searchPerformed && documents.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
               {{ totalDocuments || documents.length }} documents
@@ -373,6 +362,16 @@
               </v-list>
             </v-menu>
           </div>
+        </div>
+
+        <div v-if="showPageSpinner" class="search-centered-loading" aria-live="polite" :aria-label="loading ? 'Loading collection' : 'Searching'">
+          <v-progress-circular
+            indeterminate
+            size="26"
+            width="2"
+            color="primary"
+            class="search-mini-spinner"
+          />
         </div>
 
         <!-- Advanced Filters - OLD PANEL (hidden, replaced by compact version above) -->
@@ -648,7 +647,7 @@
                 Try adjusting your search terms or filters.
               </div>
             </div>
-            <div class="collection-search-empty-count">0 results found</div>
+            <div class="collection-search-empty-count">{{ emptySearchResultsSummary }}</div>
           </div>
 
           <div
@@ -1558,6 +1557,7 @@ const { documents, loading, error, total: totalDocuments, loadDocuments: loadDoc
 const searchQuery = ref('')
 const searchPerformed = ref(false)
 const searchInputPending = ref(false)
+const lastSubmittedSearchQuery = ref('')
 const viewMode = ref('list')
 const showDocumentDialog = ref(false)
 const documentJson = ref('')
@@ -1593,6 +1593,19 @@ const searchFieldItems = computed(() => {
   // Always expose `name` as a first-class search field in the UI.
   return [...new Set(['name', ...names])]
 })
+const formatSearchResultsSummary = (count) => {
+  const resultWord = count === 1 ? 'result' : 'results'
+  const query = lastSubmittedSearchQuery.value.trim()
+  const timeSuffix = searchTime.value ? ` (${searchTime.value}s)` : ''
+
+  if (!query) {
+    return `${count} ${resultWord} found${timeSuffix}`
+  }
+
+  return `${count} ${resultWord} found for "${query}"${timeSuffix}`
+}
+const searchResultsSummary = computed(() => formatSearchResultsSummary(searchResults.value.length))
+const emptySearchResultsSummary = computed(() => formatSearchResultsSummary(0))
 const hasDateRange = computed(() => Boolean(dateFrom.value || dateTo.value))
 const formatDateLabel = (value) => {
   if (!value) return ''
@@ -2886,6 +2899,7 @@ const handleSearchInput = () => {
 
     searchInputPending.value = false
     searchPerformed.value = false
+    lastSubmittedSearchQuery.value = ''
     searchResults.value = []
     searchError.value = null
 
@@ -2956,6 +2970,7 @@ const handleSearch = async () => {
     searchInputPending.value = false
     searchError.value = 'Collection name is missing. Please navigate to a valid collection.'
     searchPerformed.value = false
+    lastSubmittedSearchQuery.value = ''
     searchResults.value = []
     return
   }
@@ -2971,6 +2986,7 @@ const handleSearch = async () => {
     searchInputPending.value = false
     // No query and no filters - show all documents (default behavior)
     searchPerformed.value = false
+    lastSubmittedSearchQuery.value = ''
     searchResults.value = []
     searchError.value = null
 
@@ -3000,6 +3016,7 @@ const handleSearch = async () => {
   }
   
   searchPerformed.value = true
+  lastSubmittedSearchQuery.value = hasQuery ? searchQuery.value.trim() : ''
   searchError.value = null
   await ensureSearchSchemaReady()
   
@@ -3140,6 +3157,7 @@ const setQuickSort = async (sortValue) => {
     // Don't apply sort to search results - they should be sorted by relevance
     searchPerformed.value = false
     searchQuery.value = ''
+    lastSubmittedSearchQuery.value = ''
     searchResults.value = []
     if (collectionName.value) {
       await loadDocuments(collectionName.value, { sortBy: sortValue })
@@ -4218,6 +4236,7 @@ watch(() => route.params.name, async (newName, oldName) => {
       // Clear search when collection changes
       searchQuery.value = ''
       searchPerformed.value = false
+      lastSubmittedSearchQuery.value = ''
       searchResults.value = []
     } catch (err) {
       console.error('CollectionDocumentsView: Error reloading documents for new collection:', err)
@@ -4276,6 +4295,7 @@ watch(() => [route.query.q, route.query.from, route.query.to], ([newQuery, newFr
     // Query was removed - clear search and show documents
     searchQuery.value = ''
     searchPerformed.value = false
+    lastSubmittedSearchQuery.value = ''
     searchResults.value = []
     // Reload documents if we have a collection
     if (collectionName.value && collectionName.value.trim()) {
@@ -5759,13 +5779,14 @@ onUnmounted(() => {
 }
 
 .search-centered-loading {
-  position: fixed;
-  inset: 0;
+  position: static;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  min-height: 26px;
+  margin-top: 100px;
   pointer-events: none;
-  z-index: 2100;
+  z-index: 1;
 }
 
 .compact-search-settings-btn:hover {
