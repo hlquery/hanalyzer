@@ -47,12 +47,11 @@
                   placeholder="e.g. production_v1, current_search_index"
                   variant="outlined"
                   density="comfortable"
-                  class="form-input-modern"
+                  class="form-input-modern alias-name-input"
                   :rules="[rules.required, rules.aliasName]"
                   :disabled="loading"
                   prepend-inner-icon="mdi-tag-outline"
                   hide-details="auto"
-                  autofocus
                   persistent-placeholder
                 ></v-text-field>
                 <div class="field-helper-row">
@@ -216,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed } from 'vue'
+import { ref, onMounted, inject, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCollections } from '../composables/useCollections'
 import { useAliases } from '../composables/useAliases'
@@ -330,7 +329,24 @@ const handleSubmit = async () => {
   }
 }
 
-onMounted(() => {
+const scrollPageToTop = () => {
+  if (typeof window === 'undefined') return
+
+  window.scrollTo({ top: 0, left: 0, behavior: 'auto' })
+  document.documentElement.scrollTop = 0
+  document.body.scrollTop = 0
+
+  const main = document.getElementById('main-content')
+  if (main) {
+    main.scrollTop = 0
+  }
+}
+
+onMounted(async () => {
+  await nextTick()
+  scrollPageToTop()
+  requestAnimationFrame(scrollPageToTop)
+
   loadCollectionsAsync()
   loadAliases(false)
 })
@@ -586,6 +602,81 @@ export default {
 
 .form-input-modern :deep(.v-field__prepend-inner) {
   padding-top: 16px !important;
+}
+
+.alias-name-input :deep(.v-field),
+.collection-filter-input :deep(.v-field) {
+  min-height: 46px !important;
+  border-radius: 8px !important;
+  background-color: #fbfdff !important;
+  box-shadow: none !important;
+  --v-field-border-opacity: 1 !important;
+  --v-field-border-width: 1px !important;
+}
+
+.alias-name-input :deep(.v-field__outline),
+.collection-filter-input :deep(.v-field__outline) {
+  color: #d7dee8 !important;
+}
+
+.alias-name-input :deep(.v-field:hover .v-field__outline),
+.collection-filter-input :deep(.v-field:hover .v-field__outline) {
+  color: #cbd5e1 !important;
+}
+
+.alias-name-input :deep(.v-field--focused),
+.collection-filter-input :deep(.v-field--focused) {
+  background-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.alias-name-input :deep(.v-field--focused .v-field__outline),
+.collection-filter-input :deep(.v-field--focused .v-field__outline) {
+  color: #cbd5e1 !important;
+}
+
+.alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline),
+.collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline) {
+  color: #cbd5e1 !important;
+}
+
+.alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__start),
+.alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__notch),
+.alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__end),
+.collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__start),
+.collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__notch),
+.collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__end) {
+  border-color: #cbd5e1 !important;
+  border-width: 1px !important;
+}
+
+.alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-label.v-field-label),
+.collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-label.v-field-label) {
+  color: #64748b !important;
+}
+
+.alias-name-input :deep(.v-field__input),
+.collection-filter-input :deep(.v-field__input) {
+  min-height: 46px !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  color: #475569 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+.alias-name-input :deep(input::placeholder),
+.collection-filter-input :deep(input::placeholder) {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+  font-size: 13px !important;
+  font-weight: 400 !important;
+}
+
+.alias-name-input :deep(.v-field__prepend-inner),
+.collection-filter-input :deep(.v-field__prepend-inner) {
+  padding-top: 10px !important;
+  color: #94a3b8 !important;
 }
 
 .form-actions {

@@ -4,7 +4,7 @@
     <div class="collections-header">
       <div class="collections-title-section">
         <div>
-          <h1 class="collections-title-text">Aliases</h1>
+          <h1 class="collections-title-text">{{ pageTitle }}</h1>
           <div class="collections-total-text" v-if="!loading && aliases.length > 0">
             <v-icon icon="mdi-link-variant" size="16" class="collections-dir-icon"></v-icon>
             Showing {{ filteredAliases.length }} out of {{ aliases.length }}
@@ -76,9 +76,9 @@
       <v-card class="mb-card card-premium empty-collections-card">
         <v-card-text class="empty-state-premium empty-collections-content">
           <div class="empty-collections-text">
-          <h2 class="empty-collections-title">Create an alias</h2>
+          <h2 class="empty-collections-title">{{ emptyTitle }}</h2>
           <p class="empty-collections-description">
-            Point an alias to a collection, then use the alias name in searches.
+            {{ emptyDescription }}
           </p>
           </div>
           <div class="empty-collections-action">
@@ -143,16 +143,15 @@
             </td>
             <td>
               <div class="d-flex justify-end">
-                <v-btn
-                  icon
-                  variant="text"
-                  size="small"
-                  color="error"
+                <button
+                  type="button"
+                  class="alias-delete-btn"
                   title="Delete Alias"
+                  aria-label="Delete Alias"
                   @click.stop="confirmDeleteAlias(item.name)"
                 >
-                  <v-icon>mdi-delete</v-icon>
-                </v-btn>
+                  <i class="mdi mdi-delete alias-delete-icon" aria-hidden="true"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -298,14 +297,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, inject, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { useCollections } from '../composables/useCollections'
 import { useAliases } from '../composables/useAliases'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 
+const route = useRoute()
 const router = useRouter()
 const baseUrl = inject('baseUrl', ref('http://localhost:9200'))
 const toast = inject('toast', { success: () => {}, error: () => {} })
@@ -324,6 +324,19 @@ const itemsPerPage = ref(50)
 const currentPage = ref(1)
 const showItemsPerPageMenu = ref(false)
 const searchQuery = ref('')
+
+const collectionFilter = computed(() => {
+  const value = route.params.collection
+  return typeof value === 'string' ? value.trim() : ''
+})
+
+const pageTitle = computed(() => collectionFilter.value ? `Aliases for ${collectionFilter.value}` : 'Aliases')
+
+const emptyTitle = computed(() => collectionFilter.value ? `No aliases for ${collectionFilter.value}` : 'Create an alias')
+
+const emptyDescription = computed(() => collectionFilter.value
+  ? 'This collection does not have aliases yet.'
+  : 'Point an alias to a collection, then use the alias name in searches.')
 
 const filteredAliases = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
@@ -492,8 +505,18 @@ const formatDate = (dateString) => {
   }
 }
 
+const refreshAliases = (showLoading = true) => {
+  currentPage.value = 1
+  searchQuery.value = ''
+  loadAliases(showLoading, collectionFilter.value)
+}
+
+watch(collectionFilter, () => {
+  refreshAliases(true)
+})
+
 onMounted(() => {
-  loadAliases()
+  refreshAliases(true)
   loadCollectionsAsync()
 })
 </script>
@@ -813,7 +836,7 @@ onMounted(() => {
   margin: 0 0 16px 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #64748b;
+  color: #111827;
 }
 
 .simple-delete-dialog-preview {
@@ -1190,6 +1213,45 @@ onMounted(() => {
 
 .alias-table-row {
   cursor: pointer;
+}
+
+.alias-delete-btn {
+  appearance: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #dc2626 !important;
+  cursor: pointer;
+  line-height: 1 !important;
+  vertical-align: middle;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.alias-delete-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 18px !important;
+  height: 18px !important;
+  color: #dc2626 !important;
+  font-size: 18px !important;
+  line-height: 18px !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.alias-delete-btn:hover,
+.alias-delete-btn:focus-visible {
+  background: #fee2e2 !important;
 }
 
 .collections-table :deep(tbody tr:hover),

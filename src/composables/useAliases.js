@@ -7,15 +7,20 @@ export function useAliases(baseUrl) {
   const aliases = ref([])
   const loading = ref(false)
   const error = ref(null)
+  const currentCollectionFilter = ref('')
 
-  const loadAliases = async (showLoading = true) => {
+  const loadAliases = async (showLoading = true, collectionName = currentCollectionFilter.value) => {
     if (showLoading) loading.value = true
     error.value = null
+    currentCollectionFilter.value = collectionName || ''
     
     try {
       const baseUrlValue = getBaseUrlValue(baseUrl)
       const useProxy = shouldUseProxy(baseUrlValue)
-      const url = buildApiUrl(baseUrlValue, useProxy, '/aliases')
+      const trimmedCollectionName = String(currentCollectionFilter.value || '').trim()
+      const url = trimmedCollectionName
+        ? buildApiUrl(baseUrlValue, useProxy, `/collections/${encodeURIComponent(trimmedCollectionName)}/aliases`)
+        : buildApiUrl(baseUrlValue, useProxy, '/aliases')
       
       const response = await axios.get(url, { timeout: 5000 })
       aliases.value = response.data?.aliases || []
@@ -38,7 +43,7 @@ export function useAliases(baseUrl) {
       await axios.post(url, {
         collection_name: collectionName.trim()
       }, { timeout: 5000 })
-      await loadAliases(false)
+      await loadAliases(false, currentCollectionFilter.value)
     } catch (err) {
       throw new Error(extractSafeErrorMessage(err, 'Failed to create alias'))
     }
@@ -52,7 +57,7 @@ export function useAliases(baseUrl) {
     
     try {
       await axios.delete(url, { timeout: 5000 })
-      await loadAliases(false)
+      await loadAliases(false, currentCollectionFilter.value)
     } catch (err) {
       throw new Error(extractSafeErrorMessage(err, 'Failed to delete alias'))
     }

@@ -212,8 +212,17 @@ const routes = [
     }
   },
   {
-    path: '/aliases',
-    name: 'aliases',
+    path: '/aliases/create',
+    name: 'create-alias',
+    component: () => import('./views/AddAliasView.vue'),
+    meta: {
+      title: 'Create Alias',
+      icon: 'mdi-link-plus'
+    }
+  },
+  {
+    path: '/aliases/:collection',
+    name: 'aliases-by-collection',
     component: () => import('./views/AliasesView.vue'),
     meta: {
       title: 'Aliases',
@@ -221,12 +230,12 @@ const routes = [
     }
   },
   {
-    path: '/aliases/create',
-    name: 'create-alias',
-    component: () => import('./views/AddAliasView.vue'),
+    path: '/aliases',
+    name: 'aliases',
+    component: () => import('./views/AliasesView.vue'),
     meta: {
-      title: 'Create Alias',
-      icon: 'mdi-link-plus'
+      title: 'Aliases',
+      icon: 'mdi-link-variant'
     }
   },
   {

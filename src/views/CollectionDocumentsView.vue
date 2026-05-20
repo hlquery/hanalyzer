@@ -44,23 +44,54 @@
     <!-- Tabs for Collection Management - Light gray professional style -->
     <div class="collection-tabs-container mb-2">
       <div class="collection-tabs-bar">
-        <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
-          <v-tab value="documents" class="collection-tab" :to="collectionTabRoute('documents')">
-            <v-icon size="16" class="mr-2">mdi-file-document-outline</v-icon>
-            <span class="tab-text">Documents</span>
-            <span class="tab-count" v-if="totalDocuments > 0 || documents.length > 0">({{ totalDocuments > 0 ? totalDocuments : documents.length }})</span>
-          </v-tab>
-          <v-tab value="synonyms" class="collection-tab" :to="collectionTabRoute('synonyms')">
-            <v-icon size="16" class="mr-2">mdi-swap-horizontal</v-icon>
-            <span class="tab-text">Synonyms</span>
-            <span class="tab-count">({{ synonyms.length }})</span>
-          </v-tab>
-          <v-tab value="stopwords" class="collection-tab" :to="collectionTabRoute('stopwords')">
-            <v-icon size="16" class="mr-2">mdi-cancel</v-icon>
-            <span class="tab-text">Stopwords</span>
-            <span class="tab-count">({{ stopwords.length }})</span>
-          </v-tab>
-        </v-tabs>
+        <div class="collection-tabs-main">
+          <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
+            <v-tab value="documents" class="collection-tab" :to="collectionTabRoute('documents')">
+              <v-icon size="16" class="mr-2">mdi-file-document-outline</v-icon>
+              <span class="tab-text">Documents</span>
+              <span class="tab-count" v-if="totalDocuments > 0 || documents.length > 0">({{ totalDocuments > 0 ? totalDocuments : documents.length }})</span>
+            </v-tab>
+            <v-tab value="synonyms" class="collection-tab" :to="collectionTabRoute('synonyms')">
+              <v-icon size="16" class="mr-2">mdi-swap-horizontal</v-icon>
+              <span class="tab-text">Synonyms</span>
+              <span class="tab-count">({{ synonyms.length }})</span>
+            </v-tab>
+            <v-tab value="stopwords" class="collection-tab" :to="collectionTabRoute('stopwords')">
+              <v-icon size="16" class="mr-2">mdi-cancel</v-icon>
+              <span class="tab-text">Stopwords</span>
+              <span class="tab-count">({{ stopwords.length }})</span>
+            </v-tab>
+          </v-tabs>
+
+          <v-menu
+            v-model="showCollectionActionsMenu"
+            location="bottom start"
+            :close-on-content-click="true"
+            offset="8"
+          >
+            <template v-slot:activator="{ props }">
+              <button
+                v-bind="props"
+                type="button"
+                class="collection-more-tab"
+                :class="{ active: showCollectionActionsMenu }"
+                aria-label="Open collection actions"
+              >
+                <v-icon size="16">mdi-dots-horizontal</v-icon>
+                <span>Actions</span>
+                <v-icon size="16">mdi-chevron-down</v-icon>
+              </button>
+            </template>
+            <v-list class="collection-more-menu" density="compact">
+              <v-list-item class="collection-more-menu-item" @click="openCopyCollectionDialog">
+                <template #prepend>
+                  <v-icon size="18">mdi-content-copy</v-icon>
+                </template>
+                <v-list-item-title>Copy</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
 
         <router-link
           class="collection-search-help-link collection-search-help-link--tabs"
@@ -1190,6 +1221,59 @@
       @cancel="showBulkDeleteDialog = false"
     />
 
+    <v-dialog v-model="showCopyCollectionDialog" max-width="460" persistent>
+      <v-card class="simple-delete-dialog-card copy-collection-dialog-card">
+        <v-card-title class="simple-delete-dialog-header">
+          <div class="simple-delete-dialog-icon">
+            <v-icon size="20">mdi-content-copy</v-icon>
+          </div>
+          <div class="simple-delete-dialog-header-copy">
+            <span class="simple-delete-dialog-title">Copy Collection</span>
+            <span class="simple-delete-dialog-subtitle">{{ collectionName }}</span>
+          </div>
+        </v-card-title>
+        <v-card-text class="simple-delete-dialog-body">
+          <label class="copy-collection-label" for="copy-collection-target">
+            <v-icon size="16">mdi-arrow-right-bold-circle-outline</v-icon>
+            <span>Copy to</span>
+          </label>
+          <div class="copy-collection-input-shell">
+            <input
+              id="copy-collection-target"
+              v-model="copyCollectionTarget"
+              placeholder="New collection name"
+              class="copy-collection-input"
+              :disabled="copyingCollection"
+              autofocus
+              @keyup.enter="handleCopyCollection"
+            />
+          </div>
+          <div v-if="copyCollectionError" class="copy-collection-error">
+            {{ copyCollectionError }}
+          </div>
+        </v-card-text>
+        <v-card-actions class="simple-delete-dialog-actions">
+          <v-btn
+            variant="text"
+            class="simple-delete-cancel-btn"
+            :disabled="copyingCollection"
+            @click="closeCopyCollectionDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            variant="flat"
+            class="collections-action-btn copy-popup-btn"
+            :loading="copyingCollection"
+            :disabled="copyingCollection || !copyCollectionTarget.trim()"
+            @click="handleCopyCollection"
+          >
+            Copy
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <!-- Delete Document Confirmation Dialog -->
     <v-dialog
       v-model="showDeleteDocumentDialog"
@@ -2075,6 +2159,205 @@ const closeInlineStopwordForm = () => {
   inlineStopwordForm.value = { word: '' }
 }
 
+const openCopyCollectionDialog = () => {
+  if (!collectionName.value) {
+    toast.error('Collection name is missing', 'Error')
+    return
+  }
+
+  copyCollectionTarget.value = ''
+  copyCollectionError.value = null
+  showCollectionActionsMenu.value = false
+  showCopyCollectionDialog.value = true
+}
+
+const closeCopyCollectionDialog = () => {
+  if (copyingCollection.value) {
+    return
+  }
+
+  showCopyCollectionDialog.value = false
+  copyCollectionTarget.value = ''
+  copyCollectionError.value = null
+}
+
+const buildCopiedCollectionPayload = (sourceSchema, targetName) => {
+  let fields = []
+
+  if (Array.isArray(sourceSchema?.fields)) {
+    fields = sourceSchema.fields.map((field) => {
+      if (typeof field === 'string') {
+        return { name: field, type: 'string' }
+      }
+
+      const copiedField = {
+        name: field?.name,
+        type: field?.type || 'string'
+      }
+
+      if (field?.index) copiedField.index = true
+      if (field?.facet) copiedField.facet = true
+      if (field?.sort) copiedField.sort = true
+      return copiedField
+    }).filter(field => field.name)
+  } else if (sourceSchema?.fields && typeof sourceSchema.fields === 'object') {
+    fields = Object.entries(sourceSchema.fields)
+      .filter(([name]) => name)
+      .map(([name, type]) => ({
+        name,
+        type: typeof type === 'string' ? type : 'string'
+      }))
+  } else if (Array.isArray(sourceSchema?.searchable_fields)) {
+    fields = sourceSchema.searchable_fields
+      .filter(Boolean)
+      .map(name => ({ name, type: 'string' }))
+  }
+
+  const payload = {
+    name: targetName,
+    fields
+  }
+
+  if (sourceSchema?.metadata && typeof sourceSchema.metadata === 'object') {
+    payload.metadata = sourceSchema.metadata
+  }
+
+  return payload
+}
+
+const cleanCopiedDocument = (document) => {
+  const copied = { ...(document || {}) }
+  delete copied.collection_id
+  delete copied.score
+  delete copied._text_match
+  delete copied.highlights
+  delete copied.highlight
+  delete copied.created_at
+  delete copied.updated_at
+  delete copied.collection
+  delete copied.collection_name
+  delete copied._rankingScore
+  return copied
+}
+
+const handleCopyCollection = async () => {
+  const sourceName = String(collectionName.value || '').trim()
+  const targetName = String(copyCollectionTarget.value || '').trim()
+
+  if (!sourceName) {
+    copyCollectionError.value = 'Collection name is missing.'
+    return
+  }
+
+  if (!targetName) {
+    copyCollectionError.value = 'Enter a target collection name.'
+    return
+  }
+
+  if (sourceName === targetName) {
+    copyCollectionError.value = 'Target collection must be different from the source.'
+    return
+  }
+
+  if (!/^[a-zA-Z0-9_-]+$/.test(targetName)) {
+    copyCollectionError.value = 'Use only letters, numbers, underscores, and hyphens.'
+    return
+  }
+
+  const baseUrlValue = getBaseUrlValue(baseUrl)
+  if (!baseUrlValue) {
+    copyCollectionError.value = 'Invalid server URL configuration.'
+    return
+  }
+
+  copyingCollection.value = true
+  copyCollectionError.value = null
+
+  try {
+    const useProxy = shouldUseProxy(baseUrlValue)
+    const encodedSource = encodeURIComponent(sourceName)
+    const encodedTarget = encodeURIComponent(targetName)
+
+    const schemaUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedSource}`)
+    const schemaResponse = await axios.get(schemaUrl)
+    const createPayload = buildCopiedCollectionPayload(schemaResponse.data, targetName)
+
+    if (!createPayload.fields.length) {
+      throw new Error('Source collection schema has no fields to copy.')
+    }
+
+    const createUrl = buildApiUrl(baseUrlValue, useProxy, '/collections')
+    await axios.post(createUrl, createPayload, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const batchSize = 500
+    let offset = 0
+    let copiedCount = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const listUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedSource}/documents`)
+      const listResponse = await axios.get(listUrl, {
+        params: {
+          offset,
+          limit: batchSize,
+          include_created_at: true,
+          distributed: 'off'
+        }
+      })
+
+      const batch = Array.isArray(listResponse.data?.documents)
+        ? listResponse.data.documents
+        : (Array.isArray(listResponse.data) ? listResponse.data : [])
+
+      if (batch.length === 0) {
+        hasMore = false
+        break
+      }
+
+      const documentsToImport = batch.map(cleanCopiedDocument)
+      const importUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedTarget}/documents/import`)
+
+      try {
+        await axios.post(importUrl, { documents: documentsToImport }, {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+      } catch (err) {
+        if (err.response?.status !== 404) {
+          throw err
+        }
+
+        const insertUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedTarget}/documents`)
+        for (const document of documentsToImport) {
+          await axios.post(insertUrl, document, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+        }
+      }
+
+      copiedCount += documentsToImport.length
+      offset += batch.length
+      hasMore = batch.length === batchSize
+    }
+
+    toast.success(`Copied OK! "${sourceName}" copied to "${targetName}" (${copiedCount} document${copiedCount === 1 ? '' : 's'}).`, 'Copied OK')
+    showCopyCollectionDialog.value = false
+    copyCollectionTarget.value = ''
+  } catch (err) {
+    console.error('Copy collection error:', err)
+    copyCollectionError.value = extractSafeErrorMessage(err, 'Failed to copy collection')
+  } finally {
+    copyingCollection.value = false
+  }
+}
+
 const openDeleteDialog = () => {
   if (!collectionName.value) {
     toast.error('Collection name is missing', 'Error')
@@ -2307,6 +2590,11 @@ const sortableFields = ref([])
 
 // Tab management
 const activeTab = ref(getTabFromRoute())
+const showCollectionActionsMenu = ref(false)
+const showCopyCollectionDialog = ref(false)
+const copyCollectionTarget = ref('')
+const copyingCollection = ref(false)
+const copyCollectionError = ref(null)
 
 // Synonyms state
 const synonyms = ref([])
@@ -5305,6 +5593,120 @@ onUnmounted(() => {
   border-top: 1px solid #e2e8f0;
 }
 
+.copy-collection-dialog-card .simple-delete-dialog-header {
+  justify-content: flex-start !important;
+}
+
+.simple-delete-dialog-icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.simple-delete-dialog-subtitle {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.74);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.copy-collection-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.copy-collection-label :deep(.v-icon) {
+  color: #64748b;
+}
+
+.copy-collection-input-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #f3f4f6;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: all 0.2s ease;
+}
+
+.copy-collection-input-shell:hover,
+.copy-collection-input-shell:focus-within {
+  background: #e5e7eb;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.copy-collection-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: none !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: #111827 !important;
+  font-family: arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 600;
+}
+
+.copy-collection-input:focus,
+.copy-collection-input:focus-visible,
+.copy-collection-input:active {
+  background: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.copy-collection-input::placeholder {
+  color: #374151 !important;
+  opacity: 1 !important;
+}
+
+.copy-collection-input:focus::placeholder {
+  color: transparent !important;
+}
+
+.copy-collection-input:disabled {
+  color: #64748b !important;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.copy-collection-error {
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  margin-top: 6px;
+}
+
 /* Compact Search Bar - Small and white */
 .collection-search-shell {
   margin-bottom: 4px;
@@ -5368,6 +5770,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   min-height: 44px;
   padding: 0 8px;
+  margin-left: auto;
   margin-right: 12px;
   position: relative;
   top: -6px;
@@ -7156,14 +7559,71 @@ body :deep([role="tooltip"]) {
 
 .collection-tabs-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
+  min-height: 48px;
+}
+
+.collection-tabs-main {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  flex: 0 1 auto;
 }
 
 .collection-tabs {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 0;
+  width: auto !important;
+  max-width: max-content;
+}
+
+.collection-more-tab {
+  height: 50px;
+  min-height: 50px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #032548;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 16px;
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  margin-left: 0;
+  margin-bottom: 0;
+}
+
+.collection-more-tab:hover,
+.collection-more-tab.active {
+  background: rgba(3, 37, 72, 0.1);
+  color: #032548;
+}
+
+.collection-more-menu {
+  min-width: 160px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12) !important;
+  padding: 6px !important;
+}
+
+.collection-more-menu-item {
+  border-radius: 6px !important;
+  color: #334155 !important;
+  min-height: 38px !important;
+}
+
+.collection-more-menu-item:hover {
+  background: #f8fafc !important;
 }
 
 .collection-tabs :deep(.v-tabs-container) {
@@ -8342,6 +8802,32 @@ body :deep([role="tooltip"]) {
     gap: 10px;
   }
 
+  .collection-tabs-main {
+    width: 100%;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .collection-tabs {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  .collection-more-tab {
+    flex: 0 0 92px;
+    height: 54px;
+    min-height: 54px;
+    justify-content: center;
+    padding: 10px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 12px;
+  }
+
+  .collection-more-tab .v-icon {
+    font-size: 15px !important;
+  }
+
   .collection-search-help-link--tabs {
     align-self: flex-end;
     min-height: 36px;
@@ -8839,6 +9325,21 @@ body :deep([role="tooltip"]) {
 .delete-popup-btn:focus :deep(.v-btn__overlay) {
   background: transparent !important;
   opacity: 0 !important;
+}
+
+.copy-popup-btn {
+  background: linear-gradient(135deg, #0f4c81 0%, #0b3d6b 100%) !important;
+  background-color: #0f4c81 !important;
+  color: #ffffff !important;
+}
+
+.copy-popup-btn :deep(.v-btn__overlay) {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+.copy-popup-btn:hover {
+  background: linear-gradient(135deg, #135893 0%, #0e497d 100%) !important;
 }
 
 .collections-action-btn :deep(.v-btn__overlay) {
