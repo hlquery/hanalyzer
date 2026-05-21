@@ -9,6 +9,21 @@ export function useAliases(baseUrl) {
   const error = ref(null)
   const currentCollectionFilter = ref('')
 
+  const normalizeAliases = (items) => {
+    if (!Array.isArray(items)) return []
+
+    return items.map((item) => {
+      if (!item || typeof item !== 'object') return item
+
+      const collectionName = item.collection_name || item.collection || ''
+      return {
+        ...item,
+        collection_name: collectionName,
+        collection: item.collection || collectionName
+      }
+    })
+  }
+
   const loadAliases = async (showLoading = true, collectionName = currentCollectionFilter.value) => {
     if (showLoading) loading.value = true
     error.value = null
@@ -18,12 +33,15 @@ export function useAliases(baseUrl) {
       const baseUrlValue = getBaseUrlValue(baseUrl)
       const useProxy = shouldUseProxy(baseUrlValue)
       const trimmedCollectionName = String(currentCollectionFilter.value || '').trim()
-      const url = trimmedCollectionName
-        ? buildApiUrl(baseUrlValue, useProxy, `/aliases?collection=${encodeURIComponent(trimmedCollectionName)}`)
-        : buildApiUrl(baseUrlValue, useProxy, '/aliases')
+      const url = buildApiUrl(
+        baseUrlValue,
+        useProxy,
+        '/aliases',
+        trimmedCollectionName ? { collection: trimmedCollectionName } : {}
+      )
       
       const response = await axios.get(url, { timeout: 5000 })
-      aliases.value = response.data?.aliases || []
+      aliases.value = normalizeAliases(response.data?.aliases)
     } catch (err) {
       console.error('useAliases: Error loading aliases:', err)
       error.value = extractSafeErrorMessage(err, 'Failed to load aliases')
