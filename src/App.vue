@@ -60,34 +60,14 @@
         <div v-if="showDisconnectedState" class="not-connected-wrapper">
           <v-card class="not-connected-card" elevation="0">
             <v-card-text class="not-connected-panel">
-              <div class="not-connected-badge">Connection Issue</div>
               <div class="not-connected-body">
                 <h1 class="not-connected-title">Unable to connect</h1>
                 <p class="not-connected-description">
-                  Hanalyzer cannot reach the hlquery server at <code>{{ displayBaseUrl }}</code>.
+                  Hanalyzer cannot reach the hlquery server.
                 </p>
                 <p class="not-connected-subtitle">
                   Make sure the server is running, then retry the connection.
                 </p>
-              </div>
-              <div class="not-connected-actions">
-                <v-btn
-                  class="not-connected-primary"
-                  variant="flat"
-                  prepend-icon="mdi-refresh"
-                  :loading="isChecking"
-                  @click="checkConnection"
-                >
-                  Retry Connection
-                </v-btn>
-                <v-btn
-                  class="not-connected-secondary"
-                  variant="flat"
-                  prepend-icon="mdi-cog"
-                  @click="openServerSettings"
-                >
-                  Server Settings
-                </v-btn>
               </div>
             </v-card-text>
           </v-card>
@@ -126,12 +106,11 @@ const route = useRoute()
 const baseUrl = ref('/api')
 const deploymentDemoMode = ref(false)
 const connectionState = useConnectionStatus(baseUrl)
-const { isConnected, isChecking, hasChecked, checkConnection } = connectionState
+const { isConnected, isChecking, hasChecked } = connectionState
 const commandPaletteOpen = ref(false)
 const connectionStatus = ref(null)
 const authError = ref(null)
 const isCollectionsRoute = computed(() => route.path === '/collections' || route.path.startsWith('/collections/'))
-const displayBaseUrl = computed(() => baseUrl.value || 'http://localhost:9200')
 const showDisconnectedState = computed(() => {
   return hasChecked.value && !isChecking.value && !isConnected.value
 })
@@ -427,15 +406,20 @@ html {
 }
 
 .not-connected-card {
-  width: min(680px, 100%);
+  width: min(600px, 100%);
   border-radius: 20px !important;
-  border: 1px solid rgba(148, 163, 184, 0.22) !important;
-  background: #ffffff !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  background: #edf1f5 !important;
   box-shadow:
     0 20px 48px rgba(15, 23, 42, 0.12),
     0 10px 22px rgba(15, 23, 42, 0.08) !important;
   overflow: hidden;
   position: relative;
+  transform: translateY(-48px);
+}
+
+.not-connected-card:hover {
+  transform: translateY(-48px) !important;
 }
 
 .not-connected-panel {
@@ -443,118 +427,44 @@ html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: 88px 72px 68px 72px !important;
-  background: transparent;
+  justify-content: center;
+  gap: 14px;
+  min-height: 260px;
+  padding: 48px 56px !important;
+  background: #edf1f5;
   text-align: center;
 }
 
-.not-connected-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 34px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  border: 1px solid #dbe4f0;
-  background: #f8fbff;
-  color: #1e3a5f;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .not-connected-title {
-  font-size: 42px;
+  font-size: 34px;
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  line-height: 1.12;
   color: #0f172a;
-  margin: 6px 0 0;
+  margin: 0;
 }
 
 .not-connected-description {
-  font-size: 18px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.5;
   color: #334155;
-  margin: 2px 0 0;
-  max-width: 540px;
+  margin: 0;
+  max-width: 480px;
 }
 
 .not-connected-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
   min-width: 0;
   align-items: center;
 }
 
 .not-connected-subtitle {
-  font-size: 16px;
-  line-height: 1.55;
-  color: #5b6b81;
-  margin: 2px 0 0;
-  max-width: 500px;
-}
-
-.not-connected-description code {
-  font-family: 'JetBrains Mono', 'Inter', monospace;
-  background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.not-connected-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-top: 26px;
-  width: 100%;
-}
-
-.not-connected-actions .v-btn {
-  min-width: 190px;
-  min-height: 52px;
-  border-radius: 999px !important;
-  text-transform: none !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  font-weight: 700;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  padding-inline: 22px !important;
-}
-
-.not-connected-actions .v-btn .v-btn__content {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  line-height: 1 !important;
-}
-
-.not-connected-actions .v-btn .v-icon {
-  font-size: 18px !important;
-  opacity: 0.95 !important;
-  line-height: 1 !important;
-  margin-top: 0 !important;
-}
-
-.not-connected-actions .v-btn:focus-visible {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.22);
-}
-
-.not-connected-secondary,
-.not-connected-primary,
-.not-connected-actions .v-btn:not(.not-connected-secondary) {
-  background: linear-gradient(135deg, #0f2d4a 0%, #14385f 50%, #1a446f 100%) !important;
-  color: #ffffff !important;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.2);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #0f172a;
+  margin: 0;
+  max-width: 440px;
 }
 
 /* Premium Button Style - Global (Modern, Clean) - Enhanced 3D Effect */
