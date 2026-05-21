@@ -466,7 +466,6 @@ const router = useRouter()
 const route = useRoute()
 const baseUrl = inject('baseUrl')
 const deploymentDemoMode = inject('deploymentDemoMode', ref(false))
-const toast = inject('toast', { info: () => {} })
 const logoSrc = `${import.meta.env.BASE_URL || './'}logo.png`
 const emit = defineEmits(['open-command-palette'])
 
@@ -509,7 +508,6 @@ const isHovered = ref(false)
 const distributedMode = ref('auto')
 const demoModeEnabled = ref(false)
 const demoModeMessage = ref('')
-const demoModeToastShown = ref(false)
 const defaultDemoModeMessage = 'Search and browsing are enabled. Write and admin actions are blocked in demo mode.'
 const distributedModeOptions = [
   { title: 'Auto (Server Default)', value: 'auto' },
@@ -823,25 +821,6 @@ const checkDemoMode = async () => {
     demoModeMessage.value = ''
   }
 }
-
-watch([deploymentDemoMode, demoModeEnabled, canShowDemoModeNotice], ([deploymentDemo, serverDemo, canShowNotice]) => {
-  if (!canShowNotice) {
-    demoModeToastShown.value = false
-    return
-  }
-
-  const isDemoActive = deploymentDemo === true || serverDemo === true
-
-  if (!isDemoActive) {
-    demoModeToastShown.value = false
-    return
-  }
-
-  if (demoModeToastShown.value) return
-
-  toast.info('Demo enabled!', 'Demo Mode')
-  demoModeToastShown.value = true
-}, { immediate: true })
 
 // Check auth requirement periodically when connected
 watch([isConnected, baseUrl], () => {
