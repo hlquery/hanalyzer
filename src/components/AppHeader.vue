@@ -1,7 +1,7 @@
 <template>
   <div class="app-header-shell">
     <div
-      v-if="demoModeEnabled"
+      v-if="showDemoModeBanner"
       class="demo-mode-banner"
       role="status"
       aria-live="polite"
@@ -552,6 +552,14 @@ const demoModeMessageParts = computed(() => {
     : [{ type: 'text', value: message }]
 })
 
+const canShowDemoModeNotice = computed(() => {
+  return hasChecked.value && isConnected.value && !isChecking.value
+})
+
+const showDemoModeBanner = computed(() => {
+  return canShowDemoModeNotice.value && demoModeEnabled.value
+})
+
 const handleNavMenuToggle = (isOpen) => {
   showNavMenu.value = isOpen
   if (isOpen) {
@@ -608,7 +616,7 @@ const hasAuthConfigured = computed(() => {
 
 const injectedConnectionState = inject('connectionState', null)
 const connectionState = injectedConnectionState || useConnectionStatus(baseUrl)
-const { isConnected, lastPingTime, latencyHistory, isChecking, checkConnection } = connectionState
+const { isConnected, lastPingTime, latencyHistory, isChecking, hasChecked, checkConnection } = connectionState
 const isEffectivelyConnected = computed(() => {
   runtimeConfigRevision.value
   const url = baseUrl?.value || baseUrl
@@ -816,7 +824,12 @@ const checkDemoMode = async () => {
   }
 }
 
-watch([deploymentDemoMode, demoModeEnabled], ([deploymentDemo, serverDemo]) => {
+watch([deploymentDemoMode, demoModeEnabled, canShowDemoModeNotice], ([deploymentDemo, serverDemo, canShowNotice]) => {
+  if (!canShowNotice) {
+    demoModeToastShown.value = false
+    return
+  }
+
   const isDemoActive = deploymentDemo === true || serverDemo === true
 
   if (!isDemoActive) {
