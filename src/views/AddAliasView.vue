@@ -149,7 +149,7 @@
                       <v-icon
                         v-if="targetCollection === collection.name"
                         size="18"
-                        color="primary"
+                        color="blue-grey-darken-3"
                       >
                         mdi-check-circle
                       </v-icon>
@@ -160,7 +160,7 @@
                     class="collection-selection-summary"
                     :class="{ 'has-selection': !!targetCollection }"
                   >
-                    <v-icon size="18" :color="targetCollection ? 'primary' : 'grey-darken-1'">
+                    <v-icon size="18" :color="targetCollection ? 'blue-grey-darken-3' : 'grey-darken-1'">
                       {{ targetCollection ? 'mdi-check-circle' : 'mdi-information-outline' }}
                     </v-icon>
                     <span>
@@ -168,8 +168,7 @@
                     </span>
                   </div>
                 </div>
-                <div class="field-helper-row">
-                  <span class="field-helper-text">Choose the collection this alias should resolve to.</span>
+                <div class="field-helper-row collection-action-row">
                   <v-btn
                     size="x-small"
                     variant="text"
@@ -183,28 +182,28 @@
                 </div>
               </div>
 
-              <div class="form-actions mt-10">
-                <span class="form-actions-info">Need to change later? You can re-point aliases anytime.</span>
-                <v-btn
-                  variant="text"
-                  @click="goBack"
-                  :disabled="loading"
-                  class="mr-4 text-none px-6"
-                  height="44"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  type="submit"
-                  variant="flat"
-                  :loading="loading"
-                  :disabled="!formValid || !aliasName || !targetCollection || aliasConflict"
-                  class="alias-submit-btn px-8"
-                  prepend-icon="mdi-plus-circle-outline"
-                  height="44"
-                >
-                  Add Alias
-                </v-btn>
+              <div class="form-actions">
+                <div class="form-action-buttons">
+                  <v-btn
+                    variant="outlined"
+                    @click="goBack"
+                    :disabled="loading"
+                    class="alias-cancel-btn text-none"
+                    prepend-icon="mdi-arrow-left"
+                  >
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                    type="submit"
+                    variant="flat"
+                    :loading="loading"
+                    :disabled="!formValid || !aliasName || !targetCollection || aliasConflict"
+                    class="alias-submit-btn text-none"
+                    prepend-icon="mdi-plus"
+                  >
+                    Add Alias
+                  </v-btn>
+                </div>
               </div>
             </v-form>
           </v-card-text>
@@ -398,14 +397,15 @@ export default {
 
 .form-card-content {
   padding: 40px !important;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: #ffffff;
 }
 
 .section-icon-wrapper {
-  width: 48px;
-  height: 48px;
-  background: #f1f5f9;
-  border-radius: 12px;
+  width: 42px;
+  height: 42px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,17 +439,20 @@ export default {
   gap: 10px;
 }
 
+.collection-action-row {
+  justify-content: flex-end;
+}
+
 .field-helper-text {
   font-size: 12px;
   color: #64748b;
 }
 
 .collection-picker-shell {
-  border: 1px solid #dbe7f3;
-  border-radius: 16px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
   padding: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .collection-picker-toolbar {
@@ -474,15 +477,16 @@ export default {
   text-align: center;
   border-radius: 999px;
   padding: 8px 12px;
-  background: #eff6ff;
-  color: #0f4c81;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
   font-size: 12px;
   font-weight: 700;
 }
 
 .collection-picker-list {
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 10px;
   background: #ffffff;
   min-height: 180px;
   max-height: 320px;
@@ -508,7 +512,7 @@ export default {
 .collection-option {
   width: 100%;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: 8px;
   background: transparent;
   padding: 12px 14px;
   display: flex;
@@ -522,13 +526,13 @@ export default {
 
 .collection-option:hover {
   background: #f8fafc;
-  border-color: #dbe7f3;
+  border-color: #e2e8f0;
 }
 
 .collection-option.is-selected {
-  background: #eff6ff;
-  border-color: #93c5fd;
-  box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.08);
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  box-shadow: none;
 }
 
 .collection-option:disabled {
@@ -566,8 +570,8 @@ export default {
 .collection-selection-summary {
   margin-top: 12px;
   padding: 12px 14px;
-  border-radius: 12px;
-  background: #f8fafc;
+  border-radius: 8px;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
@@ -578,9 +582,9 @@ export default {
 }
 
 .collection-selection-summary.has-selection {
-  background: #eff6ff;
-  border-color: #bfdbfe;
-  color: #0f4c81;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 .form-input-modern :deep(.v-field) {
@@ -609,6 +613,7 @@ export default {
   min-height: 46px !important;
   border-radius: 8px !important;
   background-color: #fbfdff !important;
+  border: 1px solid #d7dee8 !important;
   box-shadow: none !important;
   --v-field-border-opacity: 1 !important;
   --v-field-border-width: 1px !important;
@@ -627,6 +632,17 @@ export default {
 .alias-name-input :deep(.v-field--focused),
 .collection-filter-input :deep(.v-field--focused) {
   background-color: #ffffff !important;
+  border-color: #d7dee8 !important;
+  box-shadow: none !important;
+}
+
+.alias-name-input :deep(.v-field--error),
+.alias-name-input :deep(.v-field--focused.v-field--error),
+.alias-name-input.v-input--error :deep(.v-field),
+.collection-filter-input :deep(.v-field--error),
+.collection-filter-input :deep(.v-field--focused.v-field--error),
+.collection-filter-input.v-input--error :deep(.v-field) {
+  border-color: #d7dee8 !important;
   box-shadow: none !important;
 }
 
@@ -635,14 +651,40 @@ export default {
   color: #cbd5e1 !important;
 }
 
+.alias-name-input :deep(.v-field--error .v-field__outline),
+.alias-name-input :deep(.v-field--focused.v-field--error .v-field__outline),
+.collection-filter-input :deep(.v-field--error .v-field__outline),
+.collection-filter-input :deep(.v-field--focused.v-field--error .v-field__outline) {
+  color: #d7dee8 !important;
+}
+
 .alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline),
 .collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline) {
   color: #cbd5e1 !important;
 }
 
+.alias-name-input :deep(.v-field--error .v-field__outline__start),
+.alias-name-input :deep(.v-field--error .v-field__outline__notch),
+.alias-name-input :deep(.v-field--error .v-field__outline__end),
+.alias-name-input :deep(.v-field--focused.v-field--error .v-field__outline__start),
+.alias-name-input :deep(.v-field--focused.v-field--error .v-field__outline__notch),
+.alias-name-input :deep(.v-field--focused.v-field--error .v-field__outline__end),
+.collection-filter-input :deep(.v-field--error .v-field__outline__start),
+.collection-filter-input :deep(.v-field--error .v-field__outline__notch),
+.collection-filter-input :deep(.v-field--error .v-field__outline__end),
+.collection-filter-input :deep(.v-field--focused.v-field--error .v-field__outline__start),
+.collection-filter-input :deep(.v-field--focused.v-field--error .v-field__outline__notch),
+.collection-filter-input :deep(.v-field--focused.v-field--error .v-field__outline__end) {
+  border-color: #d7dee8 !important;
+  border-width: 1px !important;
+}
+
 .alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__start),
 .alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__notch),
 .alias-name-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__end),
+.collection-filter-input :deep(.v-field--focused .v-field__outline__start),
+.collection-filter-input :deep(.v-field--focused .v-field__outline__notch),
+.collection-filter-input :deep(.v-field--focused .v-field__outline__end),
 .collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__start),
 .collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__notch),
 .collection-filter-input :deep(.v-field--focused:not(.v-field--error) .v-field__outline__end) {
@@ -681,41 +723,71 @@ export default {
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   flex-wrap: wrap;
+  margin-top: 40px;
+  padding-top: 22px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .form-actions-info {
   font-size: 13px;
   color: #64748b;
+  line-height: 1.4;
+}
+
+.form-action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.alias-cancel-btn,
+.alias-submit-btn {
+  min-width: 118px !important;
+  height: 42px !important;
+  border-radius: 8px !important;
+  padding: 0 18px !important;
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+
+.alias-cancel-btn {
+  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.alias-cancel-btn:hover {
+  background: #f8fafc !important;
+  border-color: #94a3b8 !important;
+}
+
+.alias-cancel-btn :deep(.v-btn__content),
+.alias-cancel-btn :deep(.v-icon) {
+  color: #334155 !important;
+}
+
+.alias-cancel-btn:focus,
+.alias-cancel-btn:focus-visible,
+.alias-submit-btn:focus,
+.alias-submit-btn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .alias-submit-btn {
-  border-radius: 6px !important;
-  font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  line-height: 44px !important;
-  height: 44px !important;
-  padding: 0 14px !important;
-  text-transform: none !important;
-  border: none !important;
-  letter-spacing: normal !important;
   color: #ffffff !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  position: relative !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  gap: 0 !important;
-  pointer-events: auto !important;
-  z-index: 10 !important;
-  cursor: pointer !important;
-  background: linear-gradient(135deg, #0f4c81 0%, #0b3d6b 100%) !important;
-  box-shadow: 0 8px 18px rgba(15, 76, 129, 0.28) !important;
+  background: #0f172a !important;
+  border: 1px solid #0f172a !important;
 }
 
 .alias-submit-btn :deep(.v-btn__overlay) {
@@ -731,14 +803,25 @@ export default {
   justify-content: center !important;
 }
 
+.alias-submit-btn :deep(.v-icon) {
+  color: #ffffff !important;
+}
+
 .alias-submit-btn:hover {
-  background: linear-gradient(135deg, #135893 0%, #0e497d 100%) !important;
-  box-shadow: 0 10px 20px rgba(15, 76, 129, 0.34) !important;
+  background: #1e293b !important;
+  border-color: #1e293b !important;
+  box-shadow: none !important;
 }
 
 .alias-submit-btn:active {
-  background: linear-gradient(135deg, #0b3d6b 0%, #082f53 100%) !important;
-  box-shadow: 0 4px 10px rgba(15, 76, 129, 0.24) !important;
+  background: #020617 !important;
+  border-color: #020617 !important;
+  box-shadow: none !important;
+}
+
+.alias-submit-btn.v-btn--disabled,
+.alias-cancel-btn.v-btn--disabled {
+  opacity: 0.55 !important;
 }
 
 .card-premium {
@@ -769,8 +852,14 @@ export default {
     align-items: stretch;
   }
 
-  .form-actions-info {
+  .form-action-buttons {
     width: 100%;
+    justify-content: stretch;
+  }
+
+  .alias-cancel-btn,
+  .alias-submit-btn {
+    flex: 1 1 0;
   }
 }
 </style>

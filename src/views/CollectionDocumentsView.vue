@@ -89,6 +89,12 @@
                 </template>
                 <v-list-item-title>Copy</v-list-item-title>
               </v-list-item>
+              <v-list-item class="collection-more-menu-item" @click="goToCollectionAliases">
+                <template #prepend>
+                  <v-icon size="18">mdi-link-variant</v-icon>
+                </template>
+                <v-list-item-title>List aliases</v-list-item-title>
+              </v-list-item>
             </v-list>
           </v-menu>
         </div>
@@ -2122,6 +2128,17 @@ const goToAddDocument = () => {
   }
 }
 
+const goToCollectionAliases = () => {
+  const name = collectionName.value
+  showCollectionActionsMenu.value = false
+
+  if (name && name.trim()) {
+    router.push(`/aliases/${encodeURIComponent(name.trim())}`)
+  } else {
+    toast.error('Collection name is required', 'Error')
+  }
+}
+
 const showInlineAddSynonym = ref(false)
 const showInlineAddStopword = ref(false)
 const addingInlineSynonym = ref(false)
@@ -3304,6 +3321,9 @@ const handleSearch = async () => {
   }
   
   searchPerformed.value = true
+  if (currentPage.value !== 1) {
+    currentPage.value = 1
+  }
   lastSubmittedSearchQuery.value = hasQuery ? searchQuery.value.trim() : ''
   searchError.value = null
   await ensureSearchSchemaReady()
@@ -3397,7 +3417,7 @@ const handleSearch = async () => {
   if (routeQ !== (nextQuery.q || '') || routeFrom !== (nextQuery.from || '') || routeTo !== (nextQuery.to || '')) {
     suppressRouteQuerySearch.value = true
     router.replace({
-      path: route.path,
+      path: getDocumentsRoutePath(1),
       query: nextQuery
     }).finally(() => {
       suppressRouteQuerySearch.value = false
