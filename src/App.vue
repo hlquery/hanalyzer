@@ -57,7 +57,43 @@
           </div>
         </v-alert>
         
-        <router-view v-slot="{ Component, route }">
+        <div v-if="showDisconnectedState" class="not-connected-wrapper">
+          <v-card class="not-connected-card" elevation="0">
+            <v-card-text class="not-connected-panel">
+              <div class="not-connected-badge">Connection Issue</div>
+              <div class="not-connected-body">
+                <h1 class="not-connected-title">Unable to connect</h1>
+                <p class="not-connected-description">
+                  Hanalyzer cannot reach the hlquery server at <code>{{ displayBaseUrl }}</code>.
+                </p>
+                <p class="not-connected-subtitle">
+                  Make sure the server is running, then retry the connection.
+                </p>
+              </div>
+              <div class="not-connected-actions">
+                <v-btn
+                  class="not-connected-primary"
+                  variant="flat"
+                  prepend-icon="mdi-refresh"
+                  :loading="isChecking"
+                  @click="checkConnection"
+                >
+                  Retry Connection
+                </v-btn>
+                <v-btn
+                  class="not-connected-secondary"
+                  variant="flat"
+                  prepend-icon="mdi-cog"
+                  @click="openServerSettings"
+                >
+                  Server Settings
+                </v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
+
+        <router-view v-else v-slot="{ Component, route }">
           <Transition name="page" mode="out-in">
             <component :is="Component" :key="route.path" />
           </Transition>
@@ -90,11 +126,15 @@ const route = useRoute()
 const baseUrl = ref('/api')
 const deploymentDemoMode = ref(false)
 const connectionState = useConnectionStatus(baseUrl)
-const { isConnected } = connectionState
+const { isConnected, isChecking, hasChecked, checkConnection } = connectionState
 const commandPaletteOpen = ref(false)
 const connectionStatus = ref(null)
 const authError = ref(null)
 const isCollectionsRoute = computed(() => route.path === '/collections' || route.path.startsWith('/collections/'))
+const displayBaseUrl = computed(() => baseUrl.value || 'http://localhost:9200')
+const showDisconnectedState = computed(() => {
+  return hasChecked.value && !isChecking.value && !isConnected.value
+})
 
 // Expose baseUrl globally for axios interceptor
 watch(baseUrl, (newUrl) => {
@@ -222,14 +262,13 @@ onUnmounted(() => {
 onMounted(() => {
   if (typeof window === 'undefined') return
 
-  applyRuntimeConfig(window.HANALYZER_CONFIG)
-
   const handleRuntimeConfigLoaded = (event) => {
     applyRuntimeConfig(event.detail)
   }
 
   window.addEventListener('hanalyzer-config-loaded', handleRuntimeConfigLoaded)
   window.__hlquery_runtime_config_handler__ = handleRuntimeConfigLoaded
+  applyRuntimeConfig(window.HANALYZER_CONFIG)
 })
 
 onUnmounted(() => {
@@ -490,7 +529,7 @@ html {
   padding-inline: 22px !important;
 }
 
-.not-connected-actions .v-btn :deep(.v-btn__content) {
+.not-connected-actions .v-btn .v-btn__content {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -498,7 +537,7 @@ html {
   line-height: 1 !important;
 }
 
-.not-connected-actions .v-btn :deep(.v-icon) {
+.not-connected-actions .v-btn .v-icon {
   font-size: 18px !important;
   opacity: 0.95 !important;
   line-height: 1 !important;

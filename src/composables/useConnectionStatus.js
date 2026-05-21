@@ -6,6 +6,7 @@ import { authManager } from './useAuth'
 export function useConnectionStatus(baseUrl) {
   const isConnected = ref(false)
   const isChecking = ref(false)
+  const hasChecked = ref(false)
   const lastPingTime = ref(null)
   const latencyHistory = ref([]) // Array of { time: timestamp, latency: ms }
   const authRequiredLocal = ref(false)
@@ -32,6 +33,7 @@ export function useConnectionStatus(baseUrl) {
     const baseUrlValue = getBaseUrlValue(baseUrl)
     if (!baseUrlValue) {
       isConnected.value = false
+      hasChecked.value = true
       return
     }
     
@@ -158,6 +160,7 @@ export function useConnectionStatus(baseUrl) {
       // Require consecutive failures to avoid online/offline flapping under load.
       markFailure()
     } finally {
+      hasChecked.value = true
       isChecking.value = false
     }
   }
@@ -195,6 +198,7 @@ export function useConnectionStatus(baseUrl) {
     return {
     isConnected,
     isChecking,
+    hasChecked,
     lastPingTime,
     latencyHistory,
     checkConnection,
