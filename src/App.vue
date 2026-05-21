@@ -405,7 +405,7 @@ html {
   background: transparent;
 }
 
-.not-connected-card {
+.v-card.not-connected-card {
   width: min(600px, 100%);
   border-radius: 20px !important;
   border: 1px solid rgba(148, 163, 184, 0.28) !important;
@@ -418,7 +418,7 @@ html {
   transform: translateY(-48px);
 }
 
-.not-connected-card:hover {
+.v-card.not-connected-card:hover {
   transform: translateY(-48px) !important;
 }
 
