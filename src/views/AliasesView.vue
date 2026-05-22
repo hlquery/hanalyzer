@@ -1274,6 +1274,35 @@ onMounted(() => {
   background-color: transparent !important;
 }
 
+@media (max-width: 768px) {
+  .collections-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .collections-title-section {
+    justify-content: center !important;
+    flex: 0 1 auto !important;
+    width: 100% !important;
+  }
+
+  .collections-total-text {
+    justify-content: center !important;
+  }
+
+  .collections-header-actions {
+    width: 100% !important;
+    margin-left: 0 !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+  }
+
+  .collections-header-actions > * {
+    flex: 0 0 auto !important;
+  }
+}
+
 @media (max-width: 600px) {
   .empty-collections-card {
     max-width: 100% !important;

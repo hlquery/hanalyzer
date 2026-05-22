@@ -161,7 +161,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="compact-search-input"
-                placeholder="Search this collection"
+                placeholder="Search this collection ..."
                 @keyup.enter="handleSearch"
                 @input="handleSearchInput"
               />
@@ -8672,7 +8672,7 @@ body :deep([role="tooltip"]) {
     margin-left: 0 !important;
     display: flex !important;
     flex-wrap: wrap !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
     align-items: center !important;
     gap: 4px 14px !important;
     order: 2;
@@ -9396,6 +9396,23 @@ body :deep([role="tooltip"]) {
   opacity: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+@media (max-width: 760px) {
+  .collections-header-actions {
+    justify-content: center !important;
+  }
+
+  .collections-header-actions .collections-action-btn.delete-header-btn,
+  .collections-header-actions .collections-action-btn.delete-header-btn:hover,
+  .collections-header-actions .collections-action-btn.delete-header-btn:active,
+  .collections-header-actions .collections-action-btn.delete-header-btn:focus,
+  .collections-header-actions .collections-action-btn.delete-header-btn:focus-visible,
+  .collections-header-actions .collections-action-btn.delete-header-btn:focus-within {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important;
+    background-color: #dc2626 !important;
+    color: #ffffff !important;
+  }
 }
 
 /* View Details Button */
