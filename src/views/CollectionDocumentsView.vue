@@ -180,7 +180,7 @@
               {{ searchResultsSummary }}
             </span>
             <span class="google-results-count" v-else-if="!searchPerformed && documents.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
-              {{ totalDocuments || documents.length }} documents
+              Showing {{ paginationInfo.start }}-{{ paginationInfo.end }} out of {{ paginationInfo.total }} documents
             </span>
           </div>
 
