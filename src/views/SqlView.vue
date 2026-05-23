@@ -31,27 +31,61 @@
         />
 
         <div class="sql-query-examples">
-          <div class="sql-example-label">Examples</div>
-          <div
-            v-for="group in sqlExampleGroups"
-            :key="group.title"
-            class="sql-example-group"
+          <button
+            class="sql-example-chip"
+            :class="{ 'sql-example-chip--active': isExampleActive('show cols;') }"
+            type="button"
+            title="SHOW COLS;"
+            :aria-pressed="isExampleActive('show cols;')"
+            @click="applyExample('show cols;')"
           >
-            <div class="sql-example-group-title">{{ group.title }}</div>
-            <button
-              v-for="example in group.items"
-              :key="example.sql"
-              class="sql-example-chip"
-              :class="{ 'sql-example-chip--active': isExampleActive(example.sql) }"
-              type="button"
-              :title="example.description"
-              :aria-pressed="isExampleActive(example.sql)"
-              @click="applyExample(example.sql)"
-            >
-              <span class="sql-example-chip-title">{{ example.label }}</span>
-              <code>{{ example.sql }}</code>
-            </button>
-          </div>
+            <span class="sql-example-chip-title">Collections</span>
+            <span class="sql-example-chip-copy">List all collections</span>
+          </button>
+          <button
+            class="sql-example-chip"
+            :class="{ 'sql-example-chip--active': isExampleActive('SELECT * FROM food LIMIT 20;') }"
+            type="button"
+            title="SELECT * FROM food LIMIT 20;"
+            :aria-pressed="isExampleActive('SELECT * FROM food LIMIT 20;')"
+            @click="applyExample('SELECT * FROM food LIMIT 20;')"
+          >
+            <span class="sql-example-chip-title">Browse documents</span>
+            <span class="sql-example-chip-copy">First 20 rows from `food`</span>
+          </button>
+          <button
+            class="sql-example-chip"
+            :class="{ 'sql-example-chip--active': isExampleActive(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`) }"
+            type="button"
+            title="SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';"
+            :aria-pressed="isExampleActive(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`)"
+            @click="applyExample(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`)"
+          >
+            <span class="sql-example-chip-title">Prefix match (music)</span>
+            <span class="sql-example-chip-copy">Content starts with Madonna or Nirvana</span>
+          </button>
+          <button
+            class="sql-example-chip"
+            :class="{ 'sql-example-chip--active': isExampleActive('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;') }"
+            type="button"
+            title="SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;"
+            :aria-pressed="isExampleActive('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;')"
+            @click="applyExample('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;')"
+          >
+            <span class="sql-example-chip-title">Newest first</span>
+            <span class="sql-example-chip-copy">Latest 20 from `art` by timestamp</span>
+          </button>
+          <button
+            class="sql-example-chip"
+            :class="{ 'sql-example-chip--active': isExampleActive('SELECT COUNT(*) FROM food;') }"
+            type="button"
+            title="SELECT COUNT(*) FROM food;"
+            :aria-pressed="isExampleActive('SELECT COUNT(*) FROM food;')"
+            @click="applyExample('SELECT COUNT(*) FROM food;')"
+          >
+            <span class="sql-example-chip-title">Count rows</span>
+            <span class="sql-example-chip-copy">Total documents in `food`</span>
+          </button>
         </div>
       </div>
     </div>
@@ -190,144 +224,6 @@ const currentPage = ref(1)
 const perPage = ref(20)
 const searchTimeMs = ref(null)
 const ranOnce = ref(false)
-
-const sqlExampleGroups = [
-  {
-    title: 'Browse',
-    items: [
-      {
-        label: 'List collections',
-        sql: 'SHOW COLLECTIONS;',
-        description: 'Return the collections available on the server.'
-      },
-      {
-        label: 'Query all',
-        sql: 'SELECT * FROM food LIMIT 20;',
-        description: 'Return every field from a collection with a bounded result set.'
-      },
-      {
-        label: 'Pick fields',
-        sql: 'SELECT id, title, score FROM food LIMIT 20;',
-        description: 'Return only the fields you want to inspect.'
-      }
-    ]
-  },
-  {
-    title: 'Text',
-    items: [
-      {
-        label: 'Contains',
-        sql: "SELECT id, title FROM food WHERE title CONTAINS 'apple' LIMIT 20;",
-        description: 'Match rows where the field contains a value anywhere in the text.'
-      },
-      {
-        label: 'Not contains',
-        sql: "SELECT id, title FROM food WHERE title NOT CONTAINS 'apple' LIMIT 20;",
-        description: 'Exclude rows where the field contains a value.'
-      },
-      {
-        label: 'LIKE',
-        sql: "SELECT id, title FROM food WHERE title LIKE '%apple%' LIMIT 20;",
-        description: 'Use SQL wildcard matching with percent and underscore patterns.'
-      },
-      {
-        label: 'ILIKE',
-        sql: "SELECT id, title FROM food WHERE title ILIKE '%Apple%' LIMIT 20;",
-        description: 'Use case-insensitive wildcard matching.'
-      }
-    ]
-  },
-  {
-    title: 'Filters',
-    items: [
-      {
-        label: 'Equals',
-        sql: "SELECT id, title FROM food WHERE category = 'fruit' LIMIT 20;",
-        description: 'Match an exact scalar field value.'
-      },
-      {
-        label: 'Range',
-        sql: 'SELECT id, title, price FROM food WHERE price BETWEEN 10 AND 50 ORDER BY price ASC LIMIT 20;',
-        description: 'Filter numeric values between two bounds.'
-      },
-      {
-        label: 'IN list',
-        sql: "SELECT id, title FROM food WHERE category IN ('fruit', 'snack') LIMIT 20;",
-        description: 'Match any value from a fixed list.'
-      },
-      {
-        label: 'Boolean',
-        sql: "SELECT id, title FROM food WHERE active IS TRUE OR category = 'featured' LIMIT 20;",
-        description: 'Combine boolean predicates with OR.'
-      }
-    ]
-  },
-  {
-    title: 'Sort',
-    items: [
-      {
-        label: 'Newest',
-        sql: 'SELECT id, title, timestamp FROM art ORDER BY timestamp DESC LIMIT 20;',
-        description: 'Sort rows by a timestamp field.'
-      },
-      {
-        label: 'Page',
-        sql: 'SELECT id, title FROM food ORDER BY id ASC LIMIT 20 OFFSET 20;',
-        description: 'Fetch the next page with LIMIT and OFFSET.'
-      },
-      {
-        label: 'Distinct',
-        sql: 'SELECT DISTINCT category FROM food ORDER BY category ASC;',
-        description: 'Return one row per unique category.'
-      }
-    ]
-  },
-  {
-    title: 'Aggregates',
-    items: [
-      {
-        label: 'Count',
-        sql: 'SELECT COUNT(*) AS total_docs FROM food;',
-        description: 'Count all matching documents.'
-      },
-      {
-        label: 'Stats',
-        sql: 'SELECT AVG(score) AS avg_score, MIN(price) AS min_price, MAX(price) AS max_price FROM food;',
-        description: 'Calculate aggregate values across matching rows.'
-      },
-      {
-        label: 'Group',
-        sql: 'SELECT category, COUNT(*) AS total_docs FROM food GROUP BY category ORDER BY total_docs DESC LIMIT 20;',
-        description: 'Group rows and order by an aggregate output.'
-      },
-      {
-        label: 'Having',
-        sql: 'SELECT category, COUNT(*) AS total_docs FROM food GROUP BY category HAVING COUNT(*) >= 2 ORDER BY total_docs DESC;',
-        description: 'Filter grouped aggregate results.'
-      }
-    ]
-  },
-  {
-    title: 'Writes',
-    items: [
-      {
-        label: 'Insert',
-        sql: "INSERT INTO food (id, title, category, score) VALUES ('doc_new', 'Inserted from SQL', 'ops', 1);",
-        description: 'Insert one document through the top-level SQL endpoint.'
-      },
-      {
-        label: 'Delete',
-        sql: "DELETE FROM food WHERE id = 'doc_new' LIMIT 1;",
-        description: 'Delete matching documents through the top-level SQL endpoint.'
-      },
-      {
-        label: 'Drop',
-        sql: 'DROP COLLECTION old_collection;',
-        description: 'Drop a collection through the top-level SQL endpoint.'
-      }
-    ]
-  }
-]
 
 const hasRows = computed(() => Array.isArray(rows.value) && rows.value.length > 0)
 const formattedSearchTimeMs = computed(() => {
@@ -618,7 +514,6 @@ watch(
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 0 32px;
-  color: #0f172a;
 }
 
 .sql-header {
@@ -819,7 +714,6 @@ watch(
   align-items: flex-start !important;
   min-height: 120px !important;
   padding: 22px 24px !important;
-  color: #0f172a !important;
 }
 
 .sql-query-input :deep(textarea) {
@@ -837,53 +731,37 @@ watch(
   resize: none !important;
 }
 
-.sql-query-input :deep(textarea::placeholder) {
-  color: #64748b !important;
-  opacity: 1 !important;
-}
-
 .sql-query-examples {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 10px;
-  margin-top: 12px;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
 }
 
 .sql-example-label {
-  grid-column: 1 / -1;
   font-size: 12px;
   font-weight: 800;
   color: #000000;
-}
-
-.sql-example-group {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.sql-example-group-title {
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #475569;
 }
 
 .sql-example-chip {
   border: 1px solid #dbe3ee;
   background: #ffffff;
   color: #0f172a;
-  border-radius: 8px;
-  padding: 8px 10px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.18s ease;
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
-  min-width: 0;
+  justify-content: center;
+  gap: 3px;
+  width: 230px;
+  min-height: 56px;
   text-align: left;
 }
 
@@ -913,27 +791,15 @@ watch(
   color: #000000;
 }
 
-.sql-example-chip code {
-  display: block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.sql-example-chip-copy {
   font-size: 11px;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #334155;
-  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #000000;
 }
 
 .sql-alert {
   margin-top: 16px;
-}
-
-.sql-alert :deep(.v-alert__content),
-.sql-alert :deep(.v-alert__content .font-weight-bold),
-.sql-alert :deep(.v-alert__content div) {
-  color: #0f172a !important;
 }
 
 .sql-results-card {
@@ -1060,8 +926,6 @@ watch(
   cursor: pointer;
   box-shadow: none;
   -webkit-tap-highlight-color: transparent;
-  color: inherit;
-  text-decoration: none;
 }
 
 .sql-cell-link:focus,
@@ -1089,13 +953,6 @@ watch(
   display: flex;
   justify-content: center;
   padding-top: 18px;
-}
-
-.sql-pagination :deep(.v-btn),
-.sql-pagination :deep(.v-pagination__item),
-.sql-pagination :deep(.v-pagination__next),
-.sql-pagination :deep(.v-pagination__prev) {
-  color: #0f172a !important;
 }
 
 .sql-state-card {
@@ -1130,22 +987,6 @@ watch(
 @media (max-width: 960px) {
   .sql-query-toolbar {
     align-items: flex-start;
-  }
-
-  .sql-query-examples {
-    grid-template-columns: 1fr;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .sql-example-label {
-    display: block;
-    width: 100%;
-  }
-
-  .sql-example-chip {
-    width: 100%;
-    text-align: left;
   }
 
   .sql-query-actions {
