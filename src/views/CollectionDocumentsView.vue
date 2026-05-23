@@ -316,27 +316,27 @@
                   v-bind="props"
                   class="google-toolbar-btn quick-sort-btn collection-toolbar-segment-btn"
                   :class="{ 'active': showSamMenu || samSearchEnabled }"
-                  :aria-label="`SAM search ${samAvailabilityLabel}`"
+                  :aria-label="`SAM+ search ${samAvailabilityLabel}`"
                   style="height: 40px; border-radius: 8px;"
                 >
                   <v-icon size="16">mdi-robot-outline</v-icon>
                   <span class="collection-toolbar-label collection-toolbar-label--desktop">{{ samStatusLabel }}</span>
-                  <span class="collection-toolbar-label collection-toolbar-label--mobile">SAM</span>
+                  <span class="collection-toolbar-label collection-toolbar-label--mobile">SAM+</span>
                 </button>
               </template>
               <v-list class="google-menu">
-                <v-list-subheader>SAM search</v-list-subheader>
+                <v-list-subheader>SAM+ search</v-list-subheader>
                 <v-list-item
                   @click="setSamPreference(true)"
                   :class="['google-menu-item', { 'active': samSearchEnabled }]"
                 >
-                  <v-list-item-title>Enable SAM</v-list-item-title>
+                  <v-list-item-title>Enable SAM+</v-list-item-title>
                 </v-list-item>
                 <v-list-item
                   @click="setSamPreference(false)"
                   :class="['google-menu-item', { 'active': !samSearchEnabled }]"
                 >
-                  <v-list-item-title>Disable SAM</v-list-item-title>
+                  <v-list-item-title>Disable SAM+</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -1725,10 +1725,10 @@ const samSearchEnabled = computed(() => {
 
   return samPreference.value !== false
 })
-const samStatusLabel = computed(() => samSearchEnabled.value ? 'SAM' : 'SAM Off')
+const samStatusLabel = computed(() => samSearchEnabled.value ? 'SAM+' : 'SAM+ Off')
 const samAvailabilityLabel = computed(() => {
   if (!serverSamLoaded.value) {
-    return 'Checking SAM'
+    return 'Checking SAM+'
   }
 
   if (!serverSamEnabled.value) {

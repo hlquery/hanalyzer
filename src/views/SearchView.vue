@@ -370,7 +370,7 @@
               <v-col cols="12" md="2">
                 <v-text-field
                   v-model.number="numTypos"
-                  label="Num Typos"
+                  label="Num Typos (0 = exact)"
                   type="number"
                   min="0"
                   max="4"
@@ -736,7 +736,7 @@ const includeFields = ref('')
 const excludeFields = ref('')
 const groupBy = ref('')
 const groupLimit = ref(3)
-const numTypos = ref(2)
+const numTypos = ref(0)
 const hybridAlpha = ref(0.5)
 const prefixMatch = ref(false)
 const prioritizeExactMatch = ref(true)

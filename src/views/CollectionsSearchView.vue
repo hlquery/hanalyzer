@@ -206,7 +206,7 @@ const error = computed(() => collectionsError.value || aliasesError.value)
 
 const searchQuery = ref('')
 const currentPage = ref(1)
-const itemsPerPage = ref(50)
+const itemsPerPage = ref(100)
 const itemsPerPageOptions = [10, 25, 50, 100]
 const showItemsPerPageMenu = ref(false)
 const showSortMenu = ref(false)

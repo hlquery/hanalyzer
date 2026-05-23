@@ -140,7 +140,7 @@ export function useSearch(baseUrl) {
           if (samIndexingActive || samHits.length === 0) {
             directSearchExecuted.value = true
             if (DEBUG_SEARCH) {
-              console.warn('SAM search is indexing or empty, falling back to standard search:', samResponse?.data)
+              console.warn('SAM+ search is indexing or empty, falling back to standard search:', samResponse?.data)
             }
           } else {
             const hydratedResults = await Promise.all(samHits.map(async (hit) => {
@@ -173,7 +173,7 @@ export function useSearch(baseUrl) {
           }
         } catch (samError) {
           if (DEBUG_SEARCH) {
-            console.warn('SAM search failed, falling back to standard search:', samError)
+            console.warn('SAM+ search failed, falling back to standard search:', samError)
           }
         }
       }

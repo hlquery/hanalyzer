@@ -184,9 +184,9 @@ export function getDemoModeErrorMessage(err) {
 }
 
 /**
- * Detect whether SAM is available from a stats or status payload.
- * @param {Object} payload - API payload that may contain SAM metadata
- * @returns {boolean} - True when SAM is reported as available/enabled
+ * Detect whether SAM+ is available from a stats or status payload.
+ * @param {Object} payload - API payload that may contain SAM+ metadata
+ * @returns {boolean} - True when SAM+ is reported as available/enabled
  */
 export function isSamAvailable(payload) {
   if (!payload || typeof payload !== 'object') {
