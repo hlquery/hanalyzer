@@ -2,7 +2,7 @@
   <div class="pagination-info">
     <div class="d-flex align-center" style="gap: 8px;">
       <span class="pagination-info-text">
-        Showing {{ start }} to {{ end }} of {{ total }} {{ itemLabel }}
+        Just showing {{ shown }} of {{ total }} {{ itemLabel }}
         <span v-if="loading" class="ml-2">
           <v-progress-circular indeterminate size="12" width="2" color="primary"></v-progress-circular>
         </span>
@@ -44,6 +44,11 @@ const start = computed(() => {
 
 const end = computed(() => {
   return Math.min(props.currentPage * props.itemsPerPage, props.total)
+})
+
+const shown = computed(() => {
+  if (props.total === 0) return 0
+  return Math.max(0, end.value - start.value + 1)
 })
 </script>
 

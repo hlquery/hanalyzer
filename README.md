@@ -32,8 +32,8 @@ Use hanalyzer when you want hlquery management to feel operational and readable 
 Clone the repository normally:
 
 ```bash
-$ git clone https://github.com/hlquery/hlquery.git
-$ cd hlquery/etc/hanalyzer
+$ git clone https://github.com/hlquery/hanalyzer.git
+$ cd hanalyzer/
 ```
 
 Install dependencies and start the dashboard:
@@ -139,7 +139,7 @@ $ curl http://localhost:9200/health
 ### 2. Start hanalyzer
 
 ```bash
-$ cd etc/hanalyzer
+$ cd hanalyzer/
 $ ./hanalyzer
 ```
 
