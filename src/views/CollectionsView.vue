@@ -1870,6 +1870,31 @@ onUnmounted(() => {
   flex: 1;
 }
 
+@media (max-width: 600px) {
+  .collections-table-card-header {
+    justify-content: center;
+    padding-bottom: 14px;
+  }
+
+  .collections-table-card-spacer {
+    display: none;
+  }
+
+  .collections-table-card-actions {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .collections-table-card-actions .items-per-page-btn,
+  .collections-table-card-actions .create-collection-header-btn {
+    min-width: 148px;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+}
+
 .collections-card :deep(.v-card) {
   border: none !important;
   border-top: none !important;

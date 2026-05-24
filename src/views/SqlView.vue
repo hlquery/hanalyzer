@@ -739,6 +739,12 @@ watch(
   margin-top: 6px;
 }
 
+@media (max-width: 600px) {
+  .sql-query-examples {
+    display: none;
+  }
+}
+
 .sql-example-label {
   font-size: 12px;
   font-weight: 800;

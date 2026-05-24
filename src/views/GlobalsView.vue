@@ -30,14 +30,7 @@
     </div>
 
     <div v-if="activeTab === 'synonyms'" class="globals-panel">
-      <div class="globals-panel-header">
-        <div class="collections-title-section">
-          <h2 class="collections-title-text" style="font-size: 18px; font-weight: 600; margin: 0;">Synonyms</h2>
-          <div class="collections-pagination-info-top" v-if="synonyms.length > 0" style="font-size: 12px; margin-top: 4px;">
-            <v-icon size="12" class="mr-1" style="opacity: 0.7;">mdi-swap-horizontal</v-icon>
-            {{ synonyms.length }} {{ synonyms.length === 1 ? 'synonym' : 'synonyms' }}
-          </div>
-        </div>
+      <div class="globals-panel-header globals-panel-header--actions-only">
         <div class="collections-header-actions globals-panel-actions">
           <v-btn
             variant="flat"
@@ -161,14 +154,7 @@
     </div>
 
     <div v-if="activeTab === 'stopwords'" class="globals-panel">
-      <div class="globals-panel-header">
-        <div class="collections-title-section">
-          <h2 class="collections-title-text" style="font-size: 18px; font-weight: 600; margin: 0;">Stopwords</h2>
-          <div class="collections-pagination-info-top" v-if="stopwordRows.length > 0" style="font-size: 12px; margin-top: 4px;">
-            <v-icon size="12" class="mr-1" style="opacity: 0.7;">mdi-cancel</v-icon>
-            {{ stopwordRows.length }} {{ stopwordRows.length === 1 ? 'stopword' : 'stopwords' }}
-          </div>
-        </div>
+      <div class="globals-panel-header globals-panel-header--actions-only">
         <div class="collections-header-actions globals-panel-actions">
           <v-btn
             variant="flat"
@@ -1028,7 +1014,7 @@ onMounted(async () => {
 .globals-panel {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 28px;
 }
 
 .globals-panel-header {
@@ -1038,6 +1024,10 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 0;
+}
+
+.globals-panel-header--actions-only {
+  justify-content: center;
 }
 
 .globals-panel-eyebrow {
@@ -1066,6 +1056,11 @@ onMounted(async () => {
 .globals-panel-actions {
   display: flex;
   gap: 8px;
+}
+
+.globals-panel-header--actions-only .globals-panel-actions {
+  margin-left: 0 !important;
+  justify-content: center !important;
 }
 
 .globals-input-card {
@@ -1296,7 +1291,11 @@ onMounted(async () => {
   max-width: 48ch;
   font-size: 14px;
   line-height: 1.6;
-  color: #64748b;
+  color: #000000;
+}
+
+.globals-empty-state .collections-action-btn {
+  margin-top: 28px !important;
 }
 
 .simple-delete-dialog-card {

@@ -3063,11 +3063,12 @@ onUnmounted(() => {
 
 @media (max-width: 768px) {
   .dashboard-view {
-    width: 100vw !important;
-    max-width: 100vw !important;
+    width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+    box-sizing: border-box !important;
     transform: none !important;
     left: auto !important;
     right: auto !important;
@@ -3090,7 +3091,8 @@ onUnmounted(() => {
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 26px 18px 40px 18px !important;
+    padding: 20px 0 40px !important;
+    box-sizing: border-box !important;
   }
 
   .dashboard-view .content-inner {
@@ -3121,8 +3123,8 @@ onUnmounted(() => {
 
   .dashboard-view .dashboard-title,
   .dashboard-view .collections-title-text.dashboard-title {
-    margin: 0 0 22px 0 !important;
-    font-size: 30px !important;
+    margin: 0 0 18px 0 !important;
+    font-size: 26px !important;
     line-height: 1.15 !important;
   }
 
@@ -3138,7 +3140,7 @@ onUnmounted(() => {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    align-items: stretch !important;
+    align-items: center !important;
     margin-top: 0 !important;
     margin-bottom: 34px !important;
     padding: 0 !important;
@@ -3165,25 +3167,25 @@ onUnmounted(() => {
   }
 
   .dashboard-view .dashboard-actions .action-button {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: min(100%, 260px) !important;
+    max-width: 260px !important;
     min-width: 0 !important;
-    height: 52px !important;
-    min-height: 52px !important;
+    height: 40px !important;
+    min-height: 40px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
     box-sizing: border-box !important;
-    padding: 0 !important;
-    border-radius: 12px !important;
-    font-size: 17px !important;
+    padding: 0 14px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     line-height: 1 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     transform: none !important;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10) !important;
     flex: 0 0 auto !important;
   }
 
@@ -3191,9 +3193,10 @@ onUnmounted(() => {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 100% !important;
+    width: auto !important;
     height: 100% !important;
     min-width: 0 !important;
+    gap: 6px !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -3204,18 +3207,20 @@ onUnmounted(() => {
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner),
   .dashboard-view .dashboard-actions .action-button :deep(.v-icon),
   .dashboard-view .dashboard-actions .action-button :deep(svg) {
-    position: absolute !important;
-    left: 18px !important;
+    position: static !important;
+    left: auto !important;
     margin: 0 !important;
-    font-size: 20px !important;
+    font-size: 16px !important;
+    width: 16px !important;
+    min-width: 16px !important;
   }
 
   .dashboard-view .dashboard-actions .dashboard-header-btn-label,
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
-    display: block !important;
+    display: inline-flex !important;
     width: fit-content !important;
     min-width: 0 !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -3233,14 +3238,16 @@ onUnmounted(() => {
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
+    box-sizing: border-box !important;
     border-radius: 14px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .dashboard-view .status-card {
     height: auto !important;
     min-height: 56px !important;
+    padding: 12px 14px !important;
   }
 
   .dashboard-view .section-title,
@@ -3250,16 +3257,16 @@ onUnmounted(() => {
 
   .dashboard-view .metric-card {
     border-radius: 16px !important;
-    margin-bottom: 22px !important;
+    margin-bottom: 0 !important;
   }
 
   .dashboard-view .metric-card :deep(.v-card-text) {
-    padding: 28px 24px !important;
+    padding: 20px 18px !important;
   }
 
   .dashboard-view .metrics-section {
     width: 100% !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 22px !important;
   }
 
   .dashboard-view :deep(.v-row),

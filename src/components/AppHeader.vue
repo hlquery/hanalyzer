@@ -1633,6 +1633,13 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   display: none;
 }
 
+.hlquery-logo-container:focus,
+.hlquery-logo-container:focus-visible {
+  outline: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .hlquery-logo-container:active {
   background: rgba(255, 255, 255, 0.15) !important;
 }

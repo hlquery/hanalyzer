@@ -46,7 +46,7 @@ cd "$SCRIPT_DIR"
 # Default values
 COMMAND="start"
 PORT="8080"
-HOST="localhost"
+HOST="0.0.0.0"
 ALLOWED_HOSTS=""
 API_URL="http://localhost:9200"
 OPEN_BROWSER=false
