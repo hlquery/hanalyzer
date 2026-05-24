@@ -9366,14 +9366,19 @@ body :deep([role="tooltip"]) {
   display: none !important;
 }
 
-/* Keep the collection delete header button free of inherited blue shadow/focus chrome. */
+/* Keep the collection delete header button's chrome aligned with the other header actions, tinted red. */
 .collections-header-actions .collections-action-btn.delete-header-btn,
 .collections-header-actions .collections-action-btn.delete-header-btn:hover,
 .collections-header-actions .collections-action-btn.delete-header-btn:active,
 .collections-header-actions .collections-action-btn.delete-header-btn:focus,
 .collections-header-actions .collections-action-btn.delete-header-btn:focus-visible,
 .collections-header-actions .collections-action-btn.delete-header-btn:focus-within {
-  box-shadow: none !important;
+  box-shadow:
+    0 4px 8px rgba(220, 38, 38, 0.4),
+    0 2px 4px rgba(220, 38, 38, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
   filter: none !important;
   outline: none !important;
 }
