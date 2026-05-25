@@ -306,9 +306,14 @@ const clearSearch = () => {
   router.push('/search/collections')
 }
 
+const getAliasRoute = (collectionName) => {
+  const name = String(collectionName || '').trim()
+  return name ? `/aliases/${encodeURIComponent(name)}` : '/aliases'
+}
+
 const goToItem = (item) => {
   if (item.type === 'alias') {
-    router.push('/aliases')
+    router.push(getAliasRoute(item.collection_name))
   } else if (item.name) {
     router.push(`/collections/${encodeURIComponent(item.name)}`)
   }

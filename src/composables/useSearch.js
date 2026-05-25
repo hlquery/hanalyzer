@@ -365,14 +365,15 @@ export function useSearch(baseUrl) {
           // Store total found count
           totalFound.value = response.data.found !== undefined ? response.data.found : response.data.hits.length
           
-          // Transform hits to include document data
-          // Sort results by _text_match (relevance) before mapping
-          // This ensures most relevant results appear first
-          const sortedHits = [...response.data.hits].sort((a, b) => {
-            const scoreA = a._text_match || a.text_match || a._textMatch || 0
-            const scoreB = b._text_match || b.text_match || b._textMatch || 0
-            return scoreB - scoreA // Descending order (highest first)
-          })
+          // Transform hits to include document data. Preserve backend order when
+          // the caller requested an explicit field sort such as rank:asc.
+          const sortedHits = sortBy
+            ? [...response.data.hits]
+            : [...response.data.hits].sort((a, b) => {
+                const scoreA = a._text_match || a.text_match || a._textMatch || 0
+                const scoreB = b._text_match || b.text_match || b._textMatch || 0
+                return scoreB - scoreA
+              })
           
           searchResults.value = sortedHits.map(hit => {
             // Hits have structure: { document: {...}, highlights: {...}, _text_match: ..., created_at: ... }

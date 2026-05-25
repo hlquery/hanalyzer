@@ -467,12 +467,64 @@ const collectionItems = computed(() => {
   }))
 })
 
-const sortOptions = [
+const baseSortOptions = [
   { title: 'Relevance', value: '_relevance' },
   { title: 'Score (Lowest First)', value: '_text_match:asc' },
   { title: 'Document ID (A-Z)', value: 'id:asc' },
   { title: 'Document ID (Z-A)', value: 'id:desc' }
 ]
+
+const buildSortOptionPair = (fieldName) => {
+  const lowerName = String(fieldName || '').toLowerCase()
+
+  if (lowerName === 'rank' || lowerName.endsWith('_rank') || lowerName.includes('ranking')) {
+    return [
+      { title: `${fieldName} (Best First)`, value: `${fieldName}:asc` },
+      { title: `${fieldName} (Worst First)`, value: `${fieldName}:desc` }
+    ]
+  }
+
+  if (lowerName.includes('score') || lowerName.includes('rating') || lowerName.includes('count')) {
+    return [
+      { title: `${fieldName} (High to Low)`, value: `${fieldName}:desc` },
+      { title: `${fieldName} (Low to High)`, value: `${fieldName}:asc` }
+    ]
+  }
+
+  if (lowerName.includes('date') || lowerName.includes('created') || lowerName.includes('updated')) {
+    return [
+      { title: `${fieldName} (Newest First)`, value: `${fieldName}:desc` },
+      { title: `${fieldName} (Oldest First)`, value: `${fieldName}:asc` }
+    ]
+  }
+
+  return [
+    { title: `${fieldName} (A-Z)`, value: `${fieldName}:asc` },
+    { title: `${fieldName} (Z-A)`, value: `${fieldName}:desc` }
+  ]
+}
+
+const sortOptions = computed(() => {
+  const options = [...baseSortOptions]
+  const seen = new Set(options.map((option) => option.value))
+  const schema = collectionSchema.value
+
+  if (schema && Array.isArray(schema.sortable_fields)) {
+    schema.sortable_fields.forEach((field) => {
+      const fieldName = typeof field === 'string' ? field : field?.name
+      if (!fieldName) return
+
+      buildSortOptionPair(fieldName).forEach((option) => {
+        if (!seen.has(option.value)) {
+          seen.add(option.value)
+          options.push(option)
+        }
+      })
+    })
+  }
+
+  return options
+})
 
 const getCollectionRoute = (collectionName) => {
   if (!collectionName) return '/collections'
@@ -527,12 +579,15 @@ const handleSearch = async () => {
   expandedRows.value = []
   
   try {
-    await performSearch(selectedCollection.value, searchQuery.value.trim(), 10)
+    await performSearch(selectedCollection.value, searchQuery.value.trim(), 10, {
+      sortBy: sortBy.value
+    })
     // Update URL
     router.replace({
       query: {
         q: searchQuery.value,
-        collection: selectedCollection.value
+        collection: selectedCollection.value,
+        ...(sortBy.value && sortBy.value !== '_relevance' ? { sort_by: sortBy.value } : {})
       }
     })
   } catch (err) {
@@ -570,6 +625,9 @@ onMounted(async () => {
     if (productsCollection) {
       selectedCollection.value = 'products'
     }
+  }
+  if (route.query.sort_by) {
+    sortBy.value = route.query.sort_by
   }
   
   // Auto-search if query is in URL

@@ -389,6 +389,17 @@
                 >
                   <v-list-item-title>Date (Oldest First)</v-list-item-title>
                 </v-list-item>
+                <template v-if="schemaQuickSortFields.length > 0">
+                  <v-divider class="my-1"></v-divider>
+                  <v-list-item
+                    v-for="option in schemaQuickSortFields"
+                    :key="option.value"
+                    @click="setQuickSort(option.value)"
+                    :class="['google-menu-item', { 'active': quickSortBy === option.value }]"
+                  >
+                    <v-list-item-title>{{ option.label }}</v-list-item-title>
+                  </v-list-item>
+                </template>
                 <v-divider class="my-1"></v-divider>
                 <v-list-item
                   @click="setQuickSort(null)"
@@ -2604,6 +2615,21 @@ const availableFields = ref([])
 const filterableFields = ref([])
 const sortableFields = ref([])
 
+const schemaQuickSortFields = computed(() => {
+  const fixedValues = new Set([
+    '_relevance',
+    '_text_match:asc',
+    'id:asc',
+    'id:desc',
+    'title:asc',
+    'title:desc',
+    'created_at:asc',
+    'created_at:desc'
+  ])
+
+  return (sortableFields.value || []).filter((option) => option && !fixedValues.has(option.value))
+})
+
 
 // Tab management
 const activeTab = ref(getTabFromRoute())
@@ -2775,6 +2801,22 @@ const loadCollectionSchema = async (showLoading = false) => {
         if (commonFieldOptions.some(opt => opt.value.includes(name))) {
           return []
         }
+
+        const lowerName = String(name || '').toLowerCase()
+        if (lowerName === 'rank' || lowerName.endsWith('_rank') || lowerName.includes('ranking')) {
+          return [
+            { label: `${name} (Best First)`, value: `${name}:asc` },
+            { label: `${name} (Worst First)`, value: `${name}:desc` }
+          ]
+        }
+
+        if (lowerName.includes('score') || lowerName.includes('rating') || lowerName.includes('count')) {
+          return [
+            { label: `${name} (High to Low)`, value: `${name}:desc` },
+            { label: `${name} (Low to High)`, value: `${name}:asc` }
+          ]
+        }
+
         return [
           { label: `${name} (A-Z)`, value: `${name}:asc` },
           { label: `${name} (Z-A)`, value: `${name}:desc` }
@@ -3359,13 +3401,8 @@ const handleSearch = async () => {
     options.prefix = false
   }
   
-  // Add sort_by - prioritize relevance for search queries
-  // When there's a search query, always use relevance sorting to show most relevant results first
-  if (hasQuery) {
-    // For search queries, always use relevance to show most relevant results
-    options.sortBy = '_relevance'
-  } else if (sortBy.value) {
-    // For non-search views (filter-only or list view), use the selected sort
+  // Add sort_by. An explicit field sort should win, even when searching text.
+  if (sortBy.value) {
     options.sortBy = sortBy.value
   } else {
     // Default to relevance if nothing is set
@@ -3450,7 +3487,8 @@ const getQuickSortLabel = () => {
   if (quickSortBy.value === 'title:desc') return 'Z-A'
   if (quickSortBy.value === 'created_at:desc') return 'Newest'
   if (quickSortBy.value === 'created_at:asc') return 'Oldest'
-  return 'Relevance'
+  const schemaOption = schemaQuickSortFields.value.find((option) => option.value === quickSortBy.value)
+  return schemaOption ? schemaOption.label : 'Relevance'
 }
 
 const setQuickSort = async (sortValue) => {
@@ -3461,15 +3499,7 @@ const setQuickSort = async (sortValue) => {
   
   // Reload documents with new sort
   if (searchPerformed.value && searchQuery.value && searchQuery.value.trim()) {
-    // If there's an active search, reset to show all documents with the new sort
-    // Don't apply sort to search results - they should be sorted by relevance
-    searchPerformed.value = false
-    searchQuery.value = ''
-    lastSubmittedSearchQuery.value = ''
-    searchResults.value = []
-    if (collectionName.value) {
-      await loadDocuments(collectionName.value, { sortBy: sortValue })
-    }
+    await handleSearch()
   } else if (searchPerformed.value) {
     // Filter-only search, can apply sort
     await handleSearch()
@@ -3486,7 +3516,8 @@ const setSort = async (sortValue) => {
   // Update quickSortBy if it matches one of our quick sort options
   if (sortValue === 'title:asc' || sortValue === 'title:desc' || 
       sortValue === 'created_at:asc' || sortValue === 'created_at:desc' ||
-      sortValue === null) {
+      sortValue === null ||
+      schemaQuickSortFields.value.some((option) => option.value === sortValue)) {
     quickSortBy.value = sortValue
   } else {
     quickSortBy.value = null

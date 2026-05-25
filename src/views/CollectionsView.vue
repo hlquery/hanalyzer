@@ -263,7 +263,7 @@
 
       <template v-slot:item.name="{ item }">
         <router-link
-          :to="item.type === 'alias' ? '/aliases' : getCollectionRoute(item.name)"
+          :to="getCollectionItemRoute(item)"
           class="collection-name-wrapper cursor-pointer"
           style="text-decoration: none; display: block;"
           @click="handleCollectionClick(item.name, $event)"
@@ -842,6 +842,26 @@ const getCollectionRoute = (collectionName) => {
   }
 }
 
+const getAliasRoute = (collectionName) => {
+  if (!collectionName || collectionName === null || collectionName === undefined) {
+    return '/aliases'
+  }
+  try {
+    const encoded = encodeURIComponent(String(collectionName).trim())
+    return encoded ? `/aliases/${encoded}` : '/aliases'
+  } catch (error) {
+    return '/aliases'
+  }
+}
+
+const getCollectionItemRoute = (item) => {
+  if (item?.type === 'alias') {
+    return getAliasRoute(item.collection_name)
+  }
+
+  return getCollectionRoute(item?.name)
+}
+
 const openCollectionInNewTab = (collectionName, event) => {
   if (!collectionName) {
     return
@@ -1365,9 +1385,7 @@ const headers = [
 
 const handleItemClick = (item) => {
   if (item.type === 'alias') {
-    router.push('/aliases')
-    // We could potentially open the dialog directly if we pass state, 
-    // but for now navigating to Aliases is consistent with user request
+    router.push(getAliasRoute(item.collection_name))
   } else {
     viewCollection(item.name)
   }

@@ -631,6 +631,17 @@ onMounted(() => {
   transform: perspective(1000px) translateZ(0) !important;
 }
 
+.aliases-view .collections-header .create-collection-header-btn,
+.aliases-view .collections-header .create-collection-header-btn:hover,
+.aliases-view .collections-header .create-collection-header-btn:focus,
+.aliases-view .collections-header .create-collection-header-btn:focus-visible,
+.aliases-view .collections-header .create-collection-header-btn:active {
+  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
+  background-color: #043061 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
 .collections-action-btn :deep(.v-btn__content) {
   position: relative !important;
   z-index: 1 !important;
@@ -1056,9 +1067,9 @@ onMounted(() => {
 }
 
 .google-toolbar-btn.active {
-  border-color: #1a73e8;
-  color: #1a73e8;
-  background: #e8f0fe;
+  border-color: #043061;
+  color: #043061;
+  background: #e8f1ff;
 }
 
 .google-toolbar-btn :deep(.v-icon) {

@@ -797,7 +797,7 @@ const isNumericFilter = (operator) => {
   return ['>', '<', '>=', '<='].includes(operator)
 }
 
-const sortOptions = [
+const baseSortOptions = [
   { title: 'Relevance', value: '_relevance' },
   { title: 'Score (Lowest First)', value: '_text_match:asc' },
   { title: 'Document ID (A-Z)', value: 'id:asc' },
@@ -805,6 +805,58 @@ const sortOptions = [
   { title: 'Title (A-Z)', value: 'title:asc' },
   { title: 'Title (Z-A)', value: 'title:desc' }
 ]
+
+const buildSortOptionPair = (fieldName) => {
+  const lowerName = String(fieldName || '').toLowerCase()
+
+  if (lowerName === 'rank' || lowerName.endsWith('_rank') || lowerName.includes('ranking')) {
+    return [
+      { title: `${fieldName} (Best First)`, value: `${fieldName}:asc` },
+      { title: `${fieldName} (Worst First)`, value: `${fieldName}:desc` }
+    ]
+  }
+
+  if (lowerName.includes('score') || lowerName.includes('rating') || lowerName.includes('count')) {
+    return [
+      { title: `${fieldName} (High to Low)`, value: `${fieldName}:desc` },
+      { title: `${fieldName} (Low to High)`, value: `${fieldName}:asc` }
+    ]
+  }
+
+  if (lowerName.includes('date') || lowerName.includes('created') || lowerName.includes('updated')) {
+    return [
+      { title: `${fieldName} (Newest First)`, value: `${fieldName}:desc` },
+      { title: `${fieldName} (Oldest First)`, value: `${fieldName}:asc` }
+    ]
+  }
+
+  return [
+    { title: `${fieldName} (A-Z)`, value: `${fieldName}:asc` },
+    { title: `${fieldName} (Z-A)`, value: `${fieldName}:desc` }
+  ]
+}
+
+const sortOptions = computed(() => {
+  const options = [...baseSortOptions]
+  const seen = new Set(options.map((option) => option.value))
+  const schema = collectionSchema.value
+
+  if (schema && Array.isArray(schema.sortable_fields)) {
+    schema.sortable_fields.forEach((field) => {
+      const fieldName = typeof field === 'string' ? field : field?.name
+      if (!fieldName) return
+
+      buildSortOptionPair(fieldName).forEach((option) => {
+        if (!seen.has(option.value)) {
+          seen.add(option.value)
+          options.push(option)
+        }
+      })
+    })
+  }
+
+  return options
+})
 
 const availableFieldNames = computed(() => {
   const schema = collectionSchema.value
