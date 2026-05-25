@@ -1068,9 +1068,9 @@ const sortBy = ref([])
 const sortDesc = ref([])
 
 // Search result sorting - intuitive options
-const searchSortBy = ref('_text_match:desc')
+const searchSortBy = ref('_relevance')
 const searchSortOptions = [
-  { label: '⭐ Relevance (Best Match)', value: '_text_match:desc' },
+  { label: 'Relevance', value: '_relevance' },
   { label: '📉 Relevance (Worst Match)', value: '_text_match:asc' },
   { label: '🔤 Title (A-Z)', value: 'title:asc' },
   { label: '🔤 Title (Z-A)', value: 'title:desc' },

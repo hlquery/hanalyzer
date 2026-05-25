@@ -318,7 +318,6 @@ const performGlobalSearch = async () => {
       query_by: 'name,title,content',
       per_page: GLOBAL_SEARCH_LIMIT,
       highlight: false,
-      sort_by: '_text_match:desc',
       collections: collections.value.map(c => c.name)
     }, { timeout: 10000 })
 

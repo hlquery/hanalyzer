@@ -724,7 +724,7 @@ const selectedCollection = ref('')
 const searchQuery = ref('')
 const searchLimit = ref(10)
 const queryBy = ref([])
-const sortBy = ref('_text_match:desc')
+const sortBy = ref('_relevance')
 const showAdvancedFilters = ref(false)
 const filters = ref([])
 const collectionSchema = ref(null)
@@ -798,7 +798,7 @@ const isNumericFilter = (operator) => {
 }
 
 const sortOptions = [
-  { title: 'Score (Highest First)', value: '_text_match:desc' },
+  { title: 'Relevance', value: '_relevance' },
   { title: 'Score (Lowest First)', value: '_text_match:asc' },
   { title: 'Document ID (A-Z)', value: 'id:asc' },
   { title: 'Document ID (Z-A)', value: 'id:desc' },
@@ -954,7 +954,7 @@ const updateURL = () => {
   if (searchLimit.value && searchLimit.value !== 10) {
     query.limit = searchLimit.value.toString()
   }
-  if (sortBy.value && sortBy.value !== '_text_match:desc') {
+  if (sortBy.value && sortBy.value !== '_relevance' && sortBy.value !== '_text_match:desc') {
     query.sort_by = sortBy.value
   }
   if (!includeMaybe.value) {
@@ -1027,7 +1027,7 @@ const handleSearch = async () => {
     }
     
     // Add sort_by if specified
-    if (sortBy.value) {
+    if (sortBy.value && sortBy.value !== '_relevance') {
       options.sortBy = sortBy.value
     }
     

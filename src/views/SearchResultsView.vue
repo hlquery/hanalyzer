@@ -361,7 +361,7 @@ const selectedCollection = ref('')
 const searchQuery = ref('')
 const searchPerformed = ref(false)
 const expandedRows = ref([])
-const sortBy = ref('_text_match:desc')
+const sortBy = ref('_relevance')
 const viewMode = ref('list')
 const hasHandledInitialMount = ref(false)
 const collectionSchema = ref(null)
@@ -468,7 +468,7 @@ const collectionItems = computed(() => {
 })
 
 const sortOptions = [
-  { title: 'Score (Highest First)', value: '_text_match:desc' },
+  { title: 'Relevance', value: '_relevance' },
   { title: 'Score (Lowest First)', value: '_text_match:asc' },
   { title: 'Document ID (A-Z)', value: 'id:asc' },
   { title: 'Document ID (Z-A)', value: 'id:desc' }

@@ -19,6 +19,14 @@ const normalizeQueryBy = (queryBy) => {
   return String(queryBy || '').trim()
 }
 
+const normalizeSortBy = (sortBy) => {
+  const value = String(sortBy || '').trim()
+  if (!value || value === '_relevance' || value === '_text_match:desc') {
+    return ''
+  }
+  return value
+}
+
 const normalizeSearchDocument = (doc, score = 0) => {
   if (!doc || typeof doc !== 'object') {
     return {
@@ -181,10 +189,12 @@ export function useSearch(baseUrl) {
       const params = {
         limit: limit,
         highlight: true,  // Enable server-side highlighting
-        // Default to relevance sorting if no sort_by is provided
-        // This ensures most relevant results appear first
-        sort_by: options.sortBy || '_text_match:desc',
         include_created_at: true  // Default: true - include created_at in search results
+      }
+
+      const sortBy = normalizeSortBy(options.sortBy)
+      if (sortBy) {
+        params.sort_by = sortBy
       }
       
       // Add query if provided (required unless filter_by or vector_query is provided)

@@ -2734,7 +2734,7 @@ const loadCollectionSchema = async (showLoading = false) => {
     // Always include score sorting options
     // Build intuitive sort options
     const baseSortOptions = [
-      { label: '⭐ Relevance (Best Match)', value: '_text_match:desc' },
+      { label: 'Relevance', value: '_relevance' },
       { label: '📉 Relevance (Worst Match)', value: '_text_match:asc' },
       { label: '🆔 Document ID (A-Z)', value: 'id:asc' },
       { label: '🆔 Document ID (Z-A)', value: 'id:desc' }
@@ -3363,13 +3363,13 @@ const handleSearch = async () => {
   // When there's a search query, always use relevance sorting to show most relevant results first
   if (hasQuery) {
     // For search queries, always use relevance to show most relevant results
-    options.sortBy = '_text_match:desc'
+    options.sortBy = '_relevance'
   } else if (sortBy.value) {
     // For non-search views (filter-only or list view), use the selected sort
     options.sortBy = sortBy.value
   } else {
     // Default to relevance if nothing is set
-    options.sortBy = '_text_match:desc'
+    options.sortBy = '_relevance'
   }
   
   // Fast default: request only near-page-size results.
