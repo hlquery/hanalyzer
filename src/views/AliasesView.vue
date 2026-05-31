@@ -980,14 +980,14 @@ onMounted(() => {
 }
 
 .empty-collections-title {
-  font-size: 28px !important;
+  font-size: 34px !important;
   font-weight: 700 !important;
   color: #1e293b !important;
   margin: 0 0 12px 0 !important;
   letter-spacing: -0.02em !important;
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
-  line-height: 1.2 !important;
+  line-height: 1.15 !important;
 }
 
 .empty-collections-description {

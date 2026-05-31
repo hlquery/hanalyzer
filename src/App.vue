@@ -75,7 +75,7 @@
 
         <router-view v-else v-slot="{ Component, route }">
           <Transition name="page" mode="out-in">
-            <component :is="Component" :key="route.path" />
+            <component :is="Component" :key="getRouteViewKey(route)" />
           </Transition>
         </router-view>
       </div>
@@ -111,6 +111,18 @@ const commandPaletteOpen = ref(false)
 const connectionStatus = ref(null)
 const authError = ref(null)
 const isCollectionsRoute = computed(() => route.path === '/collections' || route.path.startsWith('/collections/'))
+const collectionWorkspaceRouteNames = new Set([
+  'collection-documents',
+  'collection-documents-page',
+  'collection-synonyms',
+  'collection-stopwords'
+])
+const getRouteViewKey = (currentRoute) => {
+  if (collectionWorkspaceRouteNames.has(currentRoute.name)) {
+    return `collection-workspace:${String(currentRoute.params.name || '')}`
+  }
+  return currentRoute.path
+}
 const showDisconnectedState = computed(() => {
   return hasChecked.value && !isChecking.value && !isConnected.value
 })

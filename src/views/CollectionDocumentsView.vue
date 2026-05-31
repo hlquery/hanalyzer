@@ -937,11 +937,11 @@
 
     <!-- Synonyms Tab -->
     <div v-if="activeTab === 'synonyms'">
-      <div class="collections-header mb-3" style="padding: 12px 0;">
+      <div class="collections-header collection-taxonomy-header mb-3">
         <div class="collections-title-section">
-          <h2 class="collections-title-text" style="font-size: 18px; font-weight: 600; margin: 0;">Synonyms</h2>
-          <div class="collections-pagination-info-top" v-if="synonyms.length > 0" style="font-size: 12px; margin-top: 4px;">
-            <v-icon size="12" class="mr-1" style="opacity: 0.7;">mdi-swap-horizontal</v-icon>
+          <h2 class="collections-title-text">Synonyms</h2>
+          <div class="collections-pagination-info-top collection-taxonomy-count" v-if="synonyms.length > 0">
+            <v-icon size="12" class="mr-1 collection-taxonomy-count-icon">mdi-swap-horizontal</v-icon>
             {{ synonyms.length }} {{ synonyms.length === 1 ? 'synonym' : 'synonyms' }}
           </div>
         </div>
@@ -951,8 +951,7 @@
             variant="flat"
             size="small"
             prepend-icon="mdi-plus"
-            class="collections-action-btn add-synonym-btn"
-            style="font-weight: 500; min-width: 120px;"
+            class="collections-action-btn add-synonym-btn collection-taxonomy-add-btn"
           >
             {{ showInlineAddSynonym ? 'Close Form' : 'Add Synonym' }}
           </v-btn>
@@ -1017,7 +1016,7 @@
         <div>{{ synonymsError }}</div>
       </v-alert>
 
-      <v-card v-if="synonymsLoading" class="loading-state mb-card">
+      <v-card v-if="synonymsLoading && synonyms.length === 0" class="loading-state mb-card">
         <v-card-text class="text-center py-12">
           <div class="text-h6 text-grey-darken-1 font-weight-medium">Loading synonyms...</div>
           <div class="text-body-2 text-grey-darken-1 mt-2">Please wait while we fetch your data</div>
@@ -1035,48 +1034,62 @@
       </v-card>
 
       <!-- Synonyms Table -->
-      <div v-if="!synonymsLoading && synonyms.length > 0" class="documents-table-card synonyms-table-card">
+      <div v-if="synonyms.length > 0" class="documents-table-card synonyms-table-card taxonomy-table-card">
         <v-table class="documents-table synonyms-table">
           <thead>
             <tr class="table-header-row">
-              <th class="table-header-cell" style="width: 60px;">#</th>
-              <th class="table-header-cell" style="min-width: 200px;">Root Term</th>
-              <th class="table-header-cell" style="min-width: 400px;">Synonyms</th>
-              <th class="table-header-cell" style="width: 120px; text-align: center;">Actions</th>
+              <th class="table-header-cell taxonomy-index-column">#</th>
+              <th
+                :class="['table-header-cell', 'taxonomy-sortable-header', 'taxonomy-root-column', { 'taxonomy-sortable-header--loading': synonymsLoading }]"
+                :aria-disabled="synonymsLoading"
+                @click="toggleSynonymSort"
+              >
+                <span>Root Term</span>
+                <v-icon size="14" :class="{ 'taxonomy-sort-icon--inactive': !synonymSortOrder }">
+                  {{ taxonomySortIcon(synonymSortOrder) }}
+                </v-icon>
+              </th>
+              <th class="table-header-cell taxonomy-synonyms-column">Synonyms</th>
+              <th class="table-header-cell taxonomy-actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
+            <tr v-if="synonymsLoading" class="taxonomy-loading-row">
+              <td class="taxonomy-loading-cell" colspan="4">
+                <v-progress-circular indeterminate size="16" width="2" />
+                <span>Updating synonyms...</span>
+              </td>
+            </tr>
             <tr
               v-for="(synonym, index) in synonyms"
               :key="`synonym-${index}-${synonym.id || synonym.root || ''}`"
               class="table-row"
             >
-              <td class="table-cell" style="color: #64748b; font-weight: 500;">
+              <td class="table-cell taxonomy-index-cell">
                 {{ index + 1 }}
               </td>
-              <td class="table-cell" style="font-size: 14px;">
-                {{ synonym.root || 'N/A' }}
+              <td class="table-cell collection-taxonomy-term">
+                <span class="collection-taxonomy-term-text">{{ synonym.root || 'N/A' }}</span>
               </td>
               <td class="table-cell">
-                <div class="d-flex flex-wrap" style="gap: 6px;">
+                <div class="d-flex flex-wrap taxonomy-chip-list">
                   <v-chip
                     v-for="(term, termIndex) in synonym.synonyms"
                     :key="`synonym-term-${termIndex}-${term || ''}-${synonym.root || ''}`"
                     color="primary"
                     variant="flat"
                     size="small"
-                    class="font-weight-medium"
-                    style="font-size: 12px;"
+                    class="font-weight-medium taxonomy-chip"
                   >
                     {{ term }}
                   </v-chip>
-                  <span v-if="!synonym.synonyms || synonym.synonyms.length === 0" style="color: #94a3b8; font-style: italic;">
+                  <span v-if="!synonym.synonyms || synonym.synonyms.length === 0" class="taxonomy-empty-value">
                     No synonyms
                   </span>
                 </div>
               </td>
-              <td class="table-cell" style="text-align: center; vertical-align: middle; padding: 16px 20px;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+              <td class="table-cell taxonomy-actions-cell">
+                <div class="taxonomy-actions-content">
                   <v-btn
                     icon
                     variant="text"
@@ -1096,11 +1109,11 @@
 
     <!-- Stopwords Tab -->
     <div v-if="activeTab === 'stopwords'">
-      <div class="collections-header mb-4">
+      <div class="collections-header collection-taxonomy-header mb-3">
         <div class="collections-title-section">
-          <h1 class="collections-title-text">Stopwords</h1>
-          <div class="collections-pagination-info-top" v-if="stopwords.length > 0">
-            <v-icon size="14" class="mr-2" style="opacity: 0.7;">mdi-cancel</v-icon>
+          <h2 class="collections-title-text">Stopwords</h2>
+          <div class="collections-pagination-info-top collection-taxonomy-count" v-if="stopwords.length > 0">
+            <v-icon size="12" class="mr-1 collection-taxonomy-count-icon">mdi-cancel</v-icon>
             {{ stopwords.length }} {{ stopwords.length === 1 ? 'stopword' : 'stopwords' }}
           </div>
         </div>
@@ -1108,10 +1121,9 @@
           <v-btn
             @click="toggleInlineStopwordForm"
             variant="flat"
-            size="default"
+            size="small"
             prepend-icon="mdi-plus"
-            class="collections-action-btn add-stopword-btn"
-            style="font-weight: 600; min-width: 140px;"
+            class="collections-action-btn add-stopword-btn collection-taxonomy-add-btn"
           >
             {{ showInlineAddStopword ? 'Close Form' : 'Add Stopword' }}
           </v-btn>
@@ -1165,7 +1177,7 @@
         <div>{{ stopwordsError }}</div>
       </v-alert>
 
-      <v-card v-if="stopwordsLoading" class="loading-state mb-card">
+      <v-card v-if="stopwordsLoading && stopwords.length === 0" class="loading-state mb-card">
         <v-card-text class="text-center py-12">
           <div class="text-h6 text-grey-darken-1 font-weight-medium">Loading stopwords...</div>
           <div class="text-body-2 text-grey-darken-1 mt-2">Please wait while we fetch your data</div>
@@ -1183,31 +1195,46 @@
       </v-card>
 
       <!-- Stopwords Table -->
-      <div v-if="!stopwordsLoading && stopwords.length > 0" class="documents-table-card stopwords-table-card">
+      <div v-if="stopwords.length > 0" class="documents-table-card stopwords-table-card taxonomy-table-card">
         <v-table class="documents-table stopwords-table">
           <thead>
             <tr class="table-header-row">
-              <th class="table-header-cell" style="width: 60px;">#</th>
-              <th class="table-header-cell" style="min-width: 300px;">Stopword</th>
-              <th class="table-header-cell" style="width: 120px; text-align: center;">Actions</th>
+              <th class="table-header-cell taxonomy-index-column">#</th>
+              <th
+                :class="['table-header-cell', 'taxonomy-sortable-header', 'taxonomy-stopword-column', { 'taxonomy-sortable-header--loading': stopwordsLoading }]"
+                :aria-disabled="stopwordsLoading"
+                @click="toggleStopwordSort"
+              >
+                <span>Stopword</span>
+                <v-icon size="14" :class="{ 'taxonomy-sort-icon--inactive': !stopwordSortOrder }">
+                  {{ taxonomySortIcon(stopwordSortOrder) }}
+                </v-icon>
+              </th>
+              <th class="table-header-cell taxonomy-actions-column">Actions</th>
             </tr>
           </thead>
           <tbody>
+            <tr v-if="stopwordsLoading" class="taxonomy-loading-row">
+              <td class="taxonomy-loading-cell" colspan="3">
+                <v-progress-circular indeterminate size="16" width="2" />
+                <span>Updating stopwords...</span>
+              </td>
+            </tr>
             <tr
               v-for="(stopword, index) in stopwords"
               :key="`stopword-${index}-${typeof stopword === 'string' ? stopword : (stopword.word || stopword.text || '')}`"
               class="table-row"
             >
-              <td class="table-cell" style="color: #64748b; font-weight: 500;">
+              <td class="table-cell taxonomy-index-cell">
                 {{ index + 1 }}
               </td>
-              <td class="table-cell">
-                <span style="font-weight: 500; color: #1e293b;">
+              <td class="table-cell collection-taxonomy-term">
+                <span class="collection-taxonomy-term-text">
                   {{ typeof stopword === 'string' ? stopword : (stopword.word || stopword.text || JSON.stringify(stopword)) }}
                 </span>
               </td>
-              <td class="table-cell" style="text-align: center; vertical-align: middle; padding: 16px 20px;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">
+              <td class="table-cell taxonomy-actions-cell">
+                <div class="taxonomy-actions-content">
                   <v-btn
                     icon
                     variant="text"
@@ -2643,11 +2670,13 @@ const copyCollectionError = ref(null)
 const synonyms = ref([])
 const synonymsLoading = ref(false)
 const synonymsError = ref(null)
+const synonymSortOrder = ref(null)
 
 // Stopwords state
 const stopwords = ref([])
 const stopwordsLoading = ref(false)
 const stopwordsError = ref(null)
+const stopwordSortOrder = ref(null)
 
 // Delete collection state
 const showDeleteDialog = ref(false)
@@ -4245,7 +4274,10 @@ const loadSynonyms = async () => {
     const encodedCollection = encodeURIComponent(collectionName.value.trim())
     const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/synonyms`)
     
-    const response = await axios.get(url, { timeout: 5000 })
+    const response = await axios.get(url, {
+      params: synonymSortOrder.value ? { sort_by: 'root', sort_order: synonymSortOrder.value } : {},
+      timeout: 5000
+    })
 
     synonyms.value = extractSynonyms(response.data)
   } catch (err) {
@@ -4270,7 +4302,10 @@ const loadStopwords = async () => {
     const encodedCollection = encodeURIComponent(collectionName.value.trim())
     const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/stopwords`)
     
-    const response = await axios.get(url, { timeout: 5000 })
+    const response = await axios.get(url, {
+      params: stopwordSortOrder.value ? { sort_by: 'word', sort_order: stopwordSortOrder.value } : {},
+      timeout: 5000
+    })
 
     stopwords.value = normalizeStopwords(response.data)
   } catch (err) {
@@ -4280,6 +4315,24 @@ const loadStopwords = async () => {
   } finally {
     stopwordsLoading.value = false
   }
+}
+
+const toggleSynonymSort = () => {
+  if (synonymsLoading.value) return
+  synonymSortOrder.value = synonymSortOrder.value === 'asc' ? 'desc' : 'asc'
+  loadSynonyms()
+}
+
+const toggleStopwordSort = () => {
+  if (stopwordsLoading.value) return
+  stopwordSortOrder.value = stopwordSortOrder.value === 'asc' ? 'desc' : 'asc'
+  loadStopwords()
+}
+
+const taxonomySortIcon = (sortOrder) => {
+  if (sortOrder === 'asc') return 'mdi-arrow-up'
+  if (sortOrder === 'desc') return 'mdi-arrow-down'
+  return 'mdi-swap-vertical'
 }
 
 const submitInlineSynonym = async () => {
@@ -8045,24 +8098,32 @@ body :deep([role="tooltip"]) {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace !important;
 }
 
-/* Synonyms Table Styles */
-.synonyms-table-card {
-  border-radius: 12px !important;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  border: 1px solid rgba(209, 213, 219, 0.8) !important;
-}
-
-.synonyms-table {
+/* Synonyms and stopwords tables */
+.synonyms-table,
+.stopwords-table {
   background: #ffffff !important;
   width: 100%;
 }
 
-.synonyms-table .table-header-row {
+.taxonomy-table-card {
+  overflow-x: auto !important;
+}
+
+.synonyms-table {
+  min-width: 780px;
+}
+
+.stopwords-table {
+  min-width: 480px;
+}
+
+.synonyms-table .table-header-row,
+.stopwords-table .table-header-row {
   background: #032548 !important;
 }
 
-.synonyms-table .table-header-cell {
+.synonyms-table .table-header-cell,
+.stopwords-table .table-header-cell {
   color: #ffffff !important;
   font-weight: 700 !important;
   font-size: 13px !important;
@@ -8079,20 +8140,126 @@ body :deep([role="tooltip"]) {
   color: #ffffff !important;
 }
 
-.synonyms-table .table-row {
+.taxonomy-sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+.taxonomy-sortable-header:hover {
+  background: #135893 !important;
+}
+
+.taxonomy-sortable-header--loading {
+  cursor: wait;
+}
+
+.taxonomy-sortable-header .v-icon {
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.taxonomy-sort-icon--inactive {
+  opacity: 0.65;
+}
+
+.taxonomy-index-column {
+  width: 60px;
+}
+
+.taxonomy-root-column {
+  min-width: 200px;
+}
+
+.taxonomy-synonyms-column {
+  min-width: 400px;
+}
+
+.taxonomy-stopword-column {
+  min-width: 300px;
+}
+
+.taxonomy-actions-column {
+  width: 120px;
+  text-align: center !important;
+}
+
+.taxonomy-loading-row {
+  background: #f8fafc !important;
+}
+
+.taxonomy-loading-cell {
+  height: 48px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.taxonomy-loading-cell .v-progress-circular {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.synonyms-table .table-row,
+.stopwords-table .table-row {
   background: #ffffff !important;
   border-bottom: 1px solid #e5e7eb !important;
   transition: all 0.2s ease !important;
 }
 
-.synonyms-table .table-row:hover {
+.synonyms-table .table-row:hover,
+.stopwords-table .table-row:hover {
   background: #f8f9fa !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
 }
 
-.synonyms-table .table-cell {
+.synonyms-table .table-cell,
+.stopwords-table .table-cell {
   padding: 16px 20px !important;
   vertical-align: middle !important;
+}
+
+.collection-taxonomy-term {
+  color: #1e293b !important;
+}
+
+.collection-taxonomy-term-text {
+  color: #1e293b !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
+
+.taxonomy-index-cell {
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.taxonomy-chip-list {
+  gap: 6px;
+}
+
+.taxonomy-chip {
+  font-size: 12px !important;
+}
+
+.taxonomy-empty-value {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.taxonomy-actions-cell {
+  padding: 16px 20px !important;
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.taxonomy-actions-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .delete-synonym-btn,
@@ -8133,6 +8300,35 @@ body :deep([role="tooltip"]) {
   border: 1px solid rgba(209, 213, 219, 0.8) !important;
   background: #ffffff !important;
   padding: 0 !important;
+}
+
+.synonyms-table-card.taxonomy-table-card,
+.stopwords-table-card.taxonomy-table-card {
+  overflow-x: auto !important;
+}
+
+@media (max-width: 760px) {
+  .taxonomy-actions-column,
+  .taxonomy-actions-cell {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    box-shadow: -4px 0 8px rgba(15, 23, 42, 0.08);
+  }
+
+  .taxonomy-actions-column {
+    background: #032548 !important;
+    z-index: 3;
+  }
+
+  .taxonomy-actions-cell {
+    background: #ffffff !important;
+  }
+
+  .synonyms-table .table-row:hover .taxonomy-actions-cell,
+  .stopwords-table .table-row:hover .taxonomy-actions-cell {
+    background: #f8f9fa !important;
+  }
 }
 
 .synonyms-table-card :deep(.v-card),
@@ -8615,6 +8811,24 @@ body :deep([role="tooltip"]) {
   justify-content: space-between !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+.collection-taxonomy-header {
+  padding: 12px 0 !important;
+}
+
+.collection-taxonomy-count {
+  margin-top: 4px;
+  font-size: 12px !important;
+}
+
+.collection-taxonomy-count-icon {
+  opacity: 0.7;
+}
+
+.collection-taxonomy-add-btn {
+  min-width: 120px;
+  font-weight: 500 !important;
 }
 
 .collections-title-section {
