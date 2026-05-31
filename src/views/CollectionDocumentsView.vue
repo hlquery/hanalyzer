@@ -2441,7 +2441,7 @@ const handleDeleteCollection = async () => {
 const loadDocuments = async (collectionName, options = {}) => {
   const effectiveSort = Object.prototype.hasOwnProperty.call(options, 'sortBy')
     ? options.sortBy
-    : (sortBy.value || 'id:asc')
+    : sortBy.value
   const page = Math.max(1, Number(options.page) || currentPage.value || 1)
   const perPage = Math.max(1, Number(options.perPage) || itemsPerPage.value || 100)
 
@@ -3504,9 +3504,8 @@ const setQuickSort = async (sortValue) => {
     // Filter-only search, can apply sort
     await handleSearch()
   } else {
-    const effectiveSort = sortValue || 'id:asc'
     if (collectionName.value) {
-      await loadDocuments(collectionName.value, { page: 1, perPage: itemsPerPage.value, sortBy: effectiveSort })
+      await loadDocuments(collectionName.value, { page: 1, perPage: itemsPerPage.value, sortBy: sortValue })
     }
   }
 }
