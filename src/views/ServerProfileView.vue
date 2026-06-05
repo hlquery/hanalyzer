@@ -84,7 +84,6 @@
               <div class="flex-grow-1">
                 <div class="kpi-label">CPU LOAD</div>
                 <div class="kpi-value">{{ formatCpuPercent(cpuUsagePercent) }}</div>
-                <div class="kpi-context">{{ cpuUsageLevel }} <span class="kpi-trend">{{ formatDelta(cpuTrendDelta, '% last window') }}</span></div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#f59e0b">mdi-chip</v-icon>
@@ -104,7 +103,6 @@
               <div class="flex-grow-1">
                 <div class="kpi-label">MEMORY</div>
                 <div class="kpi-value">{{ formatBytesShort(stats.server?.memory_usage_bytes) }}</div>
-                <div class="kpi-context">{{ formatDelta(memoryTrendDelta, 'MB last window') }}</div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#10b981">mdi-memory</v-icon>
@@ -119,7 +117,6 @@
               <div class="flex-grow-1">
                 <div class="kpi-label">PING</div>
                 <div class="kpi-value">{{ formatLatency(lastPingTime) }}</div>
-                <div class="kpi-context">Avg {{ formatLatency(averageLatency) }}</div>
               </div>
               <div class="kpi-icon-minimal">
                 <v-icon color="#06b6d4">mdi-pulse</v-icon>
@@ -947,13 +944,6 @@ const cpuUsagePercent = computed(() => {
   return Math.min(raw, 100)
 })
 
-const cpuUsageLevel = computed(() => {
-  if (cpuUsagePercent.value >= 80) return 'High'
-  if (cpuUsagePercent.value >= 40) return 'Moderate'
-  if (cpuUsagePercent.value > 0) return 'Low'
-  return 'Idle'
-})
-
 const databaseSizeBytes = computed(() => {
   const rocksdb = stats.value?.rocksdb || {}
   const documents = getNumericStat(rocksdb.documents_size)
@@ -1155,6 +1145,51 @@ const getServerStatsFromStatusPayload = (payload) => {
   return null
 }
 
+const normalizeStatsPayload = (rawStats) => {
+  if (!rawStats || typeof rawStats !== 'object') {
+    return {}
+  }
+
+  const normalized = { ...rawStats }
+  const server = { ...(normalized.server || {}) }
+  const lsm = normalized.lsm && typeof normalized.lsm === 'object' ? normalized.lsm : {}
+  const rocksdb = normalized.rocksdb && typeof normalized.rocksdb === 'object' ? normalized.rocksdb : {}
+  const storage = normalized.storage && typeof normalized.storage === 'object' ? normalized.storage : {}
+  const collectionsTotal = Number(
+    normalized.collections_total ??
+    storage.total_collections ??
+    normalized.total_collections ??
+    normalized.collections?.total ??
+    0
+  )
+
+  normalized.server = {
+    ...server,
+    uptime_seconds: server.uptime_seconds ?? normalized.uptime_seconds ?? 0,
+    cpu_usage_percent: server.cpu_usage_percent ?? normalized.cpu_usage_percent ?? 0,
+    memory_usage_bytes: server.memory_usage_bytes ?? normalized.memory_usage_bytes ?? 0
+  }
+
+  normalized.collections = {
+    ...(normalized.collections || {}),
+    total: Number.isFinite(collectionsTotal) ? collectionsTotal : 0
+  }
+
+  normalized.rocksdb = {
+    ...rocksdb,
+    total_size: rocksdb.total_size ?? lsm.total_size ?? storage.total_size_bytes ?? 0,
+    total_db_size: rocksdb.total_db_size ?? lsm.total_size ?? storage.total_size_bytes ?? 0,
+    rocksdb_size: rocksdb.rocksdb_size ?? lsm.rocksdb_size ?? lsm.total_size ?? 0,
+    documents_size: rocksdb.documents_size ?? lsm.documents_size ?? 0,
+    memtable_size: rocksdb.memtable_size ?? lsm.memtable_size ?? storage.memtable_size_bytes ?? 0,
+    sstable_size: rocksdb.sstable_size ?? lsm.sstable_size ?? lsm.bytes_written ?? storage.sstable_size_bytes ?? 0,
+    bytes_written: rocksdb.bytes_written ?? lsm.bytes_written ?? lsm.sstable_size ?? storage.sstable_size_bytes ?? 0,
+    sstable_count: rocksdb.sstable_count ?? lsm.sstable_count ?? storage.sstable_count ?? 0
+  }
+
+  return normalized
+}
+
 const hasUsableServerStats = (payload) => {
   const statsObj = payload && typeof payload === 'object' ? payload : null
   if (!statsObj) return false
@@ -1188,22 +1223,22 @@ const buildMergedStatsPayload = async (statusPayload, baseUrlValue, useProxy) =>
     : {}
 
   if (hasUsableServerStats(statusStats)) {
-    mergedPayload.stats = statusStats
+    mergedPayload.stats = normalizeStatsPayload(statusStats)
     return mergedPayload
   }
 
   try {
     const statsSnapshot = await fetchStatsSnapshot(baseUrlValue, useProxy)
-    mergedPayload.stats = {
+    mergedPayload.stats = normalizeStatsPayload({
       ...statsSnapshot,
       ...statusStats,
       io: {
         ...(statsSnapshot?.io || {}),
         ...(statusStats?.io || {})
       }
-    }
+    })
   } catch (e) {
-    mergedPayload.stats = statusStats
+    mergedPayload.stats = normalizeStatsPayload(statusStats)
   }
 
   return mergedPayload
@@ -1259,7 +1294,7 @@ const getDatabaseName = () => {
 
 const loadTotalDocuments = async (baseUrlValue, useProxy) => {
   try {
-    const doctotalUrl = useProxy ? '/api/doctotal' : `${baseUrlValue}/doctotal`
+    const doctotalUrl = buildApiUrl(baseUrlValue, useProxy, '/doctotal')
     try {
       const doctotalResponse = await axios.get(doctotalUrl, { timeout: 3000 })
       if (doctotalResponse.data?.doctotal !== undefined) {
@@ -1270,7 +1305,7 @@ const loadTotalDocuments = async (baseUrlValue, useProxy) => {
       // Endpoint doesn't exist, fall back to calculating from collections
     }
     
-    const collectionsUrl = useProxy ? '/api/collections' : `${baseUrlValue}/collections`
+    const collectionsUrl = buildApiUrl(baseUrlValue, useProxy, '/collections')
     const collectionsResponse = await axios.get(collectionsUrl, { timeout: 5000 })
     
     if (collectionsResponse.data?.collections) {
@@ -2746,6 +2781,38 @@ onUnmounted(() => {
   display: none !important;
 }
 
+.dashboard-actions .action-button,
+.dashboard-actions .action-button :deep(.v-btn__content),
+.dashboard-actions .action-button :deep(.dashboard-header-btn-label) {
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.dashboard-actions .action-button :deep(.v-btn__content) {
+  width: auto !important;
+  margin: 0 auto !important;
+}
+
+.dashboard-actions .action-button :deep(.v-btn__prepend),
+.dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
+  flex: 0 0 auto !important;
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+}
+
+.dashboard-actions .action-button :deep(.v-icon) {
+  flex: 0 0 auto !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.dashboard-actions .action-button :deep(.dashboard-header-btn-label) {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+}
+
 /* Search Settings Boxes */
 .search-setting-box {
   height: 100%;
@@ -3135,14 +3202,15 @@ onUnmounted(() => {
     right: auto !important;
     transform: none !important;
     display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
+    flex-direction: row !important;
+    gap: 8px !important;
     width: 100% !important;
     max-width: 100% !important;
     min-width: 0 !important;
-    align-items: center !important;
+    align-items: stretch !important;
+    justify-content: center !important;
     margin-top: 0 !important;
-    margin-bottom: 34px !important;
+    margin-bottom: 24px !important;
     padding: 0 !important;
     z-index: auto !important;
   }
@@ -3167,8 +3235,8 @@ onUnmounted(() => {
   }
 
   .dashboard-view .dashboard-actions .action-button {
-    width: min(100%, 260px) !important;
-    max-width: 260px !important;
+    width: auto !important;
+    max-width: none !important;
     min-width: 0 !important;
     height: 40px !important;
     min-height: 40px !important;
@@ -3186,17 +3254,17 @@ onUnmounted(() => {
     overflow: hidden !important;
     transform: none !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10) !important;
-    flex: 0 0 auto !important;
+    flex: 1 1 0 !important;
   }
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: auto !important;
+    width: 100% !important;
     height: 100% !important;
     min-width: 0 !important;
-    gap: 6px !important;
+    gap: 0 !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -3204,7 +3272,19 @@ onUnmounted(() => {
   }
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
-  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner),
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
   .dashboard-view .dashboard-actions .action-button :deep(.v-icon),
   .dashboard-view .dashboard-actions .action-button :deep(svg) {
     position: static !important;
@@ -3221,6 +3301,8 @@ onUnmounted(() => {
     width: fit-content !important;
     min-width: 0 !important;
     margin: 0 !important;
+    padding: 0 18px !important;
+    justify-content: center !important;
     text-align: center !important;
     white-space: nowrap !important;
     overflow: hidden !important;
@@ -3288,6 +3370,138 @@ onUnmounted(() => {
   .dashboard-view :deep(.v-col) {
     padding-left: 0 !important;
     padding-right: 0 !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-view .dashboard-actions .action-button {
+    justify-content: center !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
+    position: absolute !important;
+    left: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+  }
+
+  .dashboard-view .dashboard-actions .dashboard-header-btn-label,
+  .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
+    justify-content: center !important;
+    text-align: center !important;
+    margin: 0 !important;
+  }
+}
+
+/* Dashboard header action layout: keep icon and text together, centered as a group. */
+.dashboard-view .collections-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.dashboard-view .collections-title-section {
+  grid-column: 1 !important;
+  min-width: 0 !important;
+}
+
+.dashboard-view .dashboard-actions {
+  grid-column: 2 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  width: auto !important;
+  margin: 0 auto 24px !important;
+  padding: 0 !important;
+}
+
+.dashboard-view .dashboard-actions .action-button {
+  width: auto !important;
+  min-width: 126px !important;
+  max-width: none !important;
+  padding: 0 16px !important;
+  justify-content: flex-start !important;
+  overflow: visible !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: auto !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  overflow: visible !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
+  position: static !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.v-icon),
+.dashboard-view .dashboard-actions .action-button :deep(svg) {
+  position: static !important;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  width: 18px !important;
+  min-width: 18px !important;
+  margin: 0 !important;
+  font-size: 18px !important;
+}
+
+.dashboard-view .dashboard-actions .dashboard-header-btn-label,
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 768px) {
+  .dashboard-view .collections-header {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+  }
+
+  .dashboard-view .dashboard-actions {
+    width: 100% !important;
+    margin: 0 0 24px !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button {
+    flex: 0 1 auto !important;
   }
 }
 </style>
