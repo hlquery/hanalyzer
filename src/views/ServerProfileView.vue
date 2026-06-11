@@ -44,10 +44,12 @@
               :disabled="loading"
               variant="flat"
               size="small"
-              prepend-icon="mdi-refresh"
               class="collections-action-btn action-button refresh-header-btn"
             >
-              <span class="dashboard-header-btn-label">Refresh</span>
+              <span class="dashboard-header-btn-inner">
+                <v-icon class="dashboard-header-btn-icon" icon="mdi-refresh" size="18" />
+                <span class="dashboard-header-btn-label">Refresh</span>
+              </span>
             </v-btn>
             <v-btn
               @click="showFlushDialog = true"
@@ -55,11 +57,13 @@
               variant="flat"
               size="small"
               color="error"
-              prepend-icon="mdi-trash-can"
               class="collections-action-btn action-button flush-header-btn"
             >
-              <span class="dashboard-header-btn-label" v-if="flushing">Flushing...</span>
-              <span class="dashboard-header-btn-label" v-else>Flush All</span>
+              <span class="dashboard-header-btn-inner">
+                <v-icon class="dashboard-header-btn-icon" icon="mdi-trash-can" size="18" />
+                <span class="dashboard-header-btn-label" v-if="flushing">Flushing...</span>
+                <span class="dashboard-header-btn-label" v-else>Flush All</span>
+              </span>
             </v-btn>
           </div>
         </div>
@@ -101,7 +105,7 @@
           <v-card-text class="pa-4">
             <div class="kpi-topline">
               <div class="flex-grow-1">
-                <div class="kpi-label">MEMORY</div>
+                <div class="kpi-label">SYSTEM MEMORY</div>
                 <div class="kpi-value">{{ formatBytesShort(stats.server?.memory_usage_bytes) }}</div>
               </div>
               <div class="kpi-icon-minimal">
@@ -274,7 +278,7 @@
                 </div>
                 <v-divider class="my-3"></v-divider>
                 <div class="stats-item">
-                  <div class="stats-item-label">Memory Usage</div>
+                  <div class="stats-item-label">System Memory Used</div>
                   <div class="stats-item-value">{{ formatBytes(stats.server?.memory_usage_bytes) }}</div>
                 </div>
                 <v-divider class="my-3"></v-divider>
@@ -3178,8 +3182,8 @@ onUnmounted(() => {
   }
 
   .dashboard-view .dashboard-actions .action-button {
-    width: auto !important;
-    max-width: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
     min-width: 0 !important;
     height: 40px !important;
     min-height: 40px !important;
@@ -3197,7 +3201,7 @@ onUnmounted(() => {
     overflow: hidden !important;
     transform: none !important;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.10) !important;
-    flex: 1 1 0 !important;
+    flex: 1 1 auto !important;
   }
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
@@ -3216,10 +3220,10 @@ onUnmounted(() => {
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
-    position: absolute !important;
-    left: 12px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
     margin: 0 !important;
     width: 16px !important;
     min-width: 16px !important;
@@ -3244,7 +3248,7 @@ onUnmounted(() => {
     width: fit-content !important;
     min-width: 0 !important;
     margin: 0 !important;
-    padding: 0 18px !important;
+    padding: 0 0 0 8px !important;
     justify-content: center !important;
     text-align: center !important;
     white-space: nowrap !important;
@@ -3321,6 +3325,7 @@ onUnmounted(() => {
     justify-content: center !important;
     padding-left: 14px !important;
     padding-right: 14px !important;
+    overflow: hidden !important;
   }
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
@@ -3331,18 +3336,24 @@ onUnmounted(() => {
 
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
-    position: absolute !important;
-    left: 12px !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    transform: none !important;
     margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   .dashboard-view .dashboard-actions .dashboard-header-btn-label,
   .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
+    display: inline-flex !important;
     justify-content: center !important;
     text-align: center !important;
     margin: 0 !important;
+    padding: 0 0 0 8px !important;
+    white-space: nowrap !important;
   }
 }
 
@@ -3374,62 +3385,80 @@ onUnmounted(() => {
 }
 
 .dashboard-view .dashboard-actions .action-button {
-  width: auto !important;
-  min-width: 126px !important;
+  width: 136px !important;
+  min-width: 136px !important;
   max-width: none !important;
   padding: 0 16px !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   overflow: visible !important;
 }
 
 .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
-  display: inline-flex !important;
+  display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   gap: 0 !important;
-  width: auto !important;
+  width: 100% !important;
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  text-align: center !important;
+  text-align: left !important;
   overflow: visible !important;
 }
 
-.dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend),
-.dashboard-view .dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
-  position: static !important;
+.dashboard-view .dashboard-actions .dashboard-header-btn-inner {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  flex: 0 0 auto !important;
-  width: 18px !important;
-  min-width: 18px !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  width: auto !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+  overflow: visible !important;
+}
+
+.dashboard-view .dashboard-actions .dashboard-header-btn-icon {
+  position: static !important;
+  transform: none !important;
+  flex: 0 0 18px !important;
+  pointer-events: none !important;
+}
+
+.dashboard-view .dashboard-actions .dashboard-header-btn-label {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
-  transform: none !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content .dashboard-header-btn-inner),
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content .dashboard-header-btn-label) {
+  width: auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
 }
 
 .dashboard-view .dashboard-actions .action-button :deep(.v-icon),
 .dashboard-view .dashboard-actions .action-button :deep(svg) {
-  position: static !important;
   display: inline-flex !important;
-  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
   width: 18px !important;
   min-width: 18px !important;
   margin: 0 !important;
   font-size: 18px !important;
-}
-
-.dashboard-view .dashboard-actions .dashboard-header-btn-label,
-.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content span) {
-  display: inline-flex !important;
-  flex: 0 0 auto !important;
-  width: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  justify-content: center !important;
-  text-align: center !important;
-  white-space: nowrap !important;
 }
 
 @media (min-width: 769px) {
@@ -3461,16 +3490,74 @@ onUnmounted(() => {
 
   .dashboard-view .dashboard-actions {
     width: auto !important;
-    max-width: 100% !important;
+    max-width: max-content !important;
     justify-content: center !important;
-    margin: 0 auto 24px !important;
+    margin: 0 0 24px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
   }
 
   .dashboard-view .dashboard-actions .action-button {
-    flex: 0 1 auto !important;
-    width: auto !important;
-    min-width: 118px !important;
-    max-width: none !important;
+    flex: 0 0 136px !important;
+    width: 136px !important;
+    min-width: 136px !important;
+    max-width: 136px !important;
   }
+}
+
+.dashboard-view .dashboard-actions .action-button.v-btn,
+.dashboard-view .dashboard-actions .action-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  position: relative !important;
+  padding-left: 8px !important;
+  padding-right: 10px !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  position: static !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.dashboard-header-btn-inner) {
+  display: contents !important;
+  width: auto !important;
+  min-width: 0 !important;
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.dashboard-header-btn-icon) {
+  position: absolute !important;
+  inset-inline-start: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+}
+
+.dashboard-view .dashboard-actions .action-button :deep(.dashboard-header-btn-label),
+.dashboard-view .dashboard-actions .action-button :deep(.v-btn__content .dashboard-header-btn-label) {
+  display: block !important;
+  position: absolute !important;
+  inset-inline-start: 0 !important;
+  inset-inline-end: 0 !important;
+  top: 50% !important;
+  width: auto !important;
+  transform: translateY(-50%) !important;
+  margin: 0 !important;
+  text-align: center !important;
+  pointer-events: none !important;
 }
 </style>
