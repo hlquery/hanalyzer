@@ -1819,34 +1819,21 @@ onUnmounted(() => {
   justify-content: center !important;
 }
 
-/* Remove all icon spaces and prepend/append slots */
-.collections-action-btn:not(.refresh-header-btn) :deep(.v-icon),
-.collections-action-btn:not(.refresh-header-btn) :deep(.v-btn__prepend),
-.collections-action-btn:not(.refresh-header-btn) :deep(.v-btn__append),
-.collections-action-btn:not(.refresh-header-btn) :deep(.v-btn__prepend-inner),
-.collections-action-btn:not(.refresh-header-btn) :deep(.v-btn__append-inner) {
-  display: none !important;
-  width: 0 !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* Allow prepend icon for refresh button - must be more specific */
-.collections-action-btn.refresh-header-btn :deep(.v-btn__prepend),
-.collections-action-btn.refresh-header-btn :deep(.v-btn__prepend-inner) {
+/* Header action buttons keep their prepend icons in the same inline flow. */
+.dashboard-actions .action-button :deep(.v-btn__prepend),
+.dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
   display: flex !important;
   align-items: center !important;
   width: auto !important;
   min-width: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  margin-right: 6px !important;
+  margin-right: 8px !important;
 }
 
-.collections-action-btn.refresh-header-btn :deep(.v-icon),
-.collections-action-btn.refresh-header-btn :deep(.v-btn__prepend .v-icon),
-.collections-action-btn.refresh-header-btn :deep(.v-btn__prepend-inner .v-icon) {
+.dashboard-actions .action-button :deep(.v-icon),
+.dashboard-actions .action-button :deep(.v-btn__prepend .v-icon),
+.dashboard-actions .action-button :deep(.v-btn__prepend-inner .v-icon) {
   display: inline-flex !important;
   color: #ffffff !important;
   opacity: 1 !important;
@@ -2707,15 +2694,8 @@ onUnmounted(() => {
   justify-content: center !important;
 }
 
-.collections-action-btn :deep(.v-icon),
-.collections-action-btn :deep(.v-btn__prepend),
-.collections-action-btn :deep(.v-btn__append) {
-  display: none !important;
-}
-
-/* Allow prepend icon for flush button - align left */
-.collections-action-btn.flush-header-btn :deep(.v-btn__prepend),
-.collections-action-btn.flush-header-btn :deep(.v-btn__prepend-inner) {
+.dashboard-actions .action-button :deep(.v-btn__prepend),
+.dashboard-actions .action-button :deep(.v-btn__prepend-inner) {
   display: flex !important;
   align-items: center !important;
   width: auto !important;
@@ -2723,53 +2703,16 @@ onUnmounted(() => {
   margin: 0 !important;
   padding: 0 !important;
   margin-right: 8px !important;
-  order: 1 !important;
 }
 
-.collections-action-btn.flush-header-btn :deep(.v-icon) {
+.dashboard-actions .action-button :deep(.v-icon) {
   display: inline-flex !important;
   color: #ffffff !important;
   opacity: 1 !important;
   font-size: 18px !important;
-  margin-right: 8px !important;
+  margin-right: 0 !important;
   width: auto !important;
   min-width: auto !important;
-  order: 1 !important;
-}
-
-/* Flush button content - align left with icon first */
-.collections-action-btn.flush-header-btn :deep(.v-btn__content) {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-direction: row !important;
-  text-align: center !important;
-  gap: 8px !important;
-  position: relative !important;
-  z-index: 1 !important;
-  color: #ffffff !important;
-}
-
-/* Icon comes first (leftmost) */
-.collections-action-btn.flush-header-btn :deep(.v-btn__prepend),
-.collections-action-btn.flush-header-btn :deep(.v-btn__prepend-inner) {
-  order: -1 !important;
-  margin-right: 8px !important;
-  margin-left: 0 !important;
-}
-
-.collections-action-btn.flush-header-btn :deep(.v-icon) {
-  order: -1 !important;
-  margin-right: 8px !important;
-  margin-left: 0 !important;
-}
-
-/* Text comes after icon */
-.collections-action-btn.flush-header-btn :deep(.v-btn__content span) {
-  order: 0 !important;
-  text-align: center !important;
-  margin-left: 0 !important;
-  flex-shrink: 0 !important;
 }
 
 /* Remove any blue glow/ripple effects from dashboard button */
@@ -3435,20 +3378,20 @@ onUnmounted(() => {
   min-width: 126px !important;
   max-width: none !important;
   padding: 0 16px !important;
-  justify-content: flex-start !important;
+  justify-content: center !important;
   overflow: visible !important;
 }
 
 .dashboard-view .dashboard-actions .action-button :deep(.v-btn__content) {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 8px !important;
+  justify-content: center !important;
+  gap: 0 !important;
   width: auto !important;
   height: 100% !important;
   margin: 0 !important;
   padding: 0 !important;
-  text-align: left !important;
+  text-align: center !important;
   overflow: visible !important;
 }
 
@@ -3484,8 +3427,8 @@ onUnmounted(() => {
   width: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  justify-content: flex-start !important;
-  text-align: left !important;
+  justify-content: center !important;
+  text-align: center !important;
   white-space: nowrap !important;
 }
 
