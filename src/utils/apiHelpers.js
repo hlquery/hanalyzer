@@ -184,21 +184,6 @@ export function getDemoModeErrorMessage(err) {
 }
 
 /**
- * Detect whether SAM+ is available from a stats or status payload.
- * @param {Object} payload - API payload that may contain SAM+ metadata
- * @returns {boolean} - True when SAM+ is reported as available/enabled
- */
-export function isSamAvailable(payload) {
-  if (!payload || typeof payload !== 'object') {
-    return false
-  }
-
-  const samInfo = payload.sam && typeof payload.sam === 'object' ? payload.sam : {}
-  const enabledValue = samInfo.available ?? samInfo.enabled ?? payload.sam_available ?? payload.sam_enabled
-  return enabledValue === true
-}
-
-/**
  * Extract a list payload from common API response shapes.
  * @param {unknown} payload - API response data
  * @param {string} key - Preferred list key, such as "synonyms" or "stopwords"

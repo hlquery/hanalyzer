@@ -3,7 +3,6 @@ import axios from 'axios'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
 
-const DEBUG_SEARCH = false
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
 
@@ -27,26 +26,6 @@ const normalizeSortBy = (sortBy) => {
   return value
 }
 
-const normalizeSearchDocument = (doc, score = 0) => {
-  if (!doc || typeof doc !== 'object') {
-    return {
-      id: '',
-      _text_match: Number(score) || 0,
-      highlights: {}
-    }
-  }
-
-  return {
-    id: doc.id || '',
-    title: doc.title || doc.name,
-    content: doc.content || doc.description || doc.text,
-    ...doc,
-    _text_match: Number(score) || 0,
-    highlights: doc.highlights || {},
-    created_at: doc.created_at || doc.timestamp
-  }
-}
-
 export function useSearch(baseUrl) {
   const searchResults = ref([])
   const loading = ref(false)
@@ -55,13 +34,11 @@ export function useSearch(baseUrl) {
   const searchTime = ref(null) // Time in seconds
   const indexingInProgress = ref(false)
   const directSearchExecuted = ref(false)
-  const samSearchStatus = ref(null)
   const maybeResult = ref(null)
 
   const performSearch = async (collectionName, query, limit = 10, options = {}) => {
     indexingInProgress.value = false
     directSearchExecuted.value = false
-    samSearchStatus.value = null
     maybeResult.value = null
 
     // Validate inputs
@@ -97,10 +74,6 @@ export function useSearch(baseUrl) {
       // 2. OR we're accessing via localhost:8080 (dev server) - always use proxy in dev
       // 3. OR baseUrl is not set/empty (fallback to proxy)
       // 4. OR if the URL path starts with /api (already using proxy path)
-      const isDevServer = typeof window !== 'undefined' && 
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
-        (window.location.port === '8080' || window.location.port === '4173' || window.location.port === '')
-      
       const baseUrlValue = getBaseUrlValue(baseUrl)
       const useProxy = shouldUseProxy(baseUrlValue)
       
@@ -116,76 +89,6 @@ export function useSearch(baseUrl) {
       // Preserve quotes in query for exact phrase search
       
       const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/search`)
-      const canUseSam = !!options.useSam && !!trimmedQuery && !hasFilter && !hasVectorQuery
-      let samIndexingActive = false
-
-      const fetchDocumentById = async (documentId) => {
-        const encodedDocumentId = encodeURIComponent(String(documentId || '').trim())
-        const documentUrl = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/${encodedDocumentId}`)
-        return axios.get(documentUrl, { timeout: 10000 })
-      }
-
-      if (canUseSam) {
-        const samUrl = buildApiUrl(baseUrlValue, useProxy, '/sam/search')
-
-        try {
-          const samResponse = await axios.get(samUrl, {
-            params: {
-              collection: collectionName.trim(),
-              q: trimmedQuery,
-              limit: limit
-            },
-            timeout: 10000
-          })
-
-          const samHits = Array.isArray(samResponse?.data?.hits) ? samResponse.data.hits : []
-          samIndexingActive = samResponse?.data?.indexing_in_progress === true ||
-            samResponse?.data?.sam_indexing?.running === true ||
-            samResponse?.data?.sam_indexing?.retry_scheduled === true
-          indexingInProgress.value = samIndexingActive
-          samSearchStatus.value = samResponse?.data?.sam_indexing || null
-
-          if (samIndexingActive || samHits.length === 0) {
-            directSearchExecuted.value = true
-            if (DEBUG_SEARCH) {
-              console.warn('SAM+ search is indexing or empty, falling back to standard search:', samResponse?.data)
-            }
-          } else {
-            const hydratedResults = await Promise.all(samHits.map(async (hit) => {
-              const fallbackDoc = {
-                id: hit?.id || '',
-                title: hit?.title || '',
-                collection: hit?.collection || collectionName.trim(),
-                _sam_term: hit?.term || '',
-                _sam_kind: hit?.kind || '',
-                _sam_source: hit?.source || '',
-                _sam_matched_path: hit?.matched_path || '',
-                _sam_signal: hit?.signal ?? 0,
-                _sam_evidence_count: hit?.evidence_count ?? 0
-              }
-
-              try {
-                const documentResponse = await fetchDocumentById(hit?.id)
-                return normalizeSearchDocument(documentResponse?.data, hit?.score)
-              } catch (documentError) {
-                return normalizeSearchDocument(fallbackDoc, hit?.score)
-              }
-            }))
-
-            searchResults.value = hydratedResults
-            totalFound.value = samResponse?.data?.count !== undefined
-              ? Number(samResponse.data.count) || hydratedResults.length
-              : hydratedResults.length
-            searchTime.value = ((performance.now() - startTime) / 1000).toFixed(3)
-            return
-          }
-        } catch (samError) {
-          if (DEBUG_SEARCH) {
-            console.warn('SAM+ search failed, falling back to standard search:', samError)
-          }
-        }
-      }
-      
       const params = {
         limit: limit,
         highlight: true,  // Enable server-side highlighting
@@ -358,7 +261,7 @@ export function useSearch(baseUrl) {
       
       // Handle response structure: { hits: [...], found: number } or { results: [...] }
       if (response.data) {
-        indexingInProgress.value = samIndexingActive || response.data.indexing_in_progress === true
+        indexingInProgress.value = response.data.indexing_in_progress === true
         maybeResult.value = response.data.maybe || null
         // Handle standard search response format
         if (response.data.hits && Array.isArray(response.data.hits)) {
@@ -483,7 +386,6 @@ export function useSearch(baseUrl) {
     searchTime,
     indexingInProgress,
     directSearchExecuted,
-    samSearchStatus,
     maybeResult,
     performSearch
   }

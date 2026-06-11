@@ -3403,29 +3403,31 @@ onUnmounted(() => {
   }
 }
 
-/* Dashboard header action layout: keep icon and text together, centered as a group. */
+/* Dashboard header action layout: desktop actions float right, mobile actions center. */
 .dashboard-view .collections-header {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) !important;
+  display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
+  justify-content: space-between !important;
   gap: 16px !important;
 }
 
 .dashboard-view .collections-title-section {
-  grid-column: 1 !important;
+  flex: 1 1 auto !important;
   min-width: 0 !important;
 }
 
 .dashboard-view .dashboard-actions {
-  grid-column: 2 !important;
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-end !important;
   gap: 10px !important;
   width: auto !important;
-  margin: 0 auto 24px !important;
+  max-width: max-content !important;
+  margin: 0 0 24px auto !important;
   padding: 0 !important;
+  flex: 0 0 auto !important;
 }
 
 .dashboard-view .dashboard-actions .action-button {
@@ -3487,21 +3489,45 @@ onUnmounted(() => {
   white-space: nowrap !important;
 }
 
+@media (min-width: 769px) {
+  .dashboard-view .collections-header {
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+  }
+
+  .dashboard-view .dashboard-actions {
+    align-self: flex-start !important;
+    justify-content: flex-end !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+
+  .dashboard-view .dashboard-actions .action-button {
+    flex: 0 0 auto !important;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-view .collections-header {
     display: flex !important;
     flex-direction: column !important;
-    align-items: stretch !important;
+    align-items: center !important;
     gap: 0 !important;
   }
 
   .dashboard-view .dashboard-actions {
-    width: 100% !important;
-    margin: 0 0 24px !important;
+    width: auto !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    margin: 0 auto 24px !important;
   }
 
   .dashboard-view .dashboard-actions .action-button {
     flex: 0 1 auto !important;
+    width: auto !important;
+    min-width: 118px !important;
+    max-width: none !important;
   }
 }
 </style>
