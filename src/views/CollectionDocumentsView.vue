@@ -3254,6 +3254,11 @@ const buildSearchRouteQuery = () => {
   return nextQuery
 }
 
+const clearDisplayedSearchResults = () => {
+  searchResults.value = []
+  currentPage.value = 1
+}
+
 const handleSearch = async () => {
   // Clear any pending debounced search
   if (searchDebounceTimer.value) {
@@ -3267,7 +3272,7 @@ const handleSearch = async () => {
     searchError.value = 'Collection name is missing. Please navigate to a valid collection.'
     searchPerformed.value = false
     lastSubmittedSearchQuery.value = ''
-    searchResults.value = []
+    clearDisplayedSearchResults()
     return
   }
 
@@ -3283,7 +3288,7 @@ const handleSearch = async () => {
     // No query and no filters - show all documents (default behavior)
     searchPerformed.value = false
     lastSubmittedSearchQuery.value = ''
-    searchResults.value = []
+    clearDisplayedSearchResults()
     searchError.value = null
 
     // Ensure we restore the default documents list in cases where the initial mount
@@ -3311,10 +3316,9 @@ const handleSearch = async () => {
     return
   }
   
+  searchInputPending.value = true
   searchPerformed.value = true
-  if (currentPage.value !== 1) {
-    currentPage.value = 1
-  }
+  clearDisplayedSearchResults()
   lastSubmittedSearchQuery.value = hasQuery ? searchQuery.value.trim() : ''
   searchError.value = null
   await ensureSearchSchemaReady()

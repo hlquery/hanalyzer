@@ -696,7 +696,7 @@
                 Database & Indexes
               </div>
               <div class="flush-info-value">
-                {{ getDatabaseName() }} will be cleared
+                Storage will be cleared
               </div>
             </div>
             <v-divider class="my-3"></v-divider>
@@ -1257,43 +1257,6 @@ const fetchHealthSnapshot = async (baseUrlValue, useProxy) => {
 const getMemoryPercent = (used, total) => {
   if (!used || !total) return 0
   return Math.round((used / total) * 100)
-}
-
-const getDatabaseName = () => {
-  // Try to get database information from stats
-  // Check multiple possible locations in the response
-  if (stats.value?.database?.name) {
-    return stats.value.database.name
-  }
-  if (stats.value?.database?.data_dir) {
-    // Extract name from path if available
-    const path = stats.value.database.data_dir
-    const parts = path.split('/').filter(p => p)
-    if (parts.length > 0) {
-      return parts[parts.length - 1]
-    }
-    return path // Return full path if can't extract name
-  }
-  if (stats.value?.server?.data_dir) {
-    // Check if data_dir is in server object
-    const path = stats.value.server.data_dir
-    const parts = path.split('/').filter(p => p)
-    if (parts.length > 0) {
-      return parts[parts.length - 1]
-    }
-    return path
-  }
-  if (stats.value?.database?.engine) {
-    // Use engine name with "Data" suffix
-    const engine = stats.value.database.engine
-    return engine.charAt(0).toUpperCase() + engine.slice(1) + ' Data'
-  }
-  if (stats.value?.rocksdb) {
-    // If RocksDB stats exist, database is likely RocksDB-based
-    return 'RocksDB Data'
-  }
-  // Default fallback - show generic name
-  return 'Database & Indexes'
 }
 
 const loadTotalDocuments = async (baseUrlValue, useProxy) => {
