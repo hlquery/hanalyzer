@@ -38,34 +38,6 @@
               <h1 class="collections-title-text dashboard-title">Server Dashboard</h1>
             </div>
           </div>
-          <div class="collections-header-actions dashboard-actions">
-            <v-btn
-              @click="loadStats"
-              :disabled="loading"
-              variant="flat"
-              size="small"
-              class="collections-action-btn action-button refresh-header-btn"
-            >
-              <span class="dashboard-header-btn-inner">
-                <v-icon class="dashboard-header-btn-icon" icon="mdi-refresh" size="18" />
-                <span class="dashboard-header-btn-label">Refresh</span>
-              </span>
-            </v-btn>
-            <v-btn
-              @click="showFlushDialog = true"
-              :disabled="!isConnected || flushing"
-              variant="flat"
-              size="small"
-              color="error"
-              class="collections-action-btn action-button flush-header-btn"
-            >
-              <span class="dashboard-header-btn-inner">
-                <v-icon class="dashboard-header-btn-icon" icon="mdi-trash-can" size="18" />
-                <span class="dashboard-header-btn-label" v-if="flushing">Flushing...</span>
-                <span class="dashboard-header-btn-label" v-else>Flush All</span>
-              </span>
-            </v-btn>
-          </div>
         </div>
 
         <div class="critical-status-bar status-grid">
@@ -246,7 +218,7 @@
 
         <!-- Detailed Stats Cards -->
         <v-row class="detail-grid-row">
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="6" class="detail-stack-col">
           <v-card class="dashboard-detail-card metric-card">
             <v-card-title class="d-flex align-center pa-4 detail-card-header">
               <v-icon class="detail-card-icon">mdi-server</v-icon>
@@ -315,6 +287,40 @@
               </div>
             </v-card-text>
           </v-card>
+
+          <v-card class="dashboard-detail-card metric-card actions-detail-card mt-4">
+            <v-card-title class="d-flex align-center pa-4 detail-card-header">
+              <v-icon class="detail-card-icon">mdi-lightning-bolt</v-icon>
+              <span class="detail-card-title">Actions</span>
+            </v-card-title>
+            <v-card-text class="pa-4">
+              <div class="stats-list">
+                <div class="stats-item stats-item-first">
+                  <div class="stats-item-label">Refresh</div>
+                  <button
+                    type="button"
+                    class="stats-item-value dashboard-text-action"
+                    :disabled="loading"
+                    @click="loadStats"
+                  >
+                    Refresh
+                  </button>
+                </div>
+                <v-divider class="my-3"></v-divider>
+                <div class="stats-item">
+                  <div class="stats-item-label">Flush All</div>
+                  <button
+                    type="button"
+                    class="stats-item-value dashboard-text-action dashboard-text-action-danger"
+                    :disabled="!isConnected || flushing"
+                    @click="showFlushDialog = true"
+                  >
+                    {{ flushing ? 'Flushing...' : 'Flush All' }}
+                  </button>
+                </div>
+              </div>
+            </v-card-text>
+          </v-card>
         </v-col>
 
         <v-col cols="12" md="6">
@@ -325,7 +331,7 @@
             </v-card-title>
             <v-card-text class="pa-4">
               <div class="stats-list">
-                <div class="stats-item">
+                <div class="stats-item stats-item-first">
                   <div class="stats-item-label">Total Size</div>
                   <div class="stats-item-value">{{ formatBytes(databaseSizeBytes) }}</div>
                 </div>
@@ -2177,6 +2183,33 @@ onUnmounted(() => {
 .stats-item-link:hover,
 .stats-item-link:focus-visible {
   color: #115e59;
+}
+
+.detail-stack-col {
+  flex-direction: column;
+}
+
+.dashboard-text-action {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: #1e293b;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dashboard-text-action:hover,
+.dashboard-text-action:focus-visible {
+  color: #0f172a;
+}
+
+.dashboard-text-action:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
 }
 
 /* Detail Cards */
