@@ -274,6 +274,8 @@ export function useSearch(baseUrl) {
           const sortedHits = [...response.data.hits]
           
           searchResults.value = sortedHits.map(hit => {
+            const displayScore = hit.score ?? hit._score ?? hit._text_match ?? hit.text_match ?? hit._textMatch ?? 0
+            const textMatch = hit._text_match ?? hit.text_match ?? hit._textMatch ?? displayScore
             // Hits have structure: { document: {...}, highlights: {...}, _text_match: ..., created_at: ... }
             if (hit.document) {
               const doc = {
@@ -281,7 +283,10 @@ export function useSearch(baseUrl) {
                 title: hit.document.title || hit.document.name,
                 content: hit.document.content || hit.document.description || hit.document.text,
                 ...hit.document,  // Spread document fields (id, title, content, etc.) - this will override above if they exist
-                _text_match: hit._text_match || hit.text_match || hit._textMatch || 0,
+                _text_match: displayScore,
+                text_match: textMatch,
+                score: displayScore,
+                weight: hit.weight,
                 highlights: hit.highlights || {},
                 // created_at can be in hit.document OR at hit level
                 created_at: hit.document.created_at || hit.created_at || hit.document.timestamp || hit.timestamp
@@ -292,7 +297,9 @@ export function useSearch(baseUrl) {
             const doc = {
               id: hit.id,
               ...hit,
-              _text_match: hit._text_match || hit.text_match || hit._textMatch || 0,
+              _text_match: displayScore,
+              text_match: textMatch,
+              score: displayScore,
               highlights: hit.highlights || {},
               created_at: hit.created_at || hit.timestamp
             }
