@@ -7068,7 +7068,8 @@ onUnmounted(() => {
   font-size: 20px;
   font-weight: 700;
   margin: 0;
-  line-height: 1.04;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
   cursor: pointer;
   user-select: text;
   -webkit-user-select: text;
@@ -7096,13 +7097,15 @@ onUnmounted(() => {
 .document-meta-link {
   display: flex;
   align-items: flex-start;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 2px;
   margin: 0 !important;
-  margin-top: -14px !important;
+  margin-top: 4px !important;
   padding: 0 !important;
   margin-left: 0 !important;
   padding-left: 0 !important;
-  line-height: 1;
+  line-height: 1.35;
   padding-right: 0 !important;
   outline: none;
   border: none;
@@ -7144,11 +7147,32 @@ onUnmounted(() => {
   color: #000000;
   font-size: 14px;
   line-height: 1.42;
-  margin: -14px 0 0 0;
+  margin: 6px 0 0 0;
   cursor: text;
   font-weight: normal !important;
   user-select: text;
   -webkit-user-select: text;
+}
+
+.doc-name-link {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .document-title-link {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .document-meta-link {
+    margin-top: 6px !important;
+    row-gap: 3px;
+  }
+
+  .document-snippet {
+    margin-top: 8px;
+  }
 }
 
 /* Disable ALL tooltips on document cards - be VERY aggressive */
