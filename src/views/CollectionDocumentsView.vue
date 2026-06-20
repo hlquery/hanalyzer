@@ -732,6 +732,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
+                :class="{ 'document-meta-link--after-long-title': String(getBestTitle(doc)).length > 40 }"
                 style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
@@ -806,6 +807,7 @@
               <router-link
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
+                :class="{ 'document-meta-link--after-long-title': String(getBestTitle(doc)).length > 40 }"
                 style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
@@ -7168,6 +7170,10 @@ onUnmounted(() => {
   .document-meta-link {
     margin-top: 6px !important;
     row-gap: 3px;
+  }
+
+  .document-meta-link--after-long-title {
+    padding-top: 4px !important;
   }
 
   .document-snippet {
