@@ -1590,7 +1590,7 @@ onUnmounted(() => {
 .dashboard-title {
   font-size: 32px;
   font-weight: 700;
-  color: #0f172a;
+  color: #000000;
   margin: 0 0 8px 0;
   letter-spacing: -0.02em;
 }
@@ -2003,14 +2003,14 @@ onUnmounted(() => {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #000000;
 }
 
 .critical-status-value {
   margin-left: auto;
   font-size: 15px;
   font-weight: 700;
-  color: #0f172a;
+  color: #000000;
 }
 
 .section-label {
@@ -2533,7 +2533,7 @@ onUnmounted(() => {
   font-weight: 700 !important;
   font-size: 18px !important;
   line-height: 1.2 !important;
-  color: #1e293b !important;
+  color: #000000 !important;
   letter-spacing: -0.02em !important;
   margin: 0 !important;
   padding: 0 !important;
