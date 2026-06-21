@@ -42,7 +42,6 @@
 
         <div class="critical-status-bar status-grid">
           <div class="critical-status-item status-card">
-            <span class="status-dot" :class="isConnected ? 'status-dot-online' : 'status-dot-offline'"></span>
             <span class="critical-status-label">Server</span>
             <span class="critical-status-value">{{ isConnected ? 'Online' : 'Offline' }}</span>
           </div>
@@ -303,7 +302,7 @@
                     :disabled="loading"
                     @click="loadStats"
                   >
-                    Refresh
+                    Execute
                   </button>
                 </div>
                 <v-divider class="my-3"></v-divider>
@@ -315,7 +314,7 @@
                     :disabled="!isConnected || flushing"
                     @click="showFlushDialog = true"
                   >
-                    {{ flushing ? 'Flushing...' : 'Flush All' }}
+                    {{ flushing ? 'Executing...' : 'Execute' }}
                   </button>
                 </div>
               </div>
@@ -1979,23 +1978,6 @@ onUnmounted(() => {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-}
-
-.status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.status-dot-online {
-  background: #22c55e;
-  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
-}
-
-.status-dot-offline {
-  background: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16);
 }
 
 .critical-status-label {
