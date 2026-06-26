@@ -3538,4 +3538,11 @@ onUnmounted(() => {
   text-align: center !important;
   pointer-events: none !important;
 }
+
+.dashboard-view .dashboard-title,
+.dashboard-view .collections-title-text.dashboard-title,
+.dashboard-view .critical-status-label,
+.dashboard-view .critical-status-value {
+  color: #000000 !important;
+}
 </style>
