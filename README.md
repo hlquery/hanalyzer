@@ -152,3 +152,26 @@ http://localhost:8080
 ```
 
 You should see the hanalyzer dashboard with connection status to your HLQuery server.
+
+### Contributing
+
+We welcome contributions from the community! All contributions must be released under the BSD 3-Clause license.
+
+### How to Contribute
+
+- Check existing [hanalyzer issues](https://github.com/hlquery/hanalyzer/issues) or create new ones
+- Contribute dashboard changes to [hlquery/hanalyzer](https://github.com/hlquery/hanalyzer)
+- Contribute shared server/API changes to [hlquery/hlquery](https://github.com/hlquery/hlquery)
+- Test and report UI, integration, and API compatibility bugs
+- Improve hanalyzer documentation and examples
+
+### Community
+
+- [Documentation](https://docs.hlquery.com)
+- [X (Twitter)](https://x.com/hlquery)
+- [hanalyzer GitHub](https://github.com/hlquery/hanalyzer)
+- [hlquery GitHub](https://github.com/hlquery/hlquery)
+
+### License
+
+hanalyzer is licensed under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
