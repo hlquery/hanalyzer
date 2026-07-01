@@ -15,6 +15,10 @@ export function useKeyboardShortcuts(shortcuts) {
     if (isShift) combination += 'shift+'
     if (isAlt) combination += 'alt+'
     combination += key
+
+    if ((combination === 'ctrl+f' || combination === 'meta+f') && !event.altKey && !event.shiftKey) {
+      return
+    }
     
     // Find matching shortcut
     const shortcut = shortcuts.find(s => s.key === combination || s.key === key)

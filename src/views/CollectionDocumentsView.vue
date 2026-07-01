@@ -3920,14 +3920,6 @@ useKeyboardShortcuts([
         showBulkDeleteDialog.value = false
       }
     }
-  },
-  {
-    key: 'ctrl+f',
-    handler: (e) => {
-      e.preventDefault()
-      const searchInput = document.querySelector('.modern-search-input-improved')
-      if (searchInput) searchInput.focus()
-    }
   }
 ])
 

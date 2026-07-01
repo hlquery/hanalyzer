@@ -123,10 +123,14 @@
               class="mb-3 document-card-clickable"
               style="cursor: pointer;"
             >
-              <v-card-text class="google-result-card">
+              <v-card-text :class="['google-result-card', getResultDensityClass(doc)]">
                 <div class="google-result-content">
                   <!-- Title (Google style - blue, clickable) -->
                   <h3 class="google-result-title" v-html="getBestTitle(doc)"></h3>
+
+                  <div v-if="getDocumentDate(doc)" class="google-result-meta google-result-meta--date">
+                    <span class="google-result-date">{{ formatDocumentDate(doc) }}</span>
+                  </div>
                   
                   <!-- URL/ID (Google style - green, smaller) - right below title -->
                   <div class="google-result-url">
@@ -136,14 +140,17 @@
                       :color="getScoreColor(doc._text_match)"
                       size="x-small"
                       variant="flat"
-                      class="ml-2 google-score-chip"
+                      class="google-score-chip"
                     >
                       Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}
                     </v-chip>
                   </div>
                   
                   <!-- Snippet/Description (Google style) -->
-                  <div class="google-result-snippet">
+                  <div
+                    v-if="(doc.highlights && Object.keys(doc.highlights).length > 0) || getBestContent(doc)"
+                    class="google-result-snippet"
+                  >
                     <!-- Highlights Preview -->
                     <div v-if="doc.highlights && Object.keys(doc.highlights).length > 0">
                       <div v-for="(highlight, field) in doc.highlights" :key="field" class="google-highlight-field">
@@ -152,11 +159,8 @@
                     </div>
                     <!-- Content Preview -->
                     <div v-else-if="getBestContent(doc)" v-html="cleanHighlightText(getBestContent(doc))"></div>
-                    <!-- Fallback if no highlights or preview -->
-                    <div v-else class="google-result-fallback">
-                      <span v-if="getDocumentDate(doc)" class="google-result-date">{{ formatDocumentDate(doc) }}</span>
-                    </div>
                   </div>
+                  <div v-else class="google-result-fallback">No preview available.</div>
                 </div>
               </v-card-text>
             </v-card>
@@ -290,6 +294,21 @@ const formatDocumentDate = (doc) => {
   } catch (err) {
     return String(dateString)
   }
+}
+
+const getResultContentLength = (doc) => {
+  const title = getBestTitle(doc) || ''
+  const id = doc?.id || ''
+  const content = getBestContent(doc) || ''
+  const date = getDocumentDate(doc) || ''
+  return String(title).length + String(id).length + String(content).length + String(date).length
+}
+
+const getResultDensityClass = (doc) => {
+  const length = getResultContentLength(doc)
+  if (length > 520) return 'google-result-card--dense'
+  if (length > 260) return 'google-result-card--compact'
+  return ''
 }
 
 const performGlobalSearch = async () => {
@@ -526,6 +545,14 @@ watch(() => route.params.query, async (newQuery) => {
   border-radius: 8px !important;
 }
 
+.google-result-card--compact {
+  padding: 16px 20px !important;
+}
+
+.google-result-card--dense {
+  padding: 14px 18px !important;
+}
+
 .google-result-card:hover {
   background: transparent !important;
   box-shadow: none !important;
@@ -539,10 +566,10 @@ watch(() => route.params.query, async (newQuery) => {
 /* Google-style Title */
 .google-result-title {
   font-size: 20px !important;
-  line-height: 1.3 !important;
+  line-height: 1.24 !important;
   font-weight: 700 !important;
   color: #1a0dab !important;
-  margin: 0 0 2px 0 !important;
+  margin: 0 0 1px 0 !important;
   padding: 0 !important;
   cursor: pointer !important;
   font-family: arial, sans-serif !important;
@@ -551,6 +578,15 @@ watch(() => route.params.query, async (newQuery) => {
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
   user-select: text !important;
+}
+
+.google-result-meta {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  min-width: 0 !important;
+  margin: 0 0 2px 0 !important;
+  line-height: 1.25 !important;
 }
 
 .google-result-title:hover {
@@ -577,11 +613,12 @@ watch(() => route.params.query, async (newQuery) => {
 /* Google-style URL */
 .google-result-url {
   display: flex !important;
-  align-items: center !important;
-  margin-bottom: 8px !important;
+  align-items: flex-start !important;
+  margin-bottom: 4px !important;
   margin-top: 0 !important;
   flex-wrap: wrap !important;
-  gap: 8px !important;
+  gap: 4px 8px !important;
+  min-width: 0 !important;
 }
 
 .google-result-url-text {
@@ -590,22 +627,27 @@ watch(() => route.params.query, async (newQuery) => {
   color: #006621 !important;
   font-family: arial, sans-serif !important;
   font-style: normal !important;
-  display: inline !important;
-  white-space: nowrap !important;
+  display: inline-block !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  white-space: normal !important;
 }
 
 .google-score-chip {
   font-size: 11px !important;
   height: 18px !important;
   font-weight: 600 !important;
+  flex: 0 0 auto !important;
+  margin-top: 0 !important;
 }
 
 /* Google-style Snippet */
 .google-result-snippet {
   font-size: 14px !important;
-  line-height: 1.58 !important;
+  line-height: 1.45 !important;
   color: #545454 !important;
-  margin-top: 8px !important;
+  margin-top: 3px !important;
   font-family: arial, sans-serif !important;
   display: block !important;
 }
@@ -627,11 +669,56 @@ watch(() => route.params.query, async (newQuery) => {
 .google-result-fallback {
   color: #70757a !important;
   font-size: 13px !important;
+  margin-top: 3px !important;
 }
 
 .google-result-date {
   color: #70757a !important;
   font-size: 13px !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-width: 640px) {
+  .google-result-card {
+    padding: 13px 14px !important;
+  }
+
+  .google-result-card--compact {
+    padding: 11px 12px !important;
+  }
+
+  .google-result-card--dense {
+    padding: 10px 11px !important;
+  }
+
+  .google-result-title {
+    font-size: 18px !important;
+    line-height: 1.22 !important;
+  }
+
+  .google-result-url {
+    align-items: flex-start !important;
+    gap: 3px 6px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .google-result-url-text {
+    flex: 1 1 170px !important;
+    min-width: 0 !important;
+    font-size: 13px !important;
+    line-height: 1.25 !important;
+  }
+
+  .google-score-chip {
+    max-width: 100% !important;
+    margin-top: 1px !important;
+  }
+
+  .google-result-snippet {
+    font-size: 13px !important;
+    line-height: 1.38 !important;
+    margin-top: 2px !important;
+  }
 }
 
 .collections-header {
