@@ -45,10 +45,15 @@
             <span class="critical-status-label">Server</span>
             <span class="critical-status-value">{{ isConnected ? 'Online' : 'Offline' }}</span>
           </div>
-          <div class="critical-status-item status-card">
-            <span class="critical-status-label">Ping</span>
-            <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
-          </div>
+          <v-tooltip location="top">
+            <template v-slot:activator="{ props }">
+              <div v-bind="props" class="critical-status-item status-card critical-status-item--help">
+                <span class="critical-status-label">Ping</span>
+                <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
+              </div>
+            </template>
+            <span>{{ pingTooltipText }}</span>
+          </v-tooltip>
         </div>
 
         <div class="section-label section-title">Operational Metrics</div>
@@ -791,6 +796,10 @@ const hasAuth = computed(() => {
   const url = baseUrl?.value || baseUrl
   const auth = getAuthForServer(url) || loadAuthFromStorage(url)
   return !!(auth && (auth.token || auth.apiKey))
+})
+
+const pingTooltipText = computed(() => {
+  return `Ping to the configured hlquery server at ${getDisplayServerUrl()}, not to your web client.`
 })
 
 const getDisplayServerUrl = () => {
@@ -1969,6 +1978,10 @@ onUnmounted(() => {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+}
+
+.critical-status-item--help {
+  cursor: help;
 }
 
 .dashboard-view :deep(.v-card),

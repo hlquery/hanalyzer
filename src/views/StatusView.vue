@@ -15,7 +15,7 @@
                 <span>{{ Math.round(lastPingTime) }}ms</span>
               </div>
             </template>
-            <span>Ping time, last check: {{ formatTime(lastCheckTime) }}</span>
+            <span>{{ pingTooltipText }}</span>
           </v-tooltip>
           
           <div class="status-indicator">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, inject } from 'vue'
+import { ref, computed, onMounted, inject } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useConnectionStatus } from '../composables/useConnectionStatus'
@@ -59,6 +59,10 @@ const { isConnected, lastPingTime, isChecking, checkConnection } = useConnection
 const lastCheckTime = ref(null)
 const serverStats = ref(null)
 const isLoadingStats = ref(false)
+const pingTooltipText = computed(() => {
+  const target = baseUrl?.value || baseUrl || 'http://localhost:9200'
+  return `Ping to the configured hlquery server at ${target}, not to your web client. Last check: ${formatTime(lastCheckTime.value)}`
+})
 
 const checkStatus = async () => {
   await checkConnection()
@@ -211,7 +215,7 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   font-size: 12px;
-  color: #64748b;
+  color: #000000;
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
   font-weight: 500;
@@ -220,6 +224,10 @@ onMounted(() => {
   border-radius: 6px;
   border: 1px solid #e2e8f0;
   cursor: help;
+}
+
+.status-ping span {
+  color: #000000;
 }
 
 .status-indicator {

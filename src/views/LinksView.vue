@@ -88,6 +88,7 @@
             <button
               type="button"
               class="links-ping-link"
+              :title="`Ping from this hlquery server to ${getItemRow(item).normalized_endpoint || getItemRow(item).endpoint || 'the selected node'}, not from your web client.`"
               :disabled="isPingingRow(getItemRow(item))"
               @click="pingNode(getItemRow(item))"
             >
@@ -608,7 +609,7 @@ onMounted(async () => {
   min-width: 78px;
   border: none;
   padding: 0.18rem 0.9rem;
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%);
+  background: #000000;
   color: #ffffff;
   font: inherit;
   font-size: 0.78rem;
@@ -619,8 +620,8 @@ onMounted(async () => {
   overflow: hidden;
   cursor: pointer;
   box-shadow:
-    0 3px 6px rgba(4, 48, 97, 0.34),
-    0 1px 2px rgba(4, 48, 97, 0.24),
+    0 3px 6px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.18),
     inset 0 -1px 0 rgba(0, 0, 0, 0.18);
   transition: background 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
@@ -636,19 +637,19 @@ onMounted(async () => {
 }
 
 .links-ping-link:hover:not(:disabled) {
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%);
+  background: #000000;
   box-shadow:
-    0 4px 9px rgba(4, 48, 97, 0.38),
-    0 2px 4px rgba(4, 48, 97, 0.28),
+    0 4px 9px rgba(0, 0, 0, 0.34),
+    0 2px 4px rgba(0, 0, 0, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .links-ping-link:active:not(:disabled) {
-  background: linear-gradient(135deg, #032a4f 0%, #021d3a 50%, #011528 100%);
+  background: #111111;
   box-shadow:
-    0 1px 3px rgba(4, 48, 97, 0.28),
-    0 1px 2px rgba(4, 48, 97, 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.26),
+    0 1px 2px rgba(0, 0, 0, 0.18),
     inset 0 2px 4px rgba(0, 0, 0, 0.24);
 }
 
