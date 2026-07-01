@@ -9,13 +9,13 @@
       >
         <v-card-text class="status-hero-content">
           <!-- Ping Display Top Right -->
-          <v-tooltip location="bottom" v-if="isConnected && lastPingTime !== null">
+          <v-tooltip location="bottom" v-if="isConnected && lastPingTime !== null" content-class="ping-tooltip">
             <template v-slot:activator="{ props }">
               <div v-bind="props" class="status-ping">
                 <span>{{ Math.round(lastPingTime) }}ms</span>
               </div>
             </template>
-            <span>{{ pingTooltipText }}</span>
+            <span class="ping-tooltip-content">{{ pingTooltipText }}</span>
           </v-tooltip>
           
           <div class="status-indicator">
@@ -61,7 +61,7 @@ const serverStats = ref(null)
 const isLoadingStats = ref(false)
 const pingTooltipText = computed(() => {
   const target = baseUrl?.value || baseUrl || 'http://localhost:9200'
-  return `Ping to the configured hlquery server at ${target}, not to your web client. Last check: ${formatTime(lastCheckTime.value)}`
+  return `Pinging server locally: ${target}. Last check: ${formatTime(lastCheckTime.value)}`
 })
 
 const checkStatus = async () => {
@@ -228,6 +228,18 @@ onMounted(() => {
 
 .status-ping span {
   color: #000000;
+}
+
+:deep(.ping-tooltip) {
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+:deep(.ping-tooltip-content) {
+  display: block;
+  max-width: 280px;
+  padding: 10px 12px;
+  line-height: 1.35;
 }
 
 .status-indicator {

@@ -45,14 +45,14 @@
             <span class="critical-status-label">Server</span>
             <span class="critical-status-value">{{ isConnected ? 'Online' : 'Offline' }}</span>
           </div>
-          <v-tooltip location="top">
+          <v-tooltip location="top" content-class="ping-tooltip">
             <template v-slot:activator="{ props }">
               <div v-bind="props" class="critical-status-item status-card critical-status-item--help">
                 <span class="critical-status-label">Ping</span>
                 <span class="critical-status-value">{{ formatLatency(lastPingTime) }}</span>
               </div>
             </template>
-            <span>{{ pingTooltipText }}</span>
+            <span class="ping-tooltip-content">{{ pingTooltipText }}</span>
           </v-tooltip>
         </div>
 
@@ -799,7 +799,7 @@ const hasAuth = computed(() => {
 })
 
 const pingTooltipText = computed(() => {
-  return `Ping to the configured hlquery server at ${getDisplayServerUrl()}, not to your web client.`
+  return `Pinging server locally: ${getDisplayServerUrl()}.`
 })
 
 const getDisplayServerUrl = () => {
@@ -3557,5 +3557,17 @@ onUnmounted(() => {
 .dashboard-view .critical-status-label,
 .dashboard-view .critical-status-value {
   color: #000000 !important;
+}
+
+:deep(.ping-tooltip) {
+  padding: 0 !important;
+  border-radius: 8px !important;
+}
+
+:deep(.ping-tooltip-content) {
+  display: block;
+  max-width: 280px;
+  padding: 10px 12px;
+  line-height: 1.35;
 }
 </style>
