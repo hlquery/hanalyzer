@@ -11,7 +11,7 @@
           </div>
         </div>
       </div>
-      <div class="collections-header-actions">
+      <div v-if="!dialog" class="collections-header-actions">
         <v-menu
           v-model="showItemsPerPageMenu"
           location="bottom start"
@@ -54,7 +54,7 @@
 
     <!-- Info Alert -->
     <v-alert
-      v-if="!isAdmin"
+      v-if="!dialog && !isAdmin"
       type="info"
       variant="tonal"
       class="mb-6 animate-fade-in"
@@ -65,7 +65,7 @@
 
     <!-- Error Alert -->
     <v-alert
-      v-if="error"
+      v-if="!dialog && error"
       type="error"
       variant="tonal"
       class="mb-6 animate-fade-in"
@@ -77,7 +77,7 @@
     </v-alert>
 
     <!-- Empty State -->
-    <div v-if="!loading && keys.length === 0 && !error" class="empty-state-wrapper">
+    <div v-if="!dialog && !loading && keys.length === 0 && !error" class="empty-state-wrapper">
       <v-card class="mb-card card-premium empty-collections-card">
         <v-card-text class="empty-state-premium empty-collections-content">
           <div class="empty-collections-text">
@@ -102,7 +102,7 @@
     </div>
 
     <!-- Keys Table -->
-    <v-card v-else-if="!loading && keys.length > 0" class="collections-card card-premium animate-fade-in">
+    <v-card v-else-if="!dialog && !loading && keys.length > 0" class="collections-card card-premium animate-fade-in">
       <v-data-table
         :headers="headers"
         :items="keys"
@@ -199,82 +199,110 @@
       </v-data-table>
     </v-card>
 
-    <LoadingSkeleton v-else variant="list" :items="5" />
+    <LoadingSkeleton v-else-if="!dialog" variant="list" :items="5" />
 
-    <!-- Create/Edit Key Dialog -->
-    <v-dialog v-model="dialog" max-width="700px" persistent>
-      <v-card class="dialog-card">
-        <v-card-title class="dialog-header pa-4">
-          <div class="d-flex align-center">
-            <v-icon :icon="isEdit ? 'mdi-pencil' : 'mdi-plus'" class="mr-2" color="primary"></v-icon>
-            <span class="text-h6 font-weight-bold">{{ isEdit ? 'Edit API Key' : 'Create API Key' }}</span>
+    <!-- Create/Edit Key Page -->
+    <section v-if="dialog" class="api-key-builder-page animate-fade-in">
+      <div class="api-key-builder-toolbar">
+        <button type="button" class="api-key-back-btn" :disabled="saving" @click="closeDialog">
+          <v-icon size="18">mdi-arrow-left</v-icon>
+          <span>Back to keys</span>
+        </button>
+      </div>
+
+      <div class="api-key-builder-hero">
+        <div class="api-key-builder-title-wrap">
+          <div class="api-key-builder-icon">
+            <v-icon :icon="isEdit ? 'mdi-pencil' : 'mdi-key-plus'" size="22"></v-icon>
           </div>
-        </v-card-title>
+          <div>
+            <h2 class="api-key-builder-title">{{ isEdit ? 'Edit API Key' : 'Create API Key' }}</h2>
+            <p class="api-key-builder-copy">
+              Configure a descriptive, scoped key with explicit collection permissions and rate limits.
+            </p>
+          </div>
+        </div>
+        <div class="api-key-builder-state">
+          <span>{{ isEdit ? 'Editing existing key' : 'New key' }}</span>
+        </div>
+      </div>
 
-        <v-card-text class="pa-6">
-          <div class="key-builder-intro mb-4">
-            <div class="d-flex align-center justify-space-between flex-wrap" style="gap: 8px;">
-              <div class="text-subtitle-2 font-weight-bold">Access Key Builder</div>
-              <v-chip size="x-small" color="primary" variant="tonal">3 steps</v-chip>
+      <v-card class="api-key-form-card">
+
+        <v-card-text class="api-key-form-body">
+          <div class="key-builder-intro mb-5">
+            <div>
+              <div class="key-builder-kicker">Access Key Builder</div>
+              <div class="key-builder-heading">Description, rate limit, and permissions</div>
             </div>
-            <div class="text-caption text-grey-darken-1 mt-1">
-              Add a description, configure permissions, then create and copy your key.
-            </div>
+            <v-chip size="small" color="primary" variant="tonal">3 steps</v-chip>
           </div>
 
-          <div v-if="!isEdit" class="mb-4">
-            <div class="d-flex align-center justify-space-between mb-2">
-              <span class="text-subtitle-2 font-weight-bold">Quick Presets</span>
+          <div v-if="!isEdit" class="form-section mb-5">
+            <div class="form-section-header">
+              <span class="form-section-title">Quick Presets</span>
+              <span class="form-section-caption">Start from a common permission profile.</span>
             </div>
             <div class="preset-row">
-              <v-btn size="small" variant="tonal" color="primary" @click="applyPreset('read_only')">Read-only</v-btn>
-              <v-btn size="small" variant="tonal" color="primary" @click="applyPreset('writer')">Writer</v-btn>
-              <v-btn size="small" variant="tonal" color="warning" @click="applyPreset('admin')">Admin</v-btn>
+              <button type="button" class="preset-pill" @click="applyPreset('read_only')">Read-only</button>
+              <button type="button" class="preset-pill" @click="applyPreset('writer')">Writer</button>
+              <button type="button" class="preset-pill preset-pill-warning" @click="applyPreset('admin')">Admin</button>
             </div>
           </div>
 
           <v-form ref="keyForm" v-model="valid">
-            <v-text-field
-              v-model="editedKey.description"
-              label="Description"
-              placeholder="e.g. Read-only key for web search"
-              variant="outlined"
-              density="comfortable"
-              class="mb-4"
-              :rules="[v => !!v || 'Description is required']"
-            ></v-text-field>
+            <div class="form-section">
+              <div class="form-section-header">
+                <span class="form-section-title">Key Details</span>
+                <span class="form-section-caption">Use a name your team will recognize later.</span>
+              </div>
+              <div class="details-grid">
+                <v-text-field
+                  v-model="editedKey.description"
+                  label="Description"
+                  placeholder="e.g. Read-only key for web search"
+                  variant="outlined"
+                  density="comfortable"
+                  class="api-key-input"
+                  :rules="[v => !!v || 'Description is required']"
+                ></v-text-field>
 
-            <v-text-field
-              v-model.number="editedKey.rate_limit_per_minute"
-              label="Rate Limit (req/min)"
-              type="number"
-              variant="outlined"
-              density="comfortable"
-              class="mb-4"
-              :rules="[v => v >= 0 || 'Limit must be positive']"
-            ></v-text-field>
-            <div class="rate-presets mb-4">
-              <span class="text-caption text-grey-darken-1">Quick limits:</span>
-              <v-btn size="x-small" variant="text" color="primary" @click="editedKey.rate_limit_per_minute = 60">60</v-btn>
-              <v-btn size="x-small" variant="text" color="primary" @click="editedKey.rate_limit_per_minute = 120">120</v-btn>
-              <v-btn size="x-small" variant="text" color="primary" @click="editedKey.rate_limit_per_minute = 300">300</v-btn>
-              <v-btn size="x-small" variant="text" color="primary" @click="editedKey.rate_limit_per_minute = 1000">1000</v-btn>
+                <div>
+                  <v-text-field
+                    v-model.number="editedKey.rate_limit_per_minute"
+                    label="Rate Limit (req/min)"
+                    type="number"
+                    variant="outlined"
+                    density="comfortable"
+                    class="api-key-input"
+                    :rules="[v => v >= 0 || 'Limit must be positive']"
+                  ></v-text-field>
+                  <div class="rate-presets">
+                    <span>Quick limits</span>
+                    <button type="button" @click="editedKey.rate_limit_per_minute = 60">60</button>
+                    <button type="button" @click="editedKey.rate_limit_per_minute = 120">120</button>
+                    <button type="button" @click="editedKey.rate_limit_per_minute = 300">300</button>
+                    <button type="button" @click="editedKey.rate_limit_per_minute = 1000">1000</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Scopes Section -->
-            <div class="mb-4">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <span class="text-subtitle-2 font-weight-bold">Permissions (Scopes)</span>
+            <div class="form-section mb-4">
+              <div class="form-section-header form-section-header-row">
+                <div>
+                  <span class="form-section-title">Permissions</span>
+                  <span class="form-section-caption">Create one scope per collection or use <code>*</code> for all collections.</span>
+                </div>
                 <v-btn
-                  size="x-small"
+                  size="small"
                   variant="tonal"
                   color="primary"
                   prepend-icon="mdi-plus"
                   @click="addScope"
                 >Add Scope</v-btn>
               </div>
-
-              <v-divider class="mb-4"></v-divider>
 
               <v-alert
                 v-if="hasDuplicateScopeCollections"
@@ -298,7 +326,7 @@
                 One or more scopes has no actions selected.
               </v-alert>
 
-              <div v-for="(scope, index) in localScopes" :key="index" class="scope-row pa-3 mb-3">
+              <div v-for="(scope, index) in localScopes" :key="index" class="scope-row pa-4 mb-3">
                 <div class="d-flex align-start">
                   <div class="flex-grow-1">
                     <div class="scope-row-header mb-2">Scope {{ index + 1 }}</div>
@@ -409,7 +437,7 @@
           </v-alert>
         </v-card-text>
 
-        <v-card-actions class="pa-4 bg-grey-lighten-4">
+        <v-card-actions class="api-key-form-actions">
           <span v-if="!createdRawKey" class="dialog-readiness-text">
             {{ hasValidScopes ? 'Ready to create key' : 'Complete required scope fields to continue' }}
           </span>
@@ -436,7 +464,7 @@
           >{{ isEdit ? 'Update Key' : 'Create Access Key' }}</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </section>
 
     <!-- Delete Confirmation -->
     <v-dialog v-model="deleteDialog" max-width="450px">
@@ -893,6 +921,169 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+.api-key-builder-page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.api-key-builder-toolbar {
+  display: flex;
+  align-items: center;
+}
+
+.api-key-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.api-key-back-btn:hover {
+  color: #0f172a;
+}
+
+.api-key-back-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.api-key-builder-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  border: 1px solid #dfe5ec;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.api-key-builder-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.api-key-builder-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  background: #111827;
+  color: #ffffff;
+}
+
+.api-key-builder-title {
+  margin: 0;
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 22px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.api-key-builder-copy {
+  margin: 5px 0 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.api-key-builder-state {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #e9eef5;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.api-key-form-card {
+  border: 1px solid #dfe5ec !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  overflow: hidden;
+}
+
+.api-key-form-body {
+  padding: 22px !important;
+}
+
+.api-key-form-actions {
+  padding: 14px 22px !important;
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.form-section {
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.form-section + .form-section {
+  margin-top: 16px;
+}
+
+.form-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+
+.form-section-header-row {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.form-section-title {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.form-section-caption {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.api-key-input {
+  margin: 0 !important;
+}
+
 .scope-row {
   background: #f8fafc;
   border: 1px solid #e2e8f0;
@@ -908,10 +1099,31 @@ onMounted(() => {
 }
 
 .key-builder-intro {
-  padding: 10px 12px;
-  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+  background: #f8fafc;
+}
+
+.key-builder-kicker {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.key-builder-heading {
+  margin-top: 3px;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .preset-row {
@@ -920,16 +1132,66 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
+.preset-pill {
+  min-height: 34px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 750;
+  padding: 0 14px;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.preset-pill:hover {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.preset-pill-warning:hover {
+  background: #92400e;
+  border-color: #92400e;
+}
+
 .rate-presets {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
+  min-height: 28px;
+  margin-top: -6px;
+}
+
+.rate-presets span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 2px;
+}
+
+.rate-presets button {
+  border: 1px solid #dbe3ea;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 750;
+  min-height: 24px;
+  padding: 0 9px;
+  cursor: pointer;
+}
+
+.rate-presets button:hover {
+  border-color: #111827;
+  color: #111827;
 }
 
 .scope-summary-card {
   border-color: #dbeafe !important;
-  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%) !important;
+  background: #f8fafc !important;
 }
 
 .summary-grid {
@@ -979,6 +1241,23 @@ onMounted(() => {
 .dialog-card {
   border-radius: 12px !important;
   overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .api-key-builder-hero,
+  .form-section-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .details-grid,
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .api-key-builder-state {
+    align-self: flex-start;
+  }
 }
 
 .collections-dir-icon {

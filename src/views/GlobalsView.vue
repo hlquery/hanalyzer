@@ -17,22 +17,14 @@
     <div class="collection-tabs-container mb-2">
       <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
         <v-tab value="synonyms" class="collection-tab">
-          <span class="tab-icon-shell tab-icon-shell--synonyms">
-            <v-icon size="18">mdi-link-variant</v-icon>
-          </span>
-          <span class="tab-label-stack">
-            <span class="tab-text">Synonyms</span>
-            <span class="tab-count">{{ synonyms.length }}</span>
-          </span>
+          <v-icon size="16" class="tab-icon">mdi-link-variant</v-icon>
+          <span class="tab-text">Synonyms</span>
+          <span class="tab-count">{{ synonyms.length }}</span>
         </v-tab>
         <v-tab value="stopwords" class="collection-tab">
-          <span class="tab-icon-shell tab-icon-shell--stopwords">
-            <v-icon size="18">mdi-filter-remove-outline</v-icon>
-          </span>
-          <span class="tab-label-stack">
-            <span class="tab-text">Stopwords</span>
-            <span class="tab-count">{{ stopwordRows.length }}</span>
-          </span>
+          <v-icon size="16" class="tab-icon">mdi-filter-remove-outline</v-icon>
+          <span class="tab-text">Stopwords</span>
+          <span class="tab-count">{{ stopwordRows.length }}</span>
         </v-tab>
       </v-tabs>
     </div>
@@ -269,77 +261,76 @@
         </v-data-table>
       </v-card>
     </div>
+    <v-dialog v-model="showDeleteSynonymDialog" max-width="480" persistent>
+      <v-card class="simple-delete-dialog-card" elevation="0">
+        <v-card-title class="simple-delete-dialog-header">
+          <div class="simple-delete-dialog-header-copy">
+            <div class="simple-delete-dialog-kicker">Confirm removal</div>
+            <div class="simple-delete-dialog-title-row">
+              <v-icon icon="mdi-swap-horizontal" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
+              <span class="simple-delete-dialog-title">Delete Global Synonym</span>
+            </div>
+          </div>
+          <v-btn icon variant="text" @click="closeDeleteSynonymDialog" color="white">
+            <v-icon size="18">mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text class="simple-delete-dialog-body">
+          <p class="simple-delete-dialog-copy">Remove this synonym group from globals?</p>
+          <div v-if="synonymToDelete" class="simple-delete-dialog-preview">
+            <div class="simple-delete-dialog-label">Root term</div>
+            <div class="simple-delete-dialog-value">{{ synonymToDelete.root }}</div>
+          </div>
+          <v-alert v-if="deleteSynonymError" type="error" variant="tonal" class="mt-4" closable @click:close="deleteSynonymError = null">
+            {{ deleteSynonymError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="simple-delete-dialog-actions">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="closeDeleteSynonymDialog" :disabled="deletingSynonym" size="small" class="mr-2">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" :disabled="deletingSynonym" size="small">
+            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
+            <span>Delete Global Synonym</span>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showDeleteStopwordDialog" max-width="480" persistent>
+      <v-card class="simple-delete-dialog-card" elevation="0">
+        <v-card-title class="simple-delete-dialog-header">
+          <div class="simple-delete-dialog-header-copy">
+            <div class="simple-delete-dialog-kicker">Confirm removal</div>
+            <div class="simple-delete-dialog-title-row">
+              <v-icon icon="mdi-text-box-remove" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
+              <span class="simple-delete-dialog-title">Delete Global Stopword</span>
+            </div>
+          </div>
+          <v-btn icon variant="text" @click="closeDeleteStopwordDialog" color="white">
+            <v-icon size="18">mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
+        <v-card-text class="simple-delete-dialog-body">
+          <p class="simple-delete-dialog-copy">Remove this stopword from globals?</p>
+          <div v-if="stopwordToDelete" class="simple-delete-dialog-preview">
+            <div class="simple-delete-dialog-label">Stopword</div>
+            <div class="simple-delete-dialog-value">{{ getStopwordText(stopwordToDelete) }}</div>
+          </div>
+          <v-alert v-if="deleteStopwordError" type="error" variant="tonal" class="mt-4" closable @click:close="deleteStopwordError = null">
+            {{ deleteStopwordError }}
+          </v-alert>
+        </v-card-text>
+        <v-card-actions class="simple-delete-dialog-actions">
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="closeDeleteStopwordDialog" :disabled="deletingStopword" size="small" class="mr-2">Cancel</v-btn>
+          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteStopword" :loading="deletingStopword" :disabled="deletingStopword" size="small">
+            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
+            <span>Delete Global Stopword</span>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
-
-  <v-dialog v-model="showDeleteSynonymDialog" max-width="480" persistent>
-    <v-card class="simple-delete-dialog-card" elevation="0">
-      <v-card-title class="simple-delete-dialog-header">
-        <div class="simple-delete-dialog-header-copy">
-          <div class="simple-delete-dialog-kicker">Confirm removal</div>
-          <div class="simple-delete-dialog-title-row">
-            <v-icon icon="mdi-swap-horizontal" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
-            <span class="simple-delete-dialog-title">Delete Global Synonym</span>
-          </div>
-        </div>
-        <v-btn icon variant="text" @click="closeDeleteSynonymDialog" color="white">
-          <v-icon size="18">mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
-      <v-card-text class="simple-delete-dialog-body">
-        <p class="simple-delete-dialog-copy">Remove this synonym group from globals?</p>
-        <div v-if="synonymToDelete" class="simple-delete-dialog-preview">
-          <div class="simple-delete-dialog-label">Root term</div>
-          <div class="simple-delete-dialog-value">{{ synonymToDelete.root }}</div>
-        </div>
-        <v-alert v-if="deleteSynonymError" type="error" variant="tonal" class="mt-4" closable @click:close="deleteSynonymError = null">
-          {{ deleteSynonymError }}
-        </v-alert>
-      </v-card-text>
-      <v-card-actions class="simple-delete-dialog-actions">
-        <v-spacer></v-spacer>
-        <v-btn variant="text" @click="closeDeleteSynonymDialog" :disabled="deletingSynonym" size="small" class="mr-2">Cancel</v-btn>
-        <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" :disabled="deletingSynonym" size="small">
-          <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
-          <span>Delete Global Synonym</span>
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
-
-  <v-dialog v-model="showDeleteStopwordDialog" max-width="480" persistent>
-    <v-card class="simple-delete-dialog-card" elevation="0">
-      <v-card-title class="simple-delete-dialog-header">
-        <div class="simple-delete-dialog-header-copy">
-          <div class="simple-delete-dialog-kicker">Confirm removal</div>
-          <div class="simple-delete-dialog-title-row">
-            <v-icon icon="mdi-text-box-remove" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
-            <span class="simple-delete-dialog-title">Delete Global Stopword</span>
-          </div>
-        </div>
-        <v-btn icon variant="text" @click="closeDeleteStopwordDialog" color="white">
-          <v-icon size="18">mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
-      <v-card-text class="simple-delete-dialog-body">
-        <p class="simple-delete-dialog-copy">Remove this stopword from globals?</p>
-        <div v-if="stopwordToDelete" class="simple-delete-dialog-preview">
-          <div class="simple-delete-dialog-label">Stopword</div>
-          <div class="simple-delete-dialog-value">{{ getStopwordText(stopwordToDelete) }}</div>
-        </div>
-        <v-alert v-if="deleteStopwordError" type="error" variant="tonal" class="mt-4" closable @click:close="deleteStopwordError = null">
-          {{ deleteStopwordError }}
-        </v-alert>
-      </v-card-text>
-      <v-card-actions class="simple-delete-dialog-actions">
-        <v-spacer></v-spacer>
-        <v-btn variant="text" @click="closeDeleteStopwordDialog" :disabled="deletingStopword" size="small" class="mr-2">Cancel</v-btn>
-        <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteStopword" :loading="deletingStopword" :disabled="deletingStopword" size="small">
-          <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
-          <span>Delete Global Stopword</span>
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
@@ -984,23 +975,22 @@ onMounted(async () => {
 }
 
 .collection-tabs-container {
-  background: #ffffff;
-  padding: 6px;
-  margin-bottom: 8px;
-  border: 1px solid #dfe4ea;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  background: transparent;
+  padding: 0;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #d8dee6;
 }
 
 .collection-tabs :deep(.v-tabs-container) {
   background: transparent;
   padding: 0;
   border-bottom: none !important;
+  height: auto !important;
 }
 
 .collection-tabs :deep(.v-tabs-list) {
   background: transparent;
-  gap: 6px;
+  gap: 22px;
   padding-bottom: 0;
   border-bottom: none !important;
 }
@@ -1012,118 +1002,90 @@ onMounted(async () => {
 }
 
 .collection-tabs :deep(.v-tabs-slider) {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  height: 0 !important;
-  width: 0 !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  height: 2px !important;
+  background: #111827 !important;
+  border-radius: 999px 999px 0 0 !important;
 }
 
 .collection-tab {
   font-family: Inter, Helvetica, sans-serif !important;
-  color: #2f3437 !important;
+  color: #64748b !important;
   text-transform: none !important;
-  padding: 8px 12px !important;
-  min-height: 48px !important;
-  height: 48px !important;
-  border-radius: 6px !important;
+  padding: 0 2px 12px !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  border-radius: 0 !important;
   background: transparent !important;
-  transition: all 0.2s ease !important;
+  transition: color 0.18s ease !important;
   margin-right: 0 !important;
-  border: 1px solid transparent !important;
+  border: 0 !important;
   margin-bottom: 0 !important;
   box-shadow: none !important;
+  min-width: auto !important;
 }
 
 .collection-tab:hover {
-  background: #f8fafc !important;
-  border-color: #dfe4ea !important;
+  background: transparent !important;
   color: #111827 !important;
   box-shadow: none !important;
 }
 
 .collection-tab.v-tab--selected {
   color: #111827 !important;
-  font-weight: 500 !important;
-  background: #eef1f4 !important;
-  border-color: #cbd5e1 !important;
-  border-radius: 6px !important;
+  font-weight: 700 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
   box-shadow: none !important;
 }
 
 .collection-tab :deep(.v-btn__content) {
   display: inline-flex !important;
   align-items: center !important;
-  gap: 10px !important;
+  gap: 8px !important;
+  line-height: 1 !important;
 }
 
-.tab-icon-shell {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-  border: 1px solid transparent;
-}
-
-.tab-icon-shell--synonyms {
-  color: #3d463f;
-  background: #f3f4f6;
-  border-color: #d8ddd9;
-}
-
-.tab-icon-shell--stopwords {
-  color: #3d463f;
-  background: #f3f4f6;
-  border-color: #d8ddd9;
-}
-
-.collection-tab.v-tab--selected .tab-icon-shell--synonyms {
-  color: #ffffff;
-  background: #2f3437;
-  border-color: #2f3437;
-}
-
-.collection-tab.v-tab--selected .tab-icon-shell--stopwords {
-  color: #ffffff;
-  background: #2f3437;
-  border-color: #2f3437;
-}
-
-.tab-label-stack {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1.1;
-  min-width: 72px;
+.tab-icon {
+  color: currentColor !important;
+  opacity: 0.8;
 }
 
 .tab-text {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 750 !important;
   font-size: 13px !important;
-  color: #2f3437 !important;
+  color: currentColor !important;
 }
 
 .collection-tab.v-tab--selected .tab-text {
-  color: #111827 !important;
+  color: currentColor !important;
   font-weight: 800 !important;
 }
 
 .tab-count {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 700 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #e9eef4;
+  font-weight: 750 !important;
   font-size: 11px !important;
-  color: #647067 !important;
+  color: #475569 !important;
   opacity: 1 !important;
   margin-left: 0 !important;
-  margin-top: 3px !important;
+  margin-top: 0 !important;
 }
 
 .collection-tab.v-tab--selected .tab-count {
-  color: #475569 !important;
+  background: #111827;
+  color: #ffffff !important;
   font-weight: 800 !important;
   opacity: 1 !important;
 }
