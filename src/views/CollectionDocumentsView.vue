@@ -1631,6 +1631,7 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 const baseUrl = inject('baseUrl')
+const deploymentDemoMode = inject('deploymentDemoMode', ref(false))
 const toast = inject('toast', { success: () => {}, error: () => {} })
 const { validateDocument, validateJSON, checkConnection, sanitizeInput } = useValidation()
 const { copyToClipboard, copyJSON } = useCopy()
@@ -4243,6 +4244,21 @@ const taxonomySortIcon = (sortOrder) => {
   return 'mdi-swap-vertical'
 }
 
+const demoModeDeleteMessage = 'Demo mode is enabled. Synonyms and stopwords cannot be deleted.'
+
+const isDemoModeActive = () => {
+  return deploymentDemoMode.value === true ||
+    (typeof window !== 'undefined' && window.__HLQUERY_DEMO_MODE__ === true)
+}
+
+const showDemoDeleteToast = () => {
+  const serverMessage = typeof window !== 'undefined' && typeof window.__HLQUERY_DEMO_MESSAGE__ === 'string'
+    ? window.__HLQUERY_DEMO_MESSAGE__.trim()
+    : ''
+  const message = serverMessage || demoModeDeleteMessage
+  toast.error(message, 'Action unavailable')
+}
+
 const submitInlineSynonym = async () => {
   const name = collectionName.value
   const root = String(inlineSynonymForm.value.root || '').trim()
@@ -4353,6 +4369,11 @@ const deletingSynonym = ref(false)
 const deleteSynonymError = ref(null)
 
 const openDeleteSynonymDialog = (synonym) => {
+  if (isDemoModeActive()) {
+    showDemoDeleteToast()
+    return
+  }
+
   synonymToDelete.value = synonym
   deleteSynonymError.value = null
   showDeleteSynonymDialog.value = true
@@ -4366,6 +4387,11 @@ const closeDeleteSynonymDialog = () => {
 }
 
 const confirmDeleteSynonym = async () => {
+  if (isDemoModeActive()) {
+    showDemoDeleteToast()
+    return
+  }
+
   if (!synonymToDelete.value) {
     deleteSynonymError.value = 'Synonym data is missing'
     return
@@ -4404,6 +4430,7 @@ const confirmDeleteSynonym = async () => {
   } catch (err) {
     const errorMsg = extractSafeErrorMessage(err, 'Failed to delete synonym')
     deleteSynonymError.value = errorMsg
+    toast.error(errorMsg, 'Delete Failed')
   } finally {
     deletingSynonym.value = false
   }
@@ -4444,6 +4471,11 @@ const addStopword = async () => {
 
 // Delete stopword - open confirmation dialog
 const openDeleteStopwordDialog = (stopwordData) => {
+  if (isDemoModeActive()) {
+    showDemoDeleteToast()
+    return
+  }
+
   stopwordToDelete.value = stopwordData
   deleteStopwordError.value = null
   showDeleteStopwordDialog.value = true
@@ -4457,6 +4489,11 @@ const closeDeleteStopwordDialog = () => {
 }
 
 const confirmDeleteStopword = async () => {
+  if (isDemoModeActive()) {
+    showDemoDeleteToast()
+    return
+  }
+
   if (!stopwordToDelete.value) {
     deleteStopwordError.value = 'Stopword data is missing'
     return
@@ -4496,6 +4533,7 @@ const confirmDeleteStopword = async () => {
     console.error('Delete stopword error:', err)
     const errorMsg = extractSafeErrorMessage(err, 'Failed to delete stopword')
     deleteStopwordError.value = errorMsg
+    toast.error(errorMsg, 'Delete Failed')
   } finally {
     deletingStopword.value = false
   }

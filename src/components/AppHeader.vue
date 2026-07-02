@@ -795,6 +795,10 @@ const checkDemoMode = async () => {
   if (!baseUrlValue || !isConnected.value) {
     demoModeEnabled.value = false
     demoModeMessage.value = ''
+    if (typeof window !== 'undefined') {
+      window.__HLQUERY_DEMO_MODE__ = false
+      window.__HLQUERY_DEMO_MESSAGE__ = ''
+    }
     return
   }
 
@@ -809,6 +813,10 @@ const checkDemoMode = async () => {
     if (response.status !== 200 || !response.data || typeof response.data !== 'object') {
       demoModeEnabled.value = false
       demoModeMessage.value = ''
+      if (typeof window !== 'undefined') {
+        window.__HLQUERY_DEMO_MODE__ = false
+        window.__HLQUERY_DEMO_MESSAGE__ = ''
+      }
       return
     }
 
@@ -816,9 +824,17 @@ const checkDemoMode = async () => {
     demoModeMessage.value = typeof response.data.demo_message === 'string'
       ? response.data.demo_message.trim()
       : ''
+    if (typeof window !== 'undefined') {
+      window.__HLQUERY_DEMO_MODE__ = demoModeEnabled.value
+      window.__HLQUERY_DEMO_MESSAGE__ = demoModeMessage.value
+    }
   } catch (err) {
     demoModeEnabled.value = false
     demoModeMessage.value = ''
+    if (typeof window !== 'undefined') {
+      window.__HLQUERY_DEMO_MODE__ = false
+      window.__HLQUERY_DEMO_MESSAGE__ = ''
+    }
   }
 }
 
