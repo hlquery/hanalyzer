@@ -153,8 +153,8 @@
             </div>
           </template>
           <template v-slot:item.actions="{ item }">
-              <v-btn icon size="x-small" variant="text" color="error" @click="openDeleteSynonymDialog(getItemRow(item))">
-                <v-icon size="18">mdi-delete</v-icon>
+              <v-btn icon size="x-small" variant="text" class="global-delete-icon-btn" @click="openDeleteSynonymDialog(getItemRow(item))">
+                <v-icon size="18" class="global-delete-icon">mdi-delete</v-icon>
               </v-btn>
             </template>
           </v-data-table>
@@ -254,8 +254,8 @@
             <span class="globals-primary-cell">{{ getItemRow(item).word }}</span>
           </template>
           <template v-slot:item.actions="{ item }">
-            <v-btn icon size="x-small" variant="text" color="error" @click="openDeleteStopwordDialog(getItemRow(item).word)">
-              <v-icon size="18">mdi-delete</v-icon>
+            <v-btn icon size="x-small" variant="text" class="global-delete-icon-btn" @click="openDeleteStopwordDialog(getItemRow(item).word)">
+              <v-icon size="18" class="global-delete-icon">mdi-delete</v-icon>
             </v-btn>
           </template>
         </v-data-table>
@@ -269,7 +269,7 @@
         <div class="simple-delete-dialog-header-copy">
           <div class="simple-delete-dialog-kicker">Confirm removal</div>
           <div class="simple-delete-dialog-title-row">
-            <v-icon icon="mdi-swap-horizontal" size="18" color="white" class="mr-2"></v-icon>
+            <v-icon icon="mdi-swap-horizontal" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
             <span class="simple-delete-dialog-title">Delete Global Synonym</span>
           </div>
         </div>
@@ -290,7 +290,7 @@
       <v-card-actions class="simple-delete-dialog-actions">
         <v-spacer></v-spacer>
         <v-btn variant="text" @click="closeDeleteSynonymDialog" :disabled="deletingSynonym" size="small" class="mr-2">Cancel</v-btn>
-        <v-btn color="primary" variant="flat" @click="confirmDeleteSynonym" :loading="deletingSynonym" size="small">Delete Synonym</v-btn>
+        <v-btn color="primary" variant="flat" prepend-icon="mdi-delete" class="global-delete-confirm-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" :disabled="deletingSynonym" size="small">Delete Global Synonym</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -301,7 +301,7 @@
         <div class="simple-delete-dialog-header-copy">
           <div class="simple-delete-dialog-kicker">Confirm removal</div>
           <div class="simple-delete-dialog-title-row">
-            <v-icon icon="mdi-text-box-remove" size="18" color="white" class="mr-2"></v-icon>
+            <v-icon icon="mdi-text-box-remove" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
             <span class="simple-delete-dialog-title">Delete Global Stopword</span>
           </div>
         </div>
@@ -322,7 +322,7 @@
       <v-card-actions class="simple-delete-dialog-actions">
         <v-spacer></v-spacer>
         <v-btn variant="text" @click="closeDeleteStopwordDialog" :disabled="deletingStopword" size="small" class="mr-2">Cancel</v-btn>
-        <v-btn color="primary" variant="flat" @click="confirmDeleteStopword" :loading="deletingStopword" size="small">Delete Stopword</v-btn>
+        <v-btn color="primary" variant="flat" prepend-icon="mdi-delete" class="global-delete-confirm-btn" @click="confirmDeleteStopword" :loading="deletingStopword" :disabled="deletingStopword" size="small">Delete Global Stopword</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -333,10 +333,12 @@ import { computed, inject, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl, extractSynonyms, normalizeStopwords, getStopwordText } from '../utils/apiHelpers'
+import { extractSafeErrorMessage } from '../utils/sanitize'
 
 const route = useRoute()
 const router = useRouter()
 const baseUrl = inject('baseUrl')
+const toast = inject('toast', { success: () => {}, error: () => {} })
 
 const activeTab = ref(route.query.tab === 'stopwords' ? 'stopwords' : 'synonyms')
 const synonyms = ref([])
@@ -544,6 +546,8 @@ const closeDeleteSynonymDialog = () => {
 }
 
 const confirmDeleteSynonym = async () => {
+  if (deletingSynonym.value) return
+
   const synonym = synonymToDelete.value
   const id = synonym?.id || synonym?.root
   if (!id) return
@@ -558,7 +562,9 @@ const confirmDeleteSynonym = async () => {
     closeDeleteSynonymDialog()
     await loadSynonyms()
   } catch (err) {
-    deleteSynonymError.value = err.response?.data?.error || err.message || 'Failed to delete global synonym'
+    const errorMsg = extractSafeErrorMessage(err, 'Failed to delete global synonym')
+    deleteSynonymError.value = errorMsg
+    toast.error(errorMsg, 'Delete Failed')
   } finally {
     deletingSynonym.value = false
   }
@@ -578,6 +584,8 @@ const closeDeleteStopwordDialog = () => {
 }
 
 const confirmDeleteStopword = async () => {
+  if (deletingStopword.value) return
+
   const word = getStopwordText(stopwordToDelete.value)
   if (!word) return
   deletingStopword.value = true
@@ -591,7 +599,9 @@ const confirmDeleteStopword = async () => {
     closeDeleteStopwordDialog()
     await loadStopwords()
   } catch (err) {
-    deleteStopwordError.value = err.response?.data?.error || err.message || 'Failed to delete global stopword'
+    const errorMsg = extractSafeErrorMessage(err, 'Failed to delete global stopword')
+    deleteStopwordError.value = errorMsg
+    toast.error(errorMsg, 'Delete Failed')
   } finally {
     deletingStopword.value = false
   }
@@ -1286,6 +1296,32 @@ onMounted(async () => {
   background: rgba(239, 68, 68, 0.1) !important;
 }
 
+.globals-table :deep(.global-delete-icon-btn) {
+  color: #111827 !important;
+  background: transparent !important;
+  transition: background 0.18s ease, color 0.18s ease !important;
+}
+
+.globals-table :deep(.global-delete-icon-btn .v-icon),
+.globals-table :deep(.global-delete-icon) {
+  display: inline-flex !important;
+  opacity: 1 !important;
+  color: #111827 !important;
+}
+
+.globals-table :deep(.global-delete-icon-btn:hover),
+.globals-table :deep(.global-delete-icon-btn:focus-visible),
+.globals-table :deep(.global-delete-icon-btn.v-btn--active) {
+  background: #111827 !important;
+  color: #ffffff !important;
+}
+
+.globals-table :deep(.global-delete-icon-btn:hover .v-icon),
+.globals-table :deep(.global-delete-icon-btn:focus-visible .v-icon),
+.globals-table :deep(.global-delete-icon-btn.v-btn--active .v-icon) {
+  color: #ffffff !important;
+}
+
 .globals-add-btn-wide {
   min-width: 140px;
 }
@@ -1399,6 +1435,11 @@ onMounted(async () => {
   align-items: center;
 }
 
+.simple-delete-dialog-title-icon {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
 .simple-delete-dialog-title {
   font-size: 20px;
   line-height: 1.1;
@@ -1447,6 +1488,18 @@ onMounted(async () => {
   padding: 16px 22px !important;
   background: #f8fafc !important;
   border-top: 1px solid #e2e8f0;
+}
+
+.global-delete-confirm-btn :deep(.v-btn__prepend),
+.global-delete-confirm-btn :deep(.v-btn__prepend-inner) {
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.global-delete-confirm-btn :deep(.v-icon) {
+  display: inline-flex !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
 }
 
 @media (max-width: 960px) {

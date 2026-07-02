@@ -197,6 +197,20 @@ axios.interceptors.response.use(
           }))
         }
       } else if (error.response.status === 403) {
+        const data = error.response?.data || {}
+        const messageText = [
+          data.message,
+          data.error,
+          data.details,
+          error.message
+        ]
+          .filter(value => typeof value === 'string')
+          .join(' ')
+
+        if (data.code === 26004 || /demo mode is enabled/i.test(messageText)) {
+          return Promise.reject(error)
+        }
+
         // 403 Forbidden - token might be invalid or doesn't have permissions
         const authHeaders = error.config?.headers || {}
         const authHeader = authHeaders.Authorization || authHeaders['X-API-Key']
