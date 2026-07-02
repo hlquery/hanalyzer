@@ -755,7 +755,7 @@
 
 <script setup>
 import { onMounted, onUnmounted, ref, computed, inject, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCollections } from '../composables/useCollections'
 import { useAliases } from '../composables/useAliases'
 import { useSearch } from '../composables/useSearch'
@@ -765,22 +765,23 @@ import { extractSafeErrorMessage } from '../utils/sanitize'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 import PaginationInfo from '../components/PaginationInfo.vue'
 
+const route = useRoute()
 const router = useRouter()
 const emit = defineEmits(['view-collection', 'view-documents'])
 
 const baseUrl = inject('baseUrl')
 const toast = inject('toast', { success: () => {}, error: () => {} })
 const { collections, loading: collectionsLoading, error: collectionsError, loadCollections: fetchCollections, loadCollectionsAsync, deleteCollection } = useCollections(baseUrl)
-const { aliases, loading: aliasesLoading, error: aliasesError, loadAliases, deleteAlias: removeAlias } = useAliases(baseUrl)
+const { aliases, loadAliases, deleteAlias: removeAlias } = useAliases(baseUrl)
 
-const loading = computed(() => collectionsLoading.value || aliasesLoading.value)
-const error = computed(() => collectionsError.value || aliasesError.value)
+const loading = computed(() => collectionsLoading.value)
+const error = computed(() => collectionsError.value)
 
 const loadCollections = async (showLoading = true, searchValue = null, sortByValue = null, sortOrderValue = null) => {
-  await Promise.all([
-    fetchCollections(showLoading, searchValue, sortByValue, sortOrderValue),
-    loadAliases(showLoading)
-  ])
+  await fetchCollections(showLoading, searchValue, sortByValue, sortOrderValue)
+  loadAliases(false).catch((err) => {
+    console.warn('CollectionsView: aliases refresh failed:', err)
+  })
 }
 
 // Keyboard shortcuts
@@ -1722,6 +1723,17 @@ onMounted(() => {
   const { sortBy: sb, sortOrder: so } = getCurrentSort()
   loadCollections(false, null, sb, so).catch((err) => {
     console.error('CollectionsView: Error loading collections:', err)
+  })
+})
+
+watch(() => route.fullPath, (newPath) => {
+  if (newPath !== '/collections') {
+    return
+  }
+
+  const { sortBy: sb, sortOrder: so } = getCurrentSort()
+  loadCollections(false, collectionFilterQuery.value, sb, so).catch((err) => {
+    console.error('CollectionsView: Error refreshing collections after route change:', err)
   })
 })
 

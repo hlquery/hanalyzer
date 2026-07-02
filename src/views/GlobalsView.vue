@@ -17,14 +17,22 @@
     <div class="collection-tabs-container mb-2">
       <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
         <v-tab value="synonyms" class="collection-tab">
-          <v-icon size="16" class="mr-2">mdi-swap-horizontal</v-icon>
-          <span class="tab-text">Synonyms</span>
-          <span class="tab-count">({{ synonyms.length }})</span>
+          <span class="tab-icon-shell tab-icon-shell--synonyms">
+            <v-icon size="18">mdi-link-variant</v-icon>
+          </span>
+          <span class="tab-label-stack">
+            <span class="tab-text">Synonyms</span>
+            <span class="tab-count">{{ synonyms.length }}</span>
+          </span>
         </v-tab>
         <v-tab value="stopwords" class="collection-tab">
-          <v-icon size="16" class="mr-2">mdi-cancel</v-icon>
-          <span class="tab-text">Stopwords</span>
-          <span class="tab-count">({{ stopwordRows.length }})</span>
+          <span class="tab-icon-shell tab-icon-shell--stopwords">
+            <v-icon size="18">mdi-filter-remove-outline</v-icon>
+          </span>
+          <span class="tab-label-stack">
+            <span class="tab-text">Stopwords</span>
+            <span class="tab-count">{{ stopwordRows.length }}</span>
+          </span>
         </v-tab>
       </v-tabs>
     </div>
@@ -104,8 +112,8 @@
 
       <v-card v-else-if="synonyms.length === 0" class="mb-card card-premium globals-empty-card">
         <v-card-text class="globals-empty-state">
-          <div class="globals-empty-icon">
-            <v-icon size="28">mdi-swap-horizontal-circle-outline</v-icon>
+          <div class="globals-empty-icon globals-empty-icon--synonyms">
+            <v-icon size="30">mdi-link-variant</v-icon>
           </div>
           <div class="globals-empty-title">No global synonyms configured</div>
           <div class="globals-empty-copy">Add root terms and variants to standardize search language across collections.</div>
@@ -130,7 +138,7 @@
           hide-default-footer
         >
           <template v-slot:item.root="{ item }">
-            <span class="font-weight-medium text-primary">{{ getItemRow(item).root || '-' }}</span>
+            <span class="globals-primary-cell">{{ getItemRow(item).root || '-' }}</span>
           </template>
           <template v-slot:item.synonyms="{ item }">
             <div class="synonyms-list">
@@ -217,8 +225,8 @@
 
       <v-card v-else-if="stopwords.length === 0" class="mb-card card-premium globals-empty-card">
         <v-card-text class="globals-empty-state">
-          <div class="globals-empty-icon">
-            <v-icon size="28">mdi-filter-remove-outline</v-icon>
+          <div class="globals-empty-icon globals-empty-icon--stopwords">
+            <v-icon size="30">mdi-filter-remove-outline</v-icon>
           </div>
           <div class="globals-empty-title">No global stopwords configured</div>
           <div class="globals-empty-copy">Keep this list for high-frequency words that should be ignored across the whole server.</div>
@@ -243,7 +251,7 @@
           hide-default-footer
         >
           <template v-slot:item.word="{ item }">
-            <span class="font-weight-medium text-primary">{{ getItemRow(item).word }}</span>
+            <span class="globals-primary-cell">{{ getItemRow(item).word }}</span>
           </template>
           <template v-slot:item.actions="{ item }">
             <v-btn icon size="x-small" variant="text" color="error" @click="openDeleteStopwordDialog(getItemRow(item).word)">
@@ -769,7 +777,7 @@ onMounted(async () => {
 }
 
 .collection-dir-icon {
-  color: #032548 !important;
+  color: #2f3437 !important;
   margin-right: 8px !important;
 }
 
@@ -808,10 +816,10 @@ onMounted(async () => {
   pointer-events: auto !important;
   z-index: 10 !important;
   cursor: pointer !important;
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
+  background: linear-gradient(135deg, #3b3f3d 0%, #2d302f 52%, #202322 100%) !important;
   box-shadow:
-    0 4px 8px rgba(4, 48, 97, 0.4),
-    0 2px 4px rgba(4, 48, 97, 0.3),
+    0 4px 8px rgba(45, 48, 47, 0.28),
+    0 2px 4px rgba(45, 48, 47, 0.22),
     0 1px 2px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
@@ -842,10 +850,10 @@ onMounted(async () => {
 }
 
 .collections-action-btn:hover {
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
+  background: linear-gradient(135deg, #474b49 0%, #363a38 52%, #252827 100%) !important;
   box-shadow:
-    0 4px 8px rgba(4, 48, 97, 0.4),
-    0 2px 4px rgba(4, 48, 97, 0.3),
+    0 4px 8px rgba(45, 48, 47, 0.3),
+    0 2px 4px rgba(45, 48, 47, 0.24),
     0 1px 2px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.2),
     inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
@@ -863,11 +871,11 @@ onMounted(async () => {
 }
 
 .collections-action-btn:active {
-  background: linear-gradient(135deg, #032a4f 0%, #021d3a 50%, #011528 100%) !important;
+  background: linear-gradient(135deg, #2d302f 0%, #202322 54%, #171918 100%) !important;
   transform: perspective(1000px) translateY(0) translateZ(0) !important;
   box-shadow:
-    0 2px 4px rgba(4, 48, 97, 0.4),
-    0 1px 2px rgba(4, 48, 97, 0.3),
+    0 2px 4px rgba(45, 48, 47, 0.32),
+    0 1px 2px rgba(45, 48, 47, 0.24),
     0 1px 1px rgba(0, 0, 0, 0.2),
     inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
 }
@@ -924,7 +932,7 @@ onMounted(async () => {
 
 .collection-tabs :deep(.v-tabs-list) {
   background: transparent;
-  gap: 0;
+  gap: 10px;
   padding-bottom: 0;
   border-bottom: none !important;
 }
@@ -945,69 +953,110 @@ onMounted(async () => {
 
 .collection-tab {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 300 !important;
-  font-size: 15px !important;
-  line-height: 26px !important;
-  color: #032548 !important;
+  color: #2f3437 !important;
   text-transform: none !important;
-  padding: 12px 24px !important;
-  min-height: auto !important;
-  height: auto !important;
-  border-radius: 6px !important;
-  background: transparent !important;
+  padding: 10px 14px !important;
+  min-height: 54px !important;
+  height: 54px !important;
+  border-radius: 8px !important;
+  background: #ffffff !important;
   transition: all 0.2s ease !important;
-  margin-right: 8px !important;
-  border: none !important;
+  margin-right: 0 !important;
+  border: 1px solid #d8ddd9 !important;
   margin-bottom: 0 !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06) !important;
 }
 
 .collection-tab:hover {
-  background: rgba(3, 37, 72, 0.1) !important;
-  color: #032548 !important;
+  background: #f7f8f7 !important;
+  border-color: #bec6c0 !important;
+  color: #202322 !important;
+  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.08) !important;
 }
 
 .collection-tab.v-tab--selected {
-  color: #ffffff !important;
+  color: #1f2724 !important;
   font-weight: 500 !important;
-  background: #032548 !important;
-  border-radius: 6px !important;
+  background: #eef4f0 !important;
+  border-color: #92a79a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 16px rgba(35, 48, 40, 0.12) !important;
 }
 
-.collection-tab :deep(.v-icon) {
-  color: #032548 !important;
-  margin-right: 8px !important;
-  font-size: 15px !important;
-  line-height: 26px !important;
+.collection-tab :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
 }
 
-.collection-tab.v-tab--selected :deep(.v-icon) {
-  color: #ffffff !important;
+.tab-icon-shell {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: 1px solid transparent;
+}
+
+.tab-icon-shell--synonyms {
+  color: #3d463f;
+  background: #eef0eb;
+  border-color: #d8ddd2;
+}
+
+.tab-icon-shell--stopwords {
+  color: #6f2d2d;
+  background: #f7ecea;
+  border-color: #ead1cc;
+}
+
+.collection-tab.v-tab--selected .tab-icon-shell--synonyms {
+  color: #ffffff;
+  background: #3e5749;
+  border-color: #3e5749;
+}
+
+.collection-tab.v-tab--selected .tab-icon-shell--stopwords {
+  color: #ffffff;
+  background: #7b3a32;
+  border-color: #7b3a32;
+}
+
+.tab-label-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+  min-width: 76px;
 }
 
 .tab-text {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 400 !important;
-  font-size: 15px !important;
-  color: #032548 !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  color: #2f3437 !important;
 }
 
 .collection-tab.v-tab--selected .tab-text {
-  color: #ffffff !important;
-  font-weight: 500 !important;
+  color: #1f2724 !important;
+  font-weight: 800 !important;
 }
 
 .tab-count {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 500 !important;
-  font-size: 13px !important;
-  color: #032548 !important;
-  opacity: 0.8 !important;
-  margin-left: 6px !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  color: #647067 !important;
+  opacity: 1 !important;
+  margin-left: 0 !important;
+  margin-top: 3px !important;
 }
 
 .collection-tab.v-tab--selected .tab-count {
-  color: #ffffff !important;
-  font-weight: 600 !important;
+  color: #4d5e52 !important;
+  font-weight: 800 !important;
   opacity: 1 !important;
 }
 
@@ -1103,9 +1152,9 @@ onMounted(async () => {
 
 .globals-input-field :deep(.v-field--focused) {
   background: #ffffff !important;
-  border-color: #60a5fa !important;
+  border-color: #5f7f6d !important;
   box-shadow:
-    0 0 0 4px rgba(96, 165, 250, 0.14),
+    0 0 0 4px rgba(95, 127, 109, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
 }
 
@@ -1128,13 +1177,13 @@ onMounted(async () => {
 }
 
 .synonym-pill {
-  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
-  color: #1d4ed8;
+  background: linear-gradient(180deg, #f4f6f2 0%, #e6ebe3 100%);
+  color: #314438;
   padding: 6px 10px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
-  border: 1px solid rgba(147, 197, 253, 0.45);
+  border: 1px solid rgba(137, 154, 141, 0.38);
 }
 
 .synonym-input-row {
@@ -1163,9 +1212,9 @@ onMounted(async () => {
 }
 
 .synonym-pill-preview {
-  background: linear-gradient(180deg, #ecfeff 0%, #ccfbf1 100%);
-  color: #0f766e;
-  border-color: rgba(94, 234, 212, 0.45);
+  background: linear-gradient(180deg, #f4f6f2 0%, #e7eee7 100%);
+  color: #3e5749;
+  border-color: rgba(95, 127, 109, 0.38);
 }
 
 .synonym-preview-more {
@@ -1196,10 +1245,10 @@ onMounted(async () => {
 }
 
 .globals-table :deep(.v-data-table__thead th) {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%) !important;
+  background: linear-gradient(135deg, #303432 0%, #242826 100%) !important;
   color: #ffffff !important;
   font-weight: 800 !important;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.26) !important;
+  border-bottom: 1px solid rgba(216, 221, 217, 0.22) !important;
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   font-size: 12px !important;
@@ -1216,12 +1265,17 @@ onMounted(async () => {
 
 .globals-table :deep(.v-data-table__tbody tr:hover),
 .globals-table :deep(.v-data-table__tbody tr:hover td) {
-  background: #eef6ff !important;
+  background: #f1f4f1 !important;
 }
 
 .globals-table :deep(.v-data-table__tbody td) {
   color: #1e293b !important;
   height: 72px !important;
+}
+
+.globals-primary-cell {
+  color: #202322 !important;
+  font-weight: 700 !important;
 }
 
 .globals-table :deep(.v-btn--icon) {
@@ -1270,14 +1324,26 @@ onMounted(async () => {
 .globals-empty-icon {
   width: 64px;
   height: 64px;
-  border-radius: 20px;
+  border-radius: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  background: linear-gradient(145deg, #eff6ff 0%, #dbeafe 100%);
-  color: #1d4ed8;
+  background: #f4f6f2;
+  color: #3e5749;
+  border: 1px solid #d9e1d9;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.globals-empty-icon--synonyms {
+  color: #3e5749;
+  background: linear-gradient(145deg, #f4f6f2 0%, #e6ebe3 100%);
+}
+
+.globals-empty-icon--stopwords {
+  color: #7b3a32;
+  background: linear-gradient(145deg, #f8efed 0%, #f0ded9 100%);
+  border-color: #ead1cc;
 }
 
 .globals-empty-title {
