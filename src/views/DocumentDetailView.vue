@@ -1495,6 +1495,12 @@ onMounted(async () => {
 }
 
 .delete-confirm-btn-modern {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 44px !important;
+  height: 44px !important;
   background: #ef4444 !important;
   background-color: #ef4444 !important;
   color: #ffffff !important;
@@ -1502,7 +1508,17 @@ onMounted(async () => {
   text-transform: none !important;
   padding: 0 24px !important;
   border-radius: 10px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.delete-confirm-btn-modern :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  line-height: 1 !important;
 }
 
 .delete-confirm-btn-modern :deep(.v-btn__overlay) {
@@ -1516,6 +1532,25 @@ onMounted(async () => {
 .delete-confirm-btn-modern :deep(.v-btn__prepend .v-icon),
 .delete-confirm-btn-modern :deep(.v-btn__prepend-inner .v-icon) {
   color: #ffffff !important;
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 16px !important;
+  display: block !important;
+  margin: 0 !important;
+  position: relative !important;
+  top: 0 !important;
+  transform: none !important;
+  vertical-align: initial !important;
+}
+
+.delete-confirm-btn-modern :deep(.v-btn__prepend),
+.delete-confirm-btn-modern :deep(.v-btn__prepend-inner) {
+  margin: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .delete-confirm-btn-modern:hover {

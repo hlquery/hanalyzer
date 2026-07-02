@@ -15,18 +15,22 @@
     </div>
 
     <div class="collection-tabs-container mb-2">
-      <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
-        <v-tab value="synonyms" class="collection-tab">
-          <v-icon size="16" class="tab-icon">mdi-link-variant</v-icon>
-          <span class="tab-text">Synonyms</span>
-          <span class="tab-count">{{ synonyms.length }}</span>
-        </v-tab>
-        <v-tab value="stopwords" class="collection-tab">
-          <v-icon size="16" class="tab-icon">mdi-filter-remove-outline</v-icon>
-          <span class="tab-text">Stopwords</span>
-          <span class="tab-count">{{ stopwordRows.length }}</span>
-        </v-tab>
-      </v-tabs>
+      <div class="collection-tabs-bar">
+        <div class="collection-tabs-main">
+          <v-tabs v-model="activeTab" class="collection-tabs" bg-color="transparent">
+            <v-tab value="synonyms" class="collection-tab">
+              <v-icon size="16" class="tab-icon">mdi-link-variant</v-icon>
+              <span class="tab-text">Synonyms</span>
+              <span class="tab-count">{{ synonyms.length }}</span>
+            </v-tab>
+            <v-tab value="stopwords" class="collection-tab">
+              <v-icon size="16" class="tab-icon">mdi-filter-remove-outline</v-icon>
+              <span class="tab-text">Stopwords</span>
+              <span class="tab-count">{{ stopwordRows.length }}</span>
+            </v-tab>
+          </v-tabs>
+        </div>
+      </div>
     </div>
 
     <div v-if="activeTab === 'synonyms'" class="globals-panel">
@@ -978,7 +982,24 @@ onMounted(async () => {
   background: transparent;
   padding: 0;
   margin-bottom: 10px;
-  border-bottom: 1px solid #d8dee6;
+}
+
+.collection-tabs-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 48px;
+  border-bottom: 1px solid #dbe3ee;
+}
+
+.collection-tabs-main {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 22px;
+  min-width: 0;
+  flex: 0 1 auto;
+  position: relative;
 }
 
 .collection-tabs :deep(.v-tabs-container) {
@@ -1002,17 +1023,16 @@ onMounted(async () => {
 }
 
 .collection-tabs :deep(.v-tabs-slider) {
-  display: block !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  height: 2px !important;
-  background: #111827 !important;
-  border-radius: 999px 999px 0 0 !important;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
 }
 
 .collection-tab {
   font-family: Inter, Helvetica, sans-serif !important;
-  color: #64748b !important;
+  color: #032548 !important;
   text-transform: none !important;
   padding: 0 2px 12px !important;
   min-height: 34px !important;
@@ -1029,12 +1049,12 @@ onMounted(async () => {
 
 .collection-tab:hover {
   background: transparent !important;
-  color: #111827 !important;
+  color: #032548 !important;
   box-shadow: none !important;
 }
 
 .collection-tab.v-tab--selected {
-  color: #111827 !important;
+  color: #032548 !important;
   font-weight: 700 !important;
   background: transparent !important;
   border-radius: 0 !important;
@@ -1077,14 +1097,14 @@ onMounted(async () => {
   background: #e9eef4;
   font-weight: 750 !important;
   font-size: 11px !important;
-  color: #475569 !important;
+  color: #032548 !important;
   opacity: 1 !important;
   margin-left: 0 !important;
   margin-top: 0 !important;
 }
 
 .collection-tab.v-tab--selected .tab-count {
-  background: #111827;
+  background: #032548;
   color: #ffffff !important;
   font-weight: 800 !important;
   opacity: 1 !important;
@@ -1537,15 +1557,27 @@ onMounted(async () => {
   padding: 16px 22px !important;
   background: #f8fafc !important;
   border-top: 1px solid #e2e8f0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 16px !important;
 }
 
 .global-delete-confirm-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
   min-width: 184px !important;
-  height: 34px !important;
-  border-radius: 7px !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 0 22px !important;
+  border-radius: 8px !important;
   text-transform: none !important;
   font-weight: 700 !important;
   letter-spacing: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
   background: #2f3437 !important;
   box-shadow: none !important;
 }
@@ -1560,20 +1592,49 @@ onMounted(async () => {
   justify-content: center !important;
   gap: 8px !important;
   width: auto !important;
+  line-height: 1 !important;
   color: #ffffff !important;
 }
 
 .global-delete-confirm-icon {
-  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
   color: #ffffff !important;
   opacity: 1 !important;
-  flex: 0 0 auto !important;
+  flex: 0 0 16px !important;
+  margin: 0 !important;
+  position: relative !important;
+  top: 0 !important;
+  transform: none !important;
+  vertical-align: initial !important;
+}
+
+.global-delete-confirm-icon :deep(svg),
+.global-delete-confirm-btn :deep(.v-icon__svg) {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
 }
 
 .global-delete-confirm-btn span {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
+  line-height: 1;
+}
+
+@media (max-width: 520px) {
+  .simple-delete-dialog-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .simple-delete-dialog-actions :deep(.v-btn),
+  .simple-delete-dialog-actions button,
+  .simple-delete-dialog-actions a {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 960px) {

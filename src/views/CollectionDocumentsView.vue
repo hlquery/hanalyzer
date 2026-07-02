@@ -41,7 +41,7 @@
     </div>
 
 
-    <!-- Tabs for Collection Management - Light gray professional style -->
+    <!-- Tabs for Collection Management -->
     <div class="collection-tabs-container mb-2">
       <div class="collection-tabs-bar">
         <div class="collection-tabs-main">
@@ -161,6 +161,7 @@
                 v-model="searchQuery"
                 type="text"
                 class="compact-search-input"
+                aria-label="Search this collection"
                 placeholder="Search this collection ..."
                 @keyup.enter="handleSearch"
                 @input="handleSearchInput"
@@ -176,10 +177,10 @@
 
         <div class="google-toolbar collection-results-toolbar" v-if="documents.length > 0 || searchPerformed">
           <div class="google-toolbar-left" style="gap: 16px;">
-            <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
+            <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0">
               {{ searchResultsSummary }}
             </span>
-            <span class="google-results-count" v-else-if="!searchPerformed && documents.length > 0" style="font-weight: 500; color: #3c4043; margin-left: 0;">
+            <span class="google-results-count" v-else-if="!searchPerformed && documents.length > 0">
               Just showing {{ Math.max(0, paginationInfo.end - paginationInfo.start + 1) }} of {{ paginationInfo.total }} documents
             </span>
           </div>
@@ -707,12 +708,11 @@
       <div class="documents-results-container" style="margin-top: 0 !important; padding-top: 0 !important;">
         <!-- Search Results -->
         <div v-if="searchPerformed && searchResults.length > 0">
-          <div style="display: flex; flex-direction: column; gap: 0; padding: 0; margin: 0; border-top: none !important;">
+          <div class="document-results-list">
             <div 
               v-for="(doc, index) in paginatedSearchResults" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 28px 0 4px 0; margin: 0 0 24px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -733,14 +733,13 @@
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
                 :class="{ 'document-meta-link--after-long-title': String(getBestTitle(doc)).length > 40 }"
-                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
-                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
-                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
-                <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
-                <span v-if="doc._text_match !== undefined" style="color: #70757a; font-size: 12px; margin-left: 8px;">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-separator">-</span>
+                <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
+                <span v-if="doc._text_match !== undefined" class="document-meta-score">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
               </router-link>
               
               <!-- Snippet/Description (Google style) with BOLD highlights - SELECTABLE TEXT -->
@@ -782,12 +781,11 @@
 
         <!-- All Documents (when no search) -->
         <div v-if="!searchPerformed">
-          <div v-if="documents && documents.length > 0" style="display: flex; flex-direction: column; gap: 0; padding: 0; margin: 0; border-top: none !important;">
+          <div v-if="documents && documents.length > 0" class="document-results-list">
             <div 
               v-for="(doc, index) in paginatedDocuments" 
               :key="doc.id || index"
               class="document-result-item"
-              style="background: transparent; border: none; border-radius: 0; padding: 28px 0 4px 0; margin: 0 0 24px 0; box-shadow: none; transition: background-color 0.2s; user-select: text; -webkit-user-select: text;"
             >
               <!-- Title on top - CLICKABLE -->
               <router-link
@@ -808,13 +806,12 @@
                 :to="getDocumentRoute(doc)"
                 class="document-result-link document-meta-link"
                 :class="{ 'document-meta-link--after-long-title': String(getBestTitle(doc)).length > 40 }"
-                style="display: flex; align-items: flex-start; gap: 2px; cursor: pointer; user-select: text; -webkit-user-select: text; padding: 0; margin: 0;"
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
-                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-weight: normal; font-size: 14px;">{{ formatDocumentDate(doc) }}</span>
-                <span v-if="formatDocumentDate(doc)" style="color: #4a5568; font-size: 14px;">-</span>
-                <span class="doc-name-link" style="color: #006621; font-size: 14px; font-weight: normal;">{{ doc.name || doc.id || 'No name' }}</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-separator">-</span>
+                <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
               </router-link>
               
               <!-- Snippet/Description (Google style) with bold searched words - SELECTABLE TEXT -->
@@ -1421,8 +1418,9 @@
           <v-btn variant="text" @click="closeDeleteSynonymDialog" :disabled="deletingSynonym" size="small" class="mr-2">
             Cancel
           </v-btn>
-          <v-btn color="primary" variant="flat" @click="confirmDeleteSynonym" :loading="deletingSynonym" size="small">
-            Delete Synonym
+          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" size="small">
+            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
+            <span>Delete Synonym</span>
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -1518,8 +1516,9 @@
           <v-btn variant="text" @click="closeDeleteStopwordDialog" :disabled="deletingStopword" size="small" class="mr-2">
             Cancel
           </v-btn>
-          <v-btn color="primary" variant="flat" @click="confirmDeleteStopword" :loading="deletingStopword" size="small">
-            Delete Stopword
+          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteStopword" :loading="deletingStopword" size="small">
+            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
+            <span>Delete Stopword</span>
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -5038,7 +5037,7 @@ onUnmounted(() => {
 .breadcrumb-collection-name:hover {
   background: #f8fafc;
   color: #1976d2;
-  transform: none !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Two Segmented Layout */
@@ -5059,7 +5058,9 @@ onUnmounted(() => {
 /* Documents Results Container - No card, just content */
 .documents-results-container {
   width: 100%;
-  padding: 0;
+  max-width: none;
+  margin: 0 !important;
+  padding: 0 !important;
   border-top: none !important;
 }
 
@@ -5638,6 +5639,84 @@ onUnmounted(() => {
   padding: 16px 22px !important;
   background: #f8fafc !important;
   border-top: 1px solid #e2e8f0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 16px !important;
+}
+
+.global-delete-confirm-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-width: 160px !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  padding: 0 22px !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  background: #2f3437 !important;
+  box-shadow: none !important;
+}
+
+.global-delete-confirm-btn:hover {
+  background: #1f2427 !important;
+}
+
+.global-delete-confirm-btn :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: auto !important;
+  line-height: 1 !important;
+  color: #ffffff !important;
+}
+
+.global-delete-confirm-icon {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  flex: 0 0 16px !important;
+  margin: 0 !important;
+  position: relative !important;
+  top: 0 !important;
+  transform: none !important;
+  vertical-align: initial !important;
+}
+
+.global-delete-confirm-icon :deep(svg),
+.global-delete-confirm-btn :deep(.v-icon__svg) {
+  width: 16px !important;
+  height: 16px !important;
+  display: block !important;
+}
+
+.global-delete-confirm-btn span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+@media (max-width: 520px) {
+  .simple-delete-dialog-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+  }
+
+  .simple-delete-dialog-actions :deep(.v-btn),
+  .simple-delete-dialog-actions button,
+  .simple-delete-dialog-actions a {
+    width: 100% !important;
+  }
 }
 
 .copy-collection-dialog-card .simple-delete-dialog-header {
@@ -5756,24 +5835,28 @@ onUnmounted(() => {
 
 /* Compact Search Bar - Small and white */
 .collection-search-shell {
-  margin-bottom: 4px;
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 14px;
+  padding: 0;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .collection-search-card {
   padding: 0;
   border: 0;
   border-radius: 0;
-  background: #ffffff !important;
+  background: transparent !important;
   box-shadow: none;
 }
 
 .collection-search-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: nowrap;
 }
 
 .collection-search-help-link {
@@ -5986,6 +6069,7 @@ onUnmounted(() => {
   .collection-search-row {
     align-items: stretch;
     flex-direction: column;
+    gap: 12px;
   }
 
   .collection-date-toolbar-btn {
@@ -6004,9 +6088,9 @@ onUnmounted(() => {
 }
 
 .collection-search-input {
-  flex: 1 1 420px;
-  min-width: 280px;
-  max-width: none;
+  flex: 1 1 540px;
+  min-width: 0;
+  max-width: 540px;
 }
 
 .collection-search-scope-select {
@@ -6146,11 +6230,12 @@ onUnmounted(() => {
   background: #f3f4f6;
   border: none;
   border-radius: 10px;
-  padding: 4px 10px;
+  padding: 0 12px;
   transition: all 0.2s ease;
   flex: 1;
-  max-width: 360px;
-  min-height: 32px;
+  max-width: 540px;
+  width: 100%;
+  min-height: 38px;
   box-shadow: none;
 }
 
@@ -6164,10 +6249,10 @@ onUnmounted(() => {
 }
 
 .compact-search-icon {
-  margin-right: 6px;
-  color: #1f2937;
+  margin-right: 8px;
+  color: #64748b;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .compact-search-input {
@@ -6175,18 +6260,19 @@ onUnmounted(() => {
   border: none;
   outline: none;
   background: transparent;
-  font-size: 13px;
+  font-size: 14px;
   color: #1f2937;
-  font-family: arial, sans-serif;
+  font-family: Inter, Helvetica, sans-serif;
   width: 100%;
   padding: 0;
-  line-height: 1.25;
-  font-weight: 600;
+  line-height: 1.3;
+  font-weight: 500;
 }
 
 .compact-search-input::placeholder {
-  color: #374151;
-  font-size: 13px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .compact-search-input:focus::placeholder {
@@ -6195,7 +6281,7 @@ onUnmounted(() => {
 
 .compact-search-clear {
   cursor: pointer;
-  color: #1f2937;
+  color: #64748b;
   font-size: 16px;
   transition: color 0.2s ease;
   margin-left: 6px;
@@ -7079,10 +7165,28 @@ onUnmounted(() => {
   -webkit-tap-highlight-color: transparent;
 }
 
+.documents-results-container {
+  width: 100%;
+  max-width: none;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.document-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  border-top: none !important;
+}
+
 .document-title-route {
   display: block;
   margin: 0;
   padding: 0;
+  line-height: 1;
+  max-width: 100%;
 }
 
 .document-result-link:focus,
@@ -7098,9 +7202,9 @@ onUnmounted(() => {
 .document-title-link {
   color: #1a0dab;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.1;
   overflow-wrap: anywhere;
   cursor: pointer;
   user-select: text;
@@ -7108,6 +7212,18 @@ onUnmounted(() => {
   outline: none;
   border: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+.document-result-item {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 0 64px 0 !important;
+  padding: 0 !important;
+  transition: background-color 0.2s;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .document-title-link:hover {
@@ -7127,23 +7243,65 @@ onUnmounted(() => {
 }
 
 .document-meta-link {
-  display: flex;
+  display: flex !important;
   align-items: flex-start;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   min-width: 0;
-  gap: 2px;
-  margin: 0 !important;
-  margin-top: 4px !important;
+  width: fit-content;
+  max-width: 100%;
+  column-gap: 0;
+  row-gap: 0;
+  margin: -13px 0 1px !important;
   padding: 0 !important;
   margin-left: 0 !important;
   padding-left: 0 !important;
-  line-height: 1.35;
+  line-height: 1.12;
   padding-right: 0 !important;
   outline: none;
   border: none;
   -webkit-tap-highlight-color: transparent;
   text-align: left;
   transform: none !important;
+}
+
+.document-meta-link--after-long-title {
+  margin: 2px 0 1px !important;
+}
+
+.document-meta-date,
+.document-meta-separator,
+.document-meta-slug,
+.document-meta-score {
+  font-size: 14px;
+  font-weight: 400;
+  width: auto !important;
+  max-width: none !important;
+  display: inline !important;
+  white-space: nowrap;
+}
+
+.document-meta-date,
+.document-meta-separator {
+  color: #6b7280;
+  flex: 0 0 auto;
+}
+
+.document-meta-separator {
+  margin: 0 3px !important;
+}
+
+.document-meta-slug {
+  color: #065f46;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.document-meta-score {
+  color: #70757a;
+  font-size: 12px;
+  margin-left: 4px;
 }
 
 .document-result-item,
@@ -7176,10 +7334,10 @@ onUnmounted(() => {
 }
 
 .document-snippet {
-  color: #000000;
-  font-size: 14px;
-  line-height: 1.42;
-  margin: 6px 0 0 0;
+  color: #111827;
+  font-size: 16px;
+  line-height: 1.32;
+  margin: -2px 0 0;
   cursor: text;
   font-weight: normal !important;
   user-select: text;
@@ -7188,26 +7346,55 @@ onUnmounted(() => {
 
 .doc-name-link {
   min-width: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  word-break: normal;
 }
 
 @media (max-width: 600px) {
+  .documents-results-container,
+  .collection-search-shell {
+    padding: 0 16px !important;
+  }
+
+  .document-result-item {
+    margin-bottom: 54px !important;
+    padding-top: 0 !important;
+  }
+
   .document-title-link {
     font-size: 18px;
-    line-height: 1.35;
+    line-height: 1.1;
   }
 
   .document-meta-link {
-    margin-top: 6px !important;
-    row-gap: 3px;
+    margin: -12px 0 1px !important;
+    flex-wrap: nowrap;
+    width: 100%;
+    max-width: 100%;
+    row-gap: 0;
+    line-height: 1.12;
+    transform: none !important;
   }
 
   .document-meta-link--after-long-title {
-    padding-top: 4px !important;
+    margin: 1px 0 1px !important;
+    padding-top: 0 !important;
   }
 
   .document-snippet {
-    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.32;
+    margin-top: -2px;
+  }
+
+  .document-meta-link,
+  .document-meta-date,
+  .document-meta-separator,
+  .document-meta-slug,
+  .document-meta-score {
+    font-size: 13px;
   }
 }
 
@@ -7625,7 +7812,7 @@ body :deep([role="tooltip"]) {
   opacity: 1 !important;
 }
 
-/* Simple Collection Tabs - Clean white style */
+/* Collection tabs */
 .collection-tabs-container {
   background: transparent;
   padding: 0;
@@ -7704,6 +7891,7 @@ body :deep([role="tooltip"]) {
 .collection-tabs :deep(.v-tabs-container) {
   background: transparent;
   padding: 0;
+  border-bottom: none !important;
 }
 
 .collection-tabs :deep(.v-tabs-list) {
@@ -7747,6 +7935,7 @@ body :deep([role="tooltip"]) {
   margin-bottom: 0 !important;
   outline: none !important;
   box-shadow: none !important;
+  border-color: transparent !important;
 }
 
 .collection-tab:focus,
@@ -7758,7 +7947,6 @@ body :deep([role="tooltip"]) {
 .collection-tab.v-tab--selected:active {
   outline: none !important;
   box-shadow: none !important;
-  border-color: transparent !important;
 }
 
 .collection-tab :deep(.v-btn__overlay),
@@ -7797,8 +7985,8 @@ body :deep([role="tooltip"]) {
 }
 
 .collection-results-toolbar {
-  padding: 0 !important;
-  margin: 0 !important;
+  padding: 8px 0 0 !important;
+  margin: 0 0 16px !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -9030,13 +9218,13 @@ body :deep([role="tooltip"]) {
 
   .collection-tabs-container {
     margin-top: 12px;
-    margin-bottom: 22px;
+    margin-bottom: 0 !important;
   }
 
   .collection-tabs-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 0;
   }
 
   .collection-tabs-main {
@@ -9051,14 +9239,8 @@ body :deep([role="tooltip"]) {
   }
 
   .collection-tabs-main::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: #dbe3ee;
-    pointer-events: none;
+    content: none;
+    display: none;
   }
 
   .collection-tabs {
@@ -10268,22 +10450,23 @@ body :deep([role="tooltip"]) {
 
 /* Google-style Toolbar */
 .google-toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
-  padding: 8px 0;
+  justify-content: space-between;
+  padding: 8px 0 0;
   border-bottom: none !important;
-  margin-bottom: 0;
+  margin-bottom: 16px;
   max-width: 100%;
-  gap: 12px;
-  background: #ffffff !important;
-  background-color: #ffffff !important;
+  gap: 16px;
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .google-toolbar-left {
   display: flex;
   align-items: center;
-  justify-self: start;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .google-toolbar-center {
@@ -10296,15 +10479,18 @@ body :deep([role="tooltip"]) {
 .google-results-count {
   font-family: arial, sans-serif;
   font-size: 14px;
-  color: #70757a;
-  line-height: 32px;
+  color: #4b5563;
+  line-height: 1.35;
 }
 
 .google-toolbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  justify-self: end;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .collection-toolbar-label--mobile {
@@ -10313,7 +10499,7 @@ body :deep([role="tooltip"]) {
 
 @media (max-width: 760px) {
   .collection-results-toolbar {
-    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
     align-items: stretch !important;
     gap: 12px !important;
   }
@@ -10331,30 +10517,32 @@ body :deep([role="tooltip"]) {
   }
 
   .collection-results-toolbar .google-toolbar-right {
-    display: grid !important;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
     align-items: stretch;
+    justify-content: flex-start !important;
     gap: 8px !important;
   }
 
   .collection-results-toolbar .google-toolbar-right > * {
     min-width: 0 !important;
+    max-width: 100%;
   }
 
   .collection-results-toolbar .items-per-page-btn,
   .collection-results-toolbar .collection-date-toolbar-btn,
   .collection-results-toolbar .quick-sort-btn {
-    width: 100%;
+    flex: 1 1 112px;
     min-width: 0 !important;
-    min-height: 64px !important;
-    height: 64px !important;
-    padding: 8px 6px !important;
-    border-radius: 14px !important;
-    flex-direction: column !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    flex-direction: row !important;
     justify-content: center !important;
     align-items: center !important;
     text-align: center !important;
-    gap: 4px !important;
+    gap: 6px !important;
   }
 
   .collection-results-toolbar .collection-toolbar-segment-btn :deep(.v-icon) {
@@ -10362,8 +10550,8 @@ body :deep([role="tooltip"]) {
   }
 
   .collection-results-toolbar .collection-toolbar-label {
-    display: block;
-    width: 100%;
+    display: inline-block;
+    width: auto;
     min-width: 0;
     margin: 0;
     overflow: hidden;
@@ -10377,14 +10565,39 @@ body :deep([role="tooltip"]) {
   }
 
   .collection-results-toolbar .collection-toolbar-label--mobile {
-    display: block;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.01em;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
   }
 
   .collection-results-toolbar .collection-date-trigger-clear {
     display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .collection-search-shell,
+  .documents-results-container {
+    padding: 0 16px !important;
+  }
+
+  .collection-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .collection-search-input {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .collection-search-shell,
+  .documents-results-container {
+    padding: 0 24px !important;
   }
 }
 
@@ -10756,7 +10969,7 @@ body :deep([role="tooltip"]) {
 
 /* Move results more to top */
 .documents-results-container {
-  margin-top: 0;
+  margin-top: 0 !important;
   padding-top: 0 !important;
 }
 
@@ -12165,14 +12378,30 @@ body :deep([role="tooltip"]) {
 }
 
 .delete-confirm-btn-modern {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 44px !important;
+  height: 44px !important;
   background: #ef4444 !important;
   background-color: #ef4444 !important;
   color: #ffffff !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   text-transform: none !important;
   padding: 0 24px !important;
   border-radius: 8px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.delete-confirm-btn-modern :deep(.v-btn__content) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  line-height: 1 !important;
 }
 
 .delete-confirm-btn-modern :deep(.v-btn__overlay) {
@@ -12186,6 +12415,25 @@ body :deep([role="tooltip"]) {
 .delete-confirm-btn-modern :deep(.v-btn__prepend .v-icon),
 .delete-confirm-btn-modern :deep(.v-btn__prepend-inner .v-icon) {
   color: #ffffff !important;
+  width: 16px !important;
+  height: 16px !important;
+  flex: 0 0 16px !important;
+  display: block !important;
+  margin: 0 !important;
+  position: relative !important;
+  top: 0 !important;
+  transform: none !important;
+  vertical-align: initial !important;
+}
+
+.delete-confirm-btn-modern :deep(.v-btn__prepend),
+.delete-confirm-btn-modern :deep(.v-btn__prepend-inner) {
+  margin: 0 !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .delete-confirm-btn-modern:hover {
