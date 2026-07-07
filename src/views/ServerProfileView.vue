@@ -307,7 +307,7 @@
                     :disabled="loading"
                     @click="loadStats"
                   >
-                    Execute
+                    Run
                   </button>
                 </div>
                 <v-divider class="my-3"></v-divider>
@@ -319,7 +319,7 @@
                     :disabled="!isConnected || flushing"
                     @click="showFlushDialog = true"
                   >
-                    {{ flushing ? 'Executing...' : 'Execute' }}
+                    {{ flushing ? 'Running...' : 'Run' }}
                   </button>
                 </div>
               </div>

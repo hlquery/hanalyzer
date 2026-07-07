@@ -26,6 +26,93 @@ const normalizeSortBy = (sortBy) => {
   return value
 }
 
+const normalizeSearchText = (value) => {
+  return String(value || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+}
+
+const hasAdvancedQuerySyntax = (query) => {
+  const value = String(query || '')
+  return /["()[\]{}:*~^<>!=|+-]|\b(?:and|or|not)\b/i.test(value)
+}
+
+const getPlainQueryTokens = (query) => {
+  if (!query || hasAdvancedQuerySyntax(query)) {
+    return []
+  }
+
+  const withoutDirectives = String(query)
+    .replace(/\b(?:do|is):[a-z_-]+\b/gi, ' ')
+    .replace(/\b[a-z_]+:[^\s]+/gi, ' ')
+
+  return normalizeSearchText(withoutDirectives)
+    .match(/[a-z0-9]+/g)
+    ?.filter((token) => token.length > 1) || []
+}
+
+const collectDocumentText = (value, parts = []) => {
+  if (value === null || value === undefined) {
+    return parts
+  }
+
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+    parts.push(String(value))
+    return parts
+  }
+
+  if (Array.isArray(value)) {
+    value.forEach((item) => collectDocumentText(item, parts))
+    return parts
+  }
+
+  if (typeof value === 'object') {
+    Object.entries(value).forEach(([key, child]) => {
+      if (key === 'highlights' || key.startsWith('_') || key === 'score' || key === 'text_match') {
+        return
+      }
+      collectDocumentText(child, parts)
+    })
+  }
+
+  return parts
+}
+
+const resultMatchesPlainQuery = (doc, query) => {
+  const tokens = getPlainQueryTokens(query)
+  const uniqueTokens = [...new Set(tokens)]
+
+  if (uniqueTokens.length < 2) {
+    return true
+  }
+
+  const normalizedPhrase = uniqueTokens.join(' ')
+  const searchableText = normalizeSearchText(collectDocumentText(doc).join(' '))
+
+  if (searchableText.includes(normalizedPhrase)) {
+    return true
+  }
+
+  return uniqueTokens.every((token) => {
+    const pattern = new RegExp(`(^|[^a-z0-9])${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`)
+    return pattern.test(searchableText)
+  })
+}
+
+const filterWeakPlainQueryMatches = (docs, query, options = {}) => {
+  if (!Array.isArray(docs) || options.vectorQuery || options.embedding || options.disablePlainQueryFilter) {
+    return docs
+  }
+
+  const tokens = getPlainQueryTokens(query)
+  if (tokens.length < 2) {
+    return docs
+  }
+
+  return docs.filter((doc) => resultMatchesPlainQuery(doc, query))
+}
+
 export function useSearch(baseUrl) {
   const searchResults = ref([])
   const loading = ref(false)
@@ -273,7 +360,7 @@ export function useSearch(baseUrl) {
           // rank:asc for benchmark university collections.
           const sortedHits = [...response.data.hits]
           
-          searchResults.value = sortedHits.map(hit => {
+          const normalizedResults = sortedHits.map(hit => {
             const displayScore = hit.score ?? hit._score ?? hit._text_match ?? hit.text_match ?? hit._textMatch ?? 0
             const textMatch = hit._text_match ?? hit.text_match ?? hit._textMatch ?? displayScore
             // Hits have structure: { document: {...}, highlights: {...}, _text_match: ..., created_at: ... }
@@ -305,16 +392,18 @@ export function useSearch(baseUrl) {
             }
             return doc
           })
+          searchResults.value = filterWeakPlainQueryMatches(normalizedResults, trimmedQuery, options)
+          totalFound.value = searchResults.value.length
         } 
         // Handle results array format
         else if (response.data.results && Array.isArray(response.data.results)) {
-          searchResults.value = response.data.results
-          totalFound.value = response.data.found !== undefined ? response.data.found : response.data.results.length
+          searchResults.value = filterWeakPlainQueryMatches(response.data.results, trimmedQuery, options)
+          totalFound.value = searchResults.value.length
         }
         // Handle direct array format
         else if (Array.isArray(response.data)) {
-          searchResults.value = response.data
-          totalFound.value = response.data.length
+          searchResults.value = filterWeakPlainQueryMatches(response.data, trimmedQuery, options)
+          totalFound.value = searchResults.value.length
         }
         // Handle error response
         else if (response.data.error) {

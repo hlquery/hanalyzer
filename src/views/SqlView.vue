@@ -14,6 +14,66 @@
           Run SQL queries against the server and inspect the result set below.
         </div>
       </div>
+      <div class="sql-header-actions">
+        <v-menu
+          v-model="helpMenuOpen"
+          location="bottom end"
+          :close-on-content-click="false"
+          max-width="520"
+        >
+          <template #activator="{ props }">
+            <button
+              v-bind="props"
+              type="button"
+              class="sql-help-btn"
+              aria-label="Open SQL help examples"
+            >
+              <v-icon icon="mdi-help-circle-outline" size="18" aria-hidden="true" />
+              <span>Help</span>
+            </button>
+          </template>
+
+          <div class="sql-help-menu">
+            <div class="sql-help-menu-header">
+              <div class="sql-help-title">SQL Examples</div>
+              <button
+                type="button"
+                class="sql-help-close"
+                aria-label="Close SQL help"
+                @click="helpMenuOpen = false"
+              >
+                <v-icon icon="mdi-close" size="18" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div class="sql-help-example-list">
+              <button
+                v-for="example in sqlExamples"
+                :key="example.sql"
+                type="button"
+                class="sql-help-example"
+                :class="{ 'sql-help-example--active': isExampleActive(example.sql) }"
+                @click="applyExample(example.sql)"
+              >
+                <span class="sql-help-example-title">{{ example.title }}</span>
+                <span class="sql-help-example-copy">{{ example.copy }}</span>
+                <code class="sql-help-example-code">{{ example.sql }}</code>
+              </button>
+            </div>
+
+            <div class="sql-help-footer">
+              <button
+                type="button"
+                class="sql-help-run"
+                :disabled="loading || !query.trim()"
+                @click="runHelpQuery"
+              >
+                Run current SQL
+              </button>
+            </div>
+          </div>
+        </v-menu>
+      </div>
     </div>
 
     <div class="sql-query-card">
@@ -32,59 +92,17 @@
 
         <div class="sql-query-examples">
           <button
+            v-for="example in sqlExamples.slice(0, 5)"
+            :key="`chip-${example.sql}`"
             class="sql-example-chip"
-            :class="{ 'sql-example-chip--active': isExampleActive('show cols;') }"
+            :class="{ 'sql-example-chip--active': isExampleActive(example.sql) }"
             type="button"
-            title="SHOW COLS;"
-            :aria-pressed="isExampleActive('show cols;')"
-            @click="applyExample('show cols;')"
+            :title="example.sql"
+            :aria-pressed="isExampleActive(example.sql)"
+            @click="applyExample(example.sql)"
           >
-            <span class="sql-example-chip-title">Collections</span>
-            <span class="sql-example-chip-copy">List all collections</span>
-          </button>
-          <button
-            class="sql-example-chip"
-            :class="{ 'sql-example-chip--active': isExampleActive('SELECT * FROM food LIMIT 20;') }"
-            type="button"
-            title="SELECT * FROM food LIMIT 20;"
-            :aria-pressed="isExampleActive('SELECT * FROM food LIMIT 20;')"
-            @click="applyExample('SELECT * FROM food LIMIT 20;')"
-          >
-            <span class="sql-example-chip-title">Browse documents</span>
-            <span class="sql-example-chip-copy">First 20 rows from `food`</span>
-          </button>
-          <button
-            class="sql-example-chip"
-            :class="{ 'sql-example-chip--active': isExampleActive(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`) }"
-            type="button"
-            title="SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';"
-            :aria-pressed="isExampleActive(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`)"
-            @click="applyExample(`SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';`)"
-          >
-            <span class="sql-example-chip-title">Prefix match (music)</span>
-            <span class="sql-example-chip-copy">Content starts with Madonna or Nirvana</span>
-          </button>
-          <button
-            class="sql-example-chip"
-            :class="{ 'sql-example-chip--active': isExampleActive('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;') }"
-            type="button"
-            title="SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;"
-            :aria-pressed="isExampleActive('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;')"
-            @click="applyExample('SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;')"
-          >
-            <span class="sql-example-chip-title">Newest first</span>
-            <span class="sql-example-chip-copy">Latest 20 from `art` by timestamp</span>
-          </button>
-          <button
-            class="sql-example-chip"
-            :class="{ 'sql-example-chip--active': isExampleActive('SELECT COUNT(*) FROM food;') }"
-            type="button"
-            title="SELECT COUNT(*) FROM food;"
-            :aria-pressed="isExampleActive('SELECT COUNT(*) FROM food;')"
-            @click="applyExample('SELECT COUNT(*) FROM food;')"
-          >
-            <span class="sql-example-chip-title">Count rows</span>
-            <span class="sql-example-chip-copy">Total documents in `food`</span>
+            <span class="sql-example-chip-title">{{ example.title }}</span>
+            <span class="sql-example-chip-copy">{{ example.copy }}</span>
           </button>
         </div>
       </div>
@@ -216,6 +234,7 @@ const query = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const queryInfo = ref(null)
+const helpMenuOpen = ref(false)
 const rows = ref([])
 const columns = ref([])
 const totalRows = ref(0)
@@ -224,6 +243,49 @@ const currentPage = ref(1)
 const perPage = ref(20)
 const searchTimeMs = ref(null)
 const ranOnce = ref(false)
+
+const sqlExamples = [
+  {
+    title: 'Collections',
+    copy: 'List every collection',
+    sql: 'show cols;'
+  },
+  {
+    title: 'Browse documents',
+    copy: 'First 20 rows from food',
+    sql: 'SELECT * FROM food LIMIT 20;'
+  },
+  {
+    title: 'Pick fields',
+    copy: 'Show only ids and titles',
+    sql: 'SELECT id, title FROM food LIMIT 20;'
+  },
+  {
+    title: 'Prefix match',
+    copy: 'Music content starting with Madonna or Nirvana',
+    sql: "SELECT title FROM music WHERE content LIKE 'madonna%' OR content LIKE 'nirvana%';"
+  },
+  {
+    title: 'Newest first',
+    copy: 'Latest art rows by timestamp',
+    sql: 'SELECT id, title FROM art ORDER BY timestamp DESC LIMIT 20;'
+  },
+  {
+    title: 'Count rows',
+    copy: 'Total documents in food',
+    sql: 'SELECT COUNT(*) FROM food;'
+  },
+  {
+    title: 'Filter text',
+    copy: 'Food rows mentioning pasta',
+    sql: "SELECT id, title FROM food WHERE content LIKE '%pasta%' LIMIT 20;"
+  },
+  {
+    title: 'Sort by score',
+    copy: 'Highest scored university rows',
+    sql: 'SELECT id, title, score FROM universities ORDER BY score DESC LIMIT 20;'
+  }
+]
 
 const hasRows = computed(() => Array.isArray(rows.value) && rows.value.length > 0)
 const formattedSearchTimeMs = computed(() => {
@@ -474,6 +536,11 @@ const applyExample = (sql) => {
   query.value = sql
 }
 
+const runHelpQuery = async () => {
+  helpMenuOpen.value = false
+  await runQuery(1)
+}
+
 onMounted(async () => {
   const initialQuery = typeof route.query.sql === 'string' ? route.query.sql : ''
   const initialPage = Number(route.query.page || 1) > 0 ? Number(route.query.page || 1) : 1
@@ -518,6 +585,177 @@ watch(
 
 .sql-header {
   margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sql-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+}
+
+.sql-help-btn {
+  appearance: none;
+  border: 1px solid #c9d6e4;
+  background: #ffffff;
+  color: #0f172a;
+  min-height: 34px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: Inter, Helvetica, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.sql-help-btn:hover,
+.sql-help-btn:focus-visible {
+  border-color: #8da9c8;
+  color: #043061;
+  outline: none;
+}
+
+.sql-help-menu {
+  width: min(520px, calc(100vw - 24px));
+  max-height: min(680px, calc(100vh - 88px));
+  overflow: hidden;
+  border: 1px solid #d7e1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.18);
+}
+
+.sql-help-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.sql-help-title {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.sql-help-close {
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sql-help-close:hover,
+.sql-help-close:focus-visible {
+  background: #eef4fb;
+  color: #0f172a;
+  outline: none;
+}
+
+.sql-help-example-list {
+  max-height: min(520px, calc(100vh - 210px));
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.sql-help-example {
+  appearance: none;
+  width: 100%;
+  border: 1px solid transparent;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 7px;
+  padding: 11px 12px;
+  display: grid;
+  gap: 5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sql-help-example:hover,
+.sql-help-example:focus-visible {
+  border-color: #c9d6e4;
+  background: #f8fafc;
+  outline: none;
+}
+
+.sql-help-example--active,
+.sql-help-example--active:hover {
+  border-color: #4b7db5;
+  background: #eaf3ff;
+}
+
+.sql-help-example-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.sql-help-example-copy {
+  font-size: 12px;
+  font-weight: 650;
+  color: #475569;
+  line-height: 1.25;
+}
+
+.sql-help-example-code {
+  display: block;
+  max-width: 100%;
+  padding: 7px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #043061;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.sql-help-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 14px 14px;
+  border-top: 1px solid #edf2f7;
+}
+
+.sql-help-run {
+  appearance: none;
+  border: 0;
+  min-height: 32px;
+  height: 32px;
+  padding: 0 13px;
+  border-radius: 6px;
+  background: #043061;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sql-help-run:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .sql-title-text {
@@ -740,6 +978,15 @@ watch(
 }
 
 @media (max-width: 600px) {
+  .sql-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .sql-header-actions {
+    justify-content: flex-start;
+  }
+
   .sql-query-examples {
     display: none;
   }

@@ -481,7 +481,7 @@
         </div>
         
         <div class="search-form-actions">
-          <v-tooltip text="Execute search (Enter key)" location="top">
+          <v-tooltip text="Run search (Enter key)" location="top">
             <template v-slot:activator="{ props }">
               <v-btn
                 v-bind="props"
