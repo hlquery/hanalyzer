@@ -269,9 +269,7 @@
       <v-card class="simple-delete-dialog-card" elevation="0">
         <v-card-title class="simple-delete-dialog-header">
           <div class="simple-delete-dialog-header-copy">
-            <div class="simple-delete-dialog-kicker">Confirm removal</div>
             <div class="simple-delete-dialog-title-row">
-              <v-icon icon="mdi-swap-horizontal" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
               <span class="simple-delete-dialog-title">Delete Global Synonym</span>
             </div>
           </div>
@@ -292,9 +290,8 @@
         <v-card-actions class="simple-delete-dialog-actions">
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="closeDeleteSynonymDialog" :disabled="deletingSynonym" size="small" class="mr-2">Cancel</v-btn>
-          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" :disabled="deletingSynonym" size="small">
-            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
-            <span>Delete Global Synonym</span>
+          <v-btn variant="text" class="global-delete-confirm-text-btn" @click="confirmDeleteSynonym" :loading="deletingSynonym" :disabled="deletingSynonym" size="small">
+            Delete
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -304,9 +301,7 @@
       <v-card class="simple-delete-dialog-card" elevation="0">
         <v-card-title class="simple-delete-dialog-header">
           <div class="simple-delete-dialog-header-copy">
-            <div class="simple-delete-dialog-kicker">Confirm removal</div>
             <div class="simple-delete-dialog-title-row">
-              <v-icon icon="mdi-text-box-remove" size="18" class="simple-delete-dialog-title-icon mr-2"></v-icon>
               <span class="simple-delete-dialog-title">Delete Global Stopword</span>
             </div>
           </div>
@@ -327,9 +322,8 @@
         <v-card-actions class="simple-delete-dialog-actions">
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="closeDeleteStopwordDialog" :disabled="deletingStopword" size="small" class="mr-2">Cancel</v-btn>
-          <v-btn color="primary" variant="flat" class="global-delete-confirm-btn" @click="confirmDeleteStopword" :loading="deletingStopword" :disabled="deletingStopword" size="small">
-            <v-icon size="16" class="global-delete-confirm-icon">mdi-delete</v-icon>
-            <span>Delete Global Stopword</span>
+          <v-btn variant="text" class="global-delete-confirm-text-btn" @click="confirmDeleteStopword" :loading="deletingStopword" :disabled="deletingStopword" size="small">
+            Delete
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -981,7 +975,7 @@ onMounted(async () => {
 .collection-tabs-container {
   background: transparent;
   padding: 0;
-  margin-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .collection-tabs-bar {
@@ -990,39 +984,97 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 8px;
   min-height: 48px;
-  border-bottom: 1px solid #dbe3ee;
 }
 
 .collection-tabs-main {
   display: inline-flex;
   align-items: flex-start;
-  gap: 22px;
+  gap: 8px;
   min-width: 0;
   flex: 0 1 auto;
-  position: relative;
+}
+
+.collection-tabs {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: auto !important;
+  max-width: max-content;
 }
 
 .collection-tabs :deep(.v-tabs-container) {
   background: transparent;
   padding: 0;
   border-bottom: none !important;
-  height: auto !important;
 }
 
 .collection-tabs :deep(.v-tabs-list) {
   background: transparent;
-  gap: 22px;
+  gap: 0;
   padding-bottom: 0;
   border-bottom: none !important;
 }
 
-.collection-tabs :deep(.v-slide-group__wrapper),
-.collection-tabs :deep(.v-slide-group__content),
-.collection-tabs :deep(.v-slide-group) {
+.collection-tab {
+  font-family: Inter, Helvetica, sans-serif !important;
+  font-weight: 300 !important;
+  font-size: 15px !important;
+  line-height: 26px !important;
+  color: #032548 !important;
+  text-transform: none !important;
+  padding: 12px 24px !important;
+  min-height: auto !important;
+  height: auto !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  transition: all 0.2s ease !important;
+  margin-right: 8px !important;
+  border: none !important;
+  margin-bottom: 0 !important;
+}
+
+.collection-tab:hover {
+  background: rgba(3, 37, 72, 0.1) !important;
+  color: #032548 !important;
+}
+
+.collection-tab.v-tab--selected {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  background: #032548 !important;
+  background-color: #032548 !important;
+  border-bottom: none !important;
+  border-radius: 6px !important;
+  margin-bottom: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+}
+
+.collection-tab:focus,
+.collection-tab:focus-visible,
+.collection-tab:active,
+.collection-tab.v-btn--active,
+.collection-tab.v-tab--selected:focus,
+.collection-tab.v-tab--selected:focus-visible,
+.collection-tab.v-tab--selected:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.collection-tab :deep(.v-btn__overlay),
+.collection-tab :deep(.v-ripple__container),
+.collection-tab :deep(.v-ripple__animation) {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.collection-tabs :deep(.v-slide-group__content) {
+  gap: 0;
   border-bottom: none !important;
 }
 
-.collection-tabs :deep(.v-tabs-slider) {
+.collection-tabs :deep(.v-tabs-slider),
+.collection-tabs :deep(.v-tab__slider) {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
@@ -1030,83 +1082,47 @@ onMounted(async () => {
   width: 0 !important;
 }
 
-.collection-tab {
-  font-family: Inter, Helvetica, sans-serif !important;
+.collection-tabs :deep(.v-slide-group__wrapper),
+.collection-tabs :deep(.v-tabs-container),
+.collection-tabs :deep(.v-slide-group) {
+  border-bottom: none !important;
+}
+
+.collection-tab :deep(.v-icon) {
   color: #032548 !important;
-  text-transform: none !important;
-  padding: 0 2px 12px !important;
-  min-height: 34px !important;
-  height: 34px !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  transition: color 0.18s ease !important;
-  margin-right: 0 !important;
-  border: 0 !important;
-  margin-bottom: 0 !important;
-  box-shadow: none !important;
-  min-width: auto !important;
+  margin-right: 8px !important;
+  font-size: 15px !important;
+  line-height: 26px !important;
 }
 
-.collection-tab:hover {
-  background: transparent !important;
-  color: #032548 !important;
-  box-shadow: none !important;
-}
-
-.collection-tab.v-tab--selected {
-  color: #032548 !important;
-  font-weight: 700 !important;
-  background: transparent !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.collection-tab :deep(.v-btn__content) {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  line-height: 1 !important;
-}
-
-.tab-icon {
-  color: currentColor !important;
-  opacity: 0.8;
+.collection-tab.v-tab--selected :deep(.v-icon) {
+  color: #ffffff !important;
 }
 
 .tab-text {
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 750 !important;
-  font-size: 13px !important;
-  color: currentColor !important;
+  font-size: 15px !important;
+  font-weight: 400 !important;
+  color: #032548 !important;
 }
 
 .collection-tab.v-tab--selected .tab-text {
-  color: currentColor !important;
-  font-weight: 800 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
 }
 
 .tab-count {
   font-family: Inter, Helvetica, sans-serif !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 22px;
-  height: 18px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: #e9eef4;
-  font-weight: 750 !important;
-  font-size: 11px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
   color: #032548 !important;
-  opacity: 1 !important;
-  margin-left: 0 !important;
-  margin-top: 0 !important;
+  opacity: 0.8 !important;
+  margin-left: 6px !important;
 }
 
 .collection-tab.v-tab--selected .tab-count {
-  background: #032548;
-  color: #ffffff !important;
-  font-weight: 800 !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-weight: 700 !important;
   opacity: 1 !important;
 }
 
@@ -1563,37 +1579,122 @@ onMounted(async () => {
   gap: 16px !important;
 }
 
+.global-delete-confirm-text-btn {
+  min-width: 86px !important;
+  height: 34px !important;
+  padding: 0 16px !important;
+  color: #ffffff !important;
+  background: #8f1d1d !important;
+  border: 1px solid #b64a4a !important;
+  border-radius: 7px !important;
+  box-shadow:
+    0 2px 5px rgba(127, 29, 29, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.global-delete-confirm-text-btn:hover,
+.global-delete-confirm-text-btn:focus-visible,
+.global-delete-confirm-text-btn.v-btn--active {
+  color: #ffffff !important;
+  background: #a12626 !important;
+  border-color: #c65f5f !important;
+  box-shadow:
+    0 3px 7px rgba(127, 29, 29, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+.global-delete-confirm-text-btn:active {
+  background: #7f1d1d !important;
+  border-color: #a84242 !important;
+  box-shadow:
+    0 1px 3px rgba(127, 29, 29, 0.18),
+    inset 0 1px 3px rgba(0, 0, 0, 0.16) !important;
+  transform: translateY(1px) !important;
+}
+
+.global-delete-confirm-text-btn :deep(.v-btn__content) {
+  color: #ffffff !important;
+}
+
+.global-delete-confirm-text-btn :deep(.v-btn__overlay),
+.global-delete-confirm-text-btn :deep(.v-btn__underlay) {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.global-delete-confirm-text-btn:hover :deep(.v-btn__content) {
+  text-decoration: none !important;
+}
+
 .global-delete-confirm-btn {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   gap: 8px !important;
-  min-width: 184px !important;
+  min-width: 128px !important;
   min-height: 44px !important;
   height: 44px !important;
-  padding: 0 22px !important;
+  padding: 0 18px !important;
   border-radius: 8px !important;
   text-transform: none !important;
   font-weight: 700 !important;
   letter-spacing: 0 !important;
   line-height: 1 !important;
   white-space: nowrap !important;
-  background: #2f3437 !important;
+  background: #dc2626 !important;
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
   box-shadow: none !important;
+  position: relative !important;
+  overflow: hidden !important;
 }
 
 .global-delete-confirm-btn:hover {
-  background: #1f2427 !important;
+  background: #b91c1c !important;
+  background-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+
+.global-delete-confirm-btn:active {
+  background: #991b1b !important;
+  background-color: #991b1b !important;
+  color: #ffffff !important;
 }
 
 .global-delete-confirm-btn :deep(.v-btn__content) {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
+  justify-content: flex-start !important;
   gap: 8px !important;
-  width: auto !important;
+  width: 100% !important;
+  height: 100% !important;
   line-height: 1 !important;
   color: #ffffff !important;
+  position: static !important;
+}
+
+.global-delete-confirm-btn :deep(.v-btn__overlay),
+.global-delete-confirm-btn :deep(.v-btn__underlay) {
+  background: transparent !important;
+}
+
+.global-delete-confirm-content {
+  position: absolute !important;
+  left: 18px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  line-height: 1 !important;
+  color: #ffffff !important;
+  pointer-events: none !important;
+  white-space: nowrap !important;
 }
 
 .global-delete-confirm-icon {
@@ -1638,6 +1739,106 @@ onMounted(async () => {
 }
 
 @media (max-width: 960px) {
+  .collection-tabs-container {
+    margin-top: 12px;
+    margin-bottom: 0 !important;
+  }
+
+  .collection-tabs-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .collection-tabs-main {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    align-items: stretch;
+    gap: 8px;
+    padding-bottom: 0;
+    border-bottom: none !important;
+    position: relative;
+  }
+
+  .collection-tabs-main::after {
+    content: none;
+    display: none;
+  }
+
+  .collection-tabs {
+    flex: 1 1 auto;
+    width: 100% !important;
+    max-width: none;
+  }
+
+  .collection-tabs :deep(*),
+  .collection-tabs :deep(.v-tabs-list),
+  .collection-tabs :deep(.v-slide-group),
+  .collection-tabs :deep(.v-slide-group__wrapper),
+  .collection-tabs :deep(.v-slide-group__content),
+  .collection-tabs :deep(.v-tabs-container),
+  .collection-tabs :deep(.v-tab),
+  .collection-tabs :deep(.v-btn) {
+    border-bottom: none !important;
+    box-shadow: none !important;
+  }
+
+  .collection-tabs :deep(.v-tab__slider),
+  .collection-tabs :deep(.v-tabs-slider) {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    height: 0 !important;
+  }
+
+  .collection-tabs :deep(.v-slide-group__content) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .collection-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    margin-right: 0 !important;
+    padding: 10px 6px !important;
+    min-height: 54px !important;
+    border-radius: 12px !important;
+    justify-content: center !important;
+  }
+
+  .collection-tab :deep(.v-btn__content) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-width: 0 !important;
+    text-align: center !important;
+  }
+
+  .collection-tab .tab-text {
+    display: block;
+    width: 100%;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+  }
+
+  .collection-tab .tab-count {
+    display: none !important;
+  }
+
+  .collection-tab :deep(.v-icon) {
+    font-size: 16px !important;
+    margin-right: 0 !important;
+  }
+
   .globals-overview-grid {
     grid-template-columns: 1fr;
   }
