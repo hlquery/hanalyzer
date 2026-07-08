@@ -189,23 +189,36 @@ const buildEndpointKey = (node) => {
   return `${parts.host}:${parts.port}`.toLowerCase()
 }
 
+const firstPresent = (...values) => values.find((value) => value !== null && value !== undefined && value !== '')
+
+const bestLatency = (...rows) => {
+  const numeric = rows
+    .filter((row) => row?.reachable)
+    .map((row) => Number(row.latency_ms))
+    .filter((value) => Number.isFinite(value) && value > 0)
+  return numeric.length > 0 ? Math.min(...numeric) : 0
+}
+
 const mergeLinkRows = (current, incoming) => {
   const roles = new Set([
     ...String(current.link_type || '').split(',').map(value => value.trim()).filter(Boolean),
     ...String(incoming.link_type || '').split(',').map(value => value.trim()).filter(Boolean)
   ])
+  const reachable = Boolean(current.reachable || incoming.reachable)
+  const preferred = incoming.reachable === reachable ? incoming : current
+  const fallback = preferred === incoming ? current : incoming
 
   return {
     ...current,
     ...incoming,
-    endpoint: current.endpoint || incoming.endpoint,
-    normalized_endpoint: current.normalized_endpoint || incoming.normalized_endpoint,
-    host: current.host || incoming.host,
-    port: current.port || incoming.port,
-    reachable: Boolean(current.reachable || incoming.reachable),
-    status_code: current.status_code || incoming.status_code,
-    latency_ms: Math.max(Number(current.latency_ms || 0), Number(incoming.latency_ms || 0)),
-    error: current.error || incoming.error,
+    endpoint: firstPresent(current.endpoint, incoming.endpoint),
+    normalized_endpoint: firstPresent(current.normalized_endpoint, incoming.normalized_endpoint),
+    host: firstPresent(current.host, incoming.host),
+    port: firstPresent(current.port, incoming.port),
+    reachable,
+    status_code: firstPresent(preferred.status_code, fallback.status_code),
+    latency_ms: reachable ? bestLatency(current, incoming) : 0,
+    error: reachable ? null : firstPresent(preferred.error, fallback.error),
     link_type: Array.from(roles).join(', ')
   }
 }
@@ -298,34 +311,16 @@ const getLastMessage = (node) => {
   return '-'
 }
 
-const getNodeBaseUrl = (node) => {
-  const row = getItemRow(node)
-  const rawEndpoint = String(row.endpoint || row.normalized_endpoint || '').trim()
-  if (rawEndpoint) {
-    const withProtocol = rawEndpoint.startsWith('http://') || rawEndpoint.startsWith('https://')
-      ? rawEndpoint
-      : `http://${rawEndpoint}`
-    return withProtocol.replace(/\/+$/, '')
-  }
-
-  const parts = getEndpointParts(row)
-  const host = String(parts.host || '').trim()
-  const port = String(parts.port || '').trim()
-  if (!host || host === '-') {
-    return ''
-  }
-  return `http://${host}${port && port !== '-' ? `:${port}` : ''}`
-}
-
 const isPingingRow = (node) => {
   return Boolean(pingingRows.value[buildEndpointKey(node)])
 }
 
 const pingNode = async (node) => {
   const key = buildEndpointKey(node)
-  const targetBaseUrl = getNodeBaseUrl(node)
+  const row = getItemRow(node)
+  const targetEndpoint = String(row.normalized_endpoint || row.endpoint || key || '').trim()
 
-  if (!key || !targetBaseUrl || isPingingRow(node)) {
+  if (!key || !targetEndpoint || isPingingRow(node)) {
     return
   }
 
@@ -334,12 +329,10 @@ const pingNode = async (node) => {
     [key]: true
   }
 
-  const startedAt = performance.now()
-  const requestUrl = `${targetBaseUrl}/health`
-  const authHeaders = {
-    ...authManager.getAuthHeaders(targetBaseUrl),
-    ...authManager.getAuthHeaders(getBaseUrlValue(baseUrl))
-  }
+  const baseUrlValue = getBaseUrlValue(baseUrl)
+  const useProxy = shouldUseProxy(baseUrlValue)
+  const requestUrl = buildApiUrl(baseUrlValue, useProxy, '/links/ping', { endpoint: targetEndpoint })
+  const authHeaders = authManager.getAuthHeaders(baseUrlValue)
 
   try {
     const response = await axios.get(requestUrl, {
@@ -347,19 +340,26 @@ const pingNode = async (node) => {
       headers: authHeaders
     })
 
-    const latencyMs = Math.max(1, Math.round(performance.now() - startedAt))
+    const pingRows = [
+      ...(Array.isArray(response.data?.nodes) ? response.data.nodes : []),
+      ...(Array.isArray(response.data?.slaves) ? response.data.slaves : [])
+    ]
+    const pingRow = pingRows.find((item) => buildEndpointKey(item) === key) || pingRows[0]
+    if (!pingRow) {
+      throw new Error('Server returned no ping result for this link.')
+    }
+
     pingOverrides.value = {
       ...pingOverrides.value,
       [key]: {
-        reachable: true,
-        latency_ms: latencyMs,
-        status_code: response.status,
-        error: null
+        reachable: Boolean(pingRow.reachable),
+        latency_ms: pingRow.reachable ? pingRow.latency_ms : null,
+        status_code: pingRow.status_code || null,
+        error: pingRow.reachable ? null : (pingRow.error || 'Ping failed')
       }
     }
     lastLinksCheck.value = Date.now()
   } catch (err) {
-    const latencyMs = Math.max(1, Math.round(performance.now() - startedAt))
     pingOverrides.value = {
       ...pingOverrides.value,
       [key]: {
@@ -385,7 +385,7 @@ const fetchLinks = async (path, stateRef) => {
   try {
     const baseUrlValue = getBaseUrlValue(baseUrl)
     const useProxy = shouldUseProxy(baseUrlValue)
-    const url = buildApiUrl(baseUrlValue, useProxy, path)
+    const url = buildApiUrl(baseUrlValue, useProxy, path, { ping: 'true' })
     const response = await axios.get(url, { timeout: 10000 })
     const clusterNodes = Array.isArray(response.data?.nodes)
       ? response.data.nodes.map((node) => ({ ...node, link_type: 'Cluster' }))
