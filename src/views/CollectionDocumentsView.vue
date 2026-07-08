@@ -736,8 +736,10 @@
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
-                <span v-if="formatDocumentDate(doc)" class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
-                <span v-if="formatDocumentDate(doc)" class="document-meta-separator">-</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-date-group">
+                  <span class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
+                  <span class="document-meta-separator">-</span>
+                </span>
                 <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
                 <span v-if="doc._text_match !== undefined" class="document-meta-score">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
               </router-link>
@@ -809,8 +811,10 @@
                 @mouseenter="$event.target.querySelector('.doc-name-link').style.textDecoration = 'underline'"
                 @mouseleave="$event.target.querySelector('.doc-name-link').style.textDecoration = 'none'"
               >
-                <span v-if="formatDocumentDate(doc)" class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
-                <span v-if="formatDocumentDate(doc)" class="document-meta-separator">-</span>
+                <span v-if="formatDocumentDate(doc)" class="document-meta-date-group">
+                  <span class="document-meta-date">{{ formatDocumentDate(doc) }}</span>
+                  <span class="document-meta-separator">-</span>
+                </span>
                 <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
               </router-link>
               
@@ -7175,7 +7179,7 @@ onUnmounted(() => {
 .document-results-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 22px;
   padding: 0;
   margin: 0;
   border-top: none !important;
@@ -7219,7 +7223,7 @@ onUnmounted(() => {
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  margin: 0 0 36px 0 !important;
+  margin: 0 0 52px 0 !important;
   padding: 0 !important;
   transition: background-color 0.2s;
   user-select: text;
@@ -7265,7 +7269,15 @@ onUnmounted(() => {
 }
 
 .document-meta-link--after-long-title {
-  margin: 2px 0 1px !important;
+  margin: -2px 0 1px !important;
+}
+
+.document-meta-date-group {
+  display: inline-flex;
+  align-items: baseline;
+  flex: 0 0 auto;
+  max-width: 100%;
+  white-space: nowrap;
 }
 
 .document-meta-date,
@@ -7337,7 +7349,7 @@ onUnmounted(() => {
   color: #111827;
   font-size: 16px;
   line-height: 1.32;
-  margin: -2px 0 0;
+  margin: -5px 0 0;
   cursor: text;
   font-weight: normal !important;
   user-select: text;
@@ -7369,24 +7381,33 @@ onUnmounted(() => {
   }
 
   .document-meta-link {
-    margin: -12px 0 1px !important;
-    flex-wrap: nowrap;
+    margin: -8px 0 1px !important;
+    flex-wrap: wrap;
     width: 100%;
     max-width: 100%;
-    row-gap: 0;
+    row-gap: 1px;
     line-height: 1.12;
     transform: none !important;
   }
 
   .document-meta-link--after-long-title {
-    margin: 1px 0 1px !important;
+    margin: 0 0 1px !important;
     padding-top: 0 !important;
+  }
+
+  .document-meta-date-group {
+    max-width: 100%;
+  }
+
+  .document-meta-slug {
+    min-width: 0;
+    max-width: 100% !important;
   }
 
   .document-snippet {
     font-size: 15px;
     line-height: 1.32;
-    margin-top: -2px;
+    margin-top: -4px;
   }
 
   .document-meta-link,

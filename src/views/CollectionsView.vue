@@ -3996,6 +3996,9 @@ onUnmounted(() => {
   width: 100%;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .search-results-panels :deep(.v-expansion-panel) {
@@ -4003,7 +4006,7 @@ onUnmounted(() => {
   box-shadow: none !important;
   border: none !important;
   border-radius: 0 !important;
-  margin-bottom: 4px !important;
+  margin-bottom: 12px !important;
   padding: 0 !important;
 }
 
