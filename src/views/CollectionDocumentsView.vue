@@ -203,7 +203,7 @@
             <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0">
               {{ searchResultsSummary }}
             </span>
-            <span class="google-results-count" v-else-if="!searchPerformed && documents.length > 0">
+            <span class="google-results-count collection-results-count-mobile" v-else-if="!searchPerformed && documents.length > 0">
               Just showing {{ Math.max(0, paginationInfo.end - paginationInfo.start + 1) }} of {{ paginationInfo.total }} documents
             </span>
           </div>
@@ -8400,6 +8400,22 @@ body :deep([role="tooltip"]) {
   width: 0 !important;
 }
 
+.collection-tabs :deep(.v-tab__slider),
+.collection-tabs :deep(.v-btn__underlay),
+.collection-tabs :deep(.v-btn__overlay),
+.collection-tabs :deep(.v-tab::before),
+.collection-tabs :deep(.v-tab::after),
+.collection-tab::before,
+.collection-tab::after {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  content: none !important;
+}
+
 .collection-tabs :deep(.v-slide-group__wrapper) {
   border-bottom: none !important;
 }
@@ -8418,7 +8434,7 @@ body :deep([role="tooltip"]) {
 
 .collection-results-toolbar {
   padding: 8px 0 0 !important;
-  margin: 0 0 16px !important;
+  margin: 24px 0 16px !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -11029,11 +11045,12 @@ body :deep([role="tooltip"]) {
   .collection-search-controls {
     width: 100%;
     margin-left: 0;
-    justify-content: flex-end;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .collection-search-mode-selector {
-    flex: 0 0 auto;
+    flex: 0 1 auto;
     margin-left: 0;
   }
 
@@ -11047,18 +11064,30 @@ body :deep([role="tooltip"]) {
   .collection-advanced-search-btn {
     flex: 0 0 auto;
   }
+
+  .collection-results-count-mobile {
+    display: inline-block;
+  }
 }
 
 @media (max-width: 560px) {
+  .collection-search-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
   .collection-search-mode-btn {
-    min-width: 50px;
-    padding: 0 8px;
-    font-size: 11px;
+    flex: 1 1 0;
+    min-width: 76px;
+    padding: 0 10px;
+    font-size: 12px;
   }
 
   .collection-advanced-search-btn {
-    width: 32px;
-    min-width: 32px;
+    width: 40px;
+    min-width: 40px;
     padding: 0;
   }
 

@@ -62,11 +62,16 @@
             </v-alert>
 
             <div class="add-document-schema-block">
-              <div class="add-document-section-title">
-                Schema
+              <div class="add-document-section-heading">
+                <div class="add-document-section-title">
+                  Schema
+                </div>
+                <div class="add-document-readonly-badge">
+                  Reference only
+                </div>
               </div>
               <div class="add-document-section-copy">
-                JSON is the only supported input on this page. The editor is prefilled from the collection schema.
+                Use this as a template reference. Make changes in the JSON editor below.
               </div>
 
               <div v-if="schemaLoading" class="add-document-loading">
@@ -80,8 +85,14 @@
             </div>
 
             <div class="add-document-editor-block">
-              <div class="add-document-section-title">
-                JSON
+              <div class="add-document-section-heading add-document-editor-heading">
+                <div class="add-document-section-title">
+                  JSON
+                </div>
+                <div class="add-document-edit-indicator">
+                  <span>Edit this box</span>
+                  <v-icon size="18">mdi-arrow-down-bold</v-icon>
+                </div>
               </div>
               <div class="add-document-section-copy">
                 Edit the payload below, then submit it as a single document object.
@@ -220,6 +231,18 @@ const resetToSchemaTemplate = () => {
   submitSuccess.value = ''
 }
 
+const getCreatedDocumentId = (responseData, payload) => {
+  const candidates = [
+    responseData?.id,
+    responseData?.document_id,
+    responseData?.document?.id,
+    payload?.id
+  ]
+
+  const value = candidates.find((candidate) => typeof candidate === 'string' && candidate.trim())
+  return value ? value.trim() : ''
+}
+
 const goBack = () => {
   if (!collectionName.value) {
     router.push('/collections')
@@ -294,9 +317,23 @@ const submitDocument = async () => {
       }
     })
 
-    const documentId = response?.data?.id || payload.id || 'Document'
-    submitSuccess.value = `${documentId} added to ${collectionName.value}.`
+    const documentId = getCreatedDocumentId(response?.data, payload)
+    submitSuccess.value = `${documentId || 'Document'} added to ${collectionName.value}.`
     toast.success(`Document added to ${collectionName.value}`, 'Add Document')
+
+    if (documentId) {
+      try {
+        await router.push({
+          name: 'document-detail',
+          params: {
+            name: collectionName.value,
+            docId: documentId
+          }
+        })
+      } catch (navigationErr) {
+        console.error('Failed to open created document:', navigationErr)
+      }
+    }
   } catch (err) {
     submitError.value = extractSafeErrorMessage(err, 'Failed to add document')
     toast.error(submitError.value, 'Add Document Failed')
@@ -388,6 +425,46 @@ onMounted(() => {
   margin-bottom: 6px;
 }
 
+.add-document-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.add-document-section-heading .add-document-section-title {
+  margin-bottom: 0;
+}
+
+.add-document-readonly-badge,
+.add-document-edit-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.add-document-readonly-badge {
+  background: #dbe4ee;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}
+
+.add-document-edit-indicator {
+  background: #043061;
+  border: 1px solid #021d3a;
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(4, 48, 97, 0.22);
+}
+
 .add-document-section-copy {
   font-size: 13px;
   line-height: 1.5;
@@ -406,7 +483,7 @@ onMounted(() => {
 .add-document-schema-preview {
   border-radius: 12px;
   background: #e2e8f0;
-  border: 1px solid #cbd5e1;
+  border: 1px dashed #94a3b8;
   padding: 14px 16px;
 }
 
@@ -424,21 +501,27 @@ onMounted(() => {
   width: 100%;
   min-height: 420px;
   resize: vertical;
-  border: 1px solid #94a3b8;
+  border: 2px solid #043061;
   border-radius: 14px;
-  background: #e5e7eb;
+  background: #ffffff;
   padding: 16px 18px;
   font-size: 13px;
   line-height: 1.65;
   color: #000000;
   outline: none;
   font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', monospace;
-  transition: border-color 0.18s ease, background-color 0.18s ease;
+  box-shadow:
+    0 0 0 4px rgba(4, 48, 97, 0.08),
+    0 16px 30px rgba(15, 23, 42, 0.1);
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .add-document-json-textarea:focus {
-  border-color: #64748b;
+  border-color: #021d3a;
   background: #ffffff;
+  box-shadow:
+    0 0 0 5px rgba(4, 48, 97, 0.16),
+    0 18px 34px rgba(15, 23, 42, 0.14);
 }
 
 .add-document-actions {
@@ -526,6 +609,11 @@ onMounted(() => {
 @media (max-width: 768px) {
   .add-document-panel {
     padding: 18px;
+  }
+
+  .add-document-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .add-document-json-textarea {
