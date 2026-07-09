@@ -284,15 +284,6 @@ const routes = [
     }
   },
   {
-    path: '/dashboard/conf',
-    name: 'dashboard-conf',
-    component: () => import('./views/DashboardConfigView.vue'),
-    meta: {
-      title: 'HLQuery Config',
-      icon: 'mdi-cog-outline'
-    }
-  },
-  {
     path: '/connections',
     name: 'connections',
     component: () => import('./views/ConnectionsView.vue'),
