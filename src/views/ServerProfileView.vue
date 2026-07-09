@@ -422,9 +422,33 @@
         </v-col>
         </v-row>
 
-        <!-- Search Configuration Settings as Table -->
         <v-row class="detail-grid-row detail-grid-row-single">
         <v-col cols="12">
+          <section class="dashboard-settings-section metric-card">
+            <div class="dashboard-settings-header dashboard-settings-header--link">
+              <div class="dashboard-settings-heading">
+                <v-icon class="detail-card-icon">mdi-cog-outline</v-icon>
+                <span class="detail-card-title">HLQuery Config</span>
+              </div>
+              <router-link to="/dashboard/conf" class="dashboard-settings-link">View conf</router-link>
+            </div>
+            <div class="dashboard-settings-table-wrap">
+              <v-table class="dashboard-settings-table">
+                <tbody>
+                  <tr v-for="row in configPreviewRows" :key="row.key">
+                    <td>{{ row.label }}</td>
+                    <td class="text-right">{{ row.value }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
+            </div>
+          </section>
+        </v-col>
+        </v-row>
+
+        <!-- Search Configuration Settings as Table -->
+        <v-row class="detail-grid-row detail-grid-row-single">
+        <v-col v-if="false" cols="12">
           <section class="dashboard-settings-section metric-card">
             <div class="dashboard-settings-header">
               <v-icon class="detail-card-icon">mdi-magnify</v-icon>
@@ -894,6 +918,14 @@ const loadedModules = computed(() => {
 
 const coreModules = computed(() => loadedModules.value.filter((moduleName) => moduleName.startsWith('core_')))
 const optionalModules = computed(() => loadedModules.value.filter((moduleName) => !moduleName.startsWith('core_')))
+const configPreviewRows = computed(() => {
+  return [
+    { key: 'hlquery.conf', label: 'Main', value: 'hlquery.conf' },
+    { key: 'search.conf', label: 'Search', value: 'search.conf' },
+    { key: 'modules.conf', label: 'Modules', value: 'modules.conf' },
+    { key: 'links.conf', label: 'Links', value: 'links.conf' }
+  ]
+})
 
 // Uptime tracking - store base value and timestamp to keep it ticking
 const baseUptimeSeconds = ref(0)
@@ -2285,6 +2317,36 @@ onUnmounted(() => {
   border-radius: 14px 14px 0 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-settings-header--link {
+  justify-content: space-between;
+}
+
+.dashboard-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-settings-link {
+  color: #043061;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dashboard-settings-link:hover,
+.dashboard-settings-link:focus-visible {
+  text-decoration: underline;
+}
+
+.dashboard-settings-link:focus,
+.dashboard-settings-link:focus-visible,
+.dashboard-settings-link:active {
+  outline: none;
+  box-shadow: none;
+  border: 0;
 }
 
 .dashboard-settings-table-wrap {

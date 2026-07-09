@@ -101,7 +101,7 @@ const resultMatchesPlainQuery = (doc, query) => {
 }
 
 const filterWeakPlainQueryMatches = (docs, query, options = {}) => {
-  if (!Array.isArray(docs) || options.vectorQuery || options.embedding || options.disablePlainQueryFilter) {
+  if (!Array.isArray(docs) || options.vectorQuery || options.embedding || options.searchPayload?.vector || options.disablePlainQueryFilter) {
     return docs
   }
 
@@ -111,6 +111,50 @@ const filterWeakPlainQueryMatches = (docs, query, options = {}) => {
   }
 
   return docs.filter((doc) => resultMatchesPlainQuery(doc, query))
+}
+
+const normalizeSearchMode = (mode) => {
+  const value = String(mode || '').trim().toLowerCase()
+  if (value === 'keyword') {
+    return 'text'
+  }
+  return ['text', 'vector', 'geo', 'hybrid'].includes(value) ? value : 'text'
+}
+
+const buildModePayload = (query, limit, options = {}) => {
+  const source = options.searchPayload || null
+  if (!source?.mode) {
+    return null
+  }
+
+  const mode = normalizeSearchMode(source.mode)
+  const payload = {
+    mode,
+    limit: Number(source.limit || limit || 10)
+  }
+
+  const payloadQuery = String(source.query ?? query ?? '').trim()
+  if (payloadQuery) {
+    payload.query = payloadQuery
+  }
+
+  if (Array.isArray(source.vector) && source.vector.length > 0) {
+    payload.vector = source.vector
+  }
+
+  if (mode === 'vector' || mode === 'hybrid') {
+    payload.vector_field = String(source.vector_field || 'embedding').trim() || 'embedding'
+    payload.distance = String(source.distance || 'cosine').trim() || 'cosine'
+  }
+
+  if (mode === 'hybrid') {
+    payload.weights = source.weights || {
+      text: 0.4,
+      vector: 0.6
+    }
+  }
+
+  return payload
 }
 
 export function useSearch(baseUrl) {
@@ -138,10 +182,12 @@ export function useSearch(baseUrl) {
     
     // Allow empty query if filter_by is provided (filter-only search)
     const hasFilter = options.filterBy && options.filterBy.trim()
-    const hasVectorQuery = options.vectorQuery || options.embedding
+    const modePayload = buildModePayload(query, limit, options)
+    const hasVectorQuery = options.vectorQuery || options.embedding || Array.isArray(modePayload?.vector)
     const trimmedQuery = query ? query.trim() : ''
+    const hasModeTextQuery = Boolean(modePayload?.query)
     
-    if (!trimmedQuery && !hasFilter && !hasVectorQuery) {
+    if (!trimmedQuery && !hasModeTextQuery && !hasFilter && !hasVectorQuery) {
       searchResults.value = []
       searchTime.value = null
       error.value = null
@@ -182,6 +228,10 @@ export function useSearch(baseUrl) {
         include_created_at: true  // Default: true - include created_at in search results
       }
 
+      if (modePayload) {
+        Object.assign(params, modePayload)
+      }
+
       const sortBy = normalizeSortBy(options.sortBy)
       if (sortBy) {
         params.sort_by = sortBy
@@ -190,6 +240,9 @@ export function useSearch(baseUrl) {
       // Add query if provided (required unless filter_by or vector_query is provided)
       if (trimmedQuery) {
         params.q = trimmedQuery  // Preserve quotes - don't remove them!
+        if (modePayload && !params.query) {
+          params.query = trimmedQuery
+        }
         // Only add query_by when explicitly set to real field names.
         // If user selected '*', omit query_by so backend uses its default all-fields behavior.
         const queryBy = normalizeQueryBy(options.queryBy)
@@ -363,6 +416,7 @@ export function useSearch(baseUrl) {
           const normalizedResults = sortedHits.map(hit => {
             const displayScore = hit.score ?? hit._score ?? hit._text_match ?? hit.text_match ?? hit._textMatch ?? 0
             const textMatch = hit._text_match ?? hit.text_match ?? hit._textMatch ?? displayScore
+            const scoreType = hit.score_type ?? hit.scoreType ?? hit._score_type ?? ''
             // Hits have structure: { document: {...}, highlights: {...}, _text_match: ..., created_at: ... }
             if (hit.document) {
               const doc = {
@@ -373,6 +427,7 @@ export function useSearch(baseUrl) {
                 _text_match: displayScore,
                 text_match: textMatch,
                 score: displayScore,
+                score_type: scoreType,
                 weight: hit.weight,
                 highlights: hit.highlights || {},
                 // created_at can be in hit.document OR at hit level
@@ -387,6 +442,7 @@ export function useSearch(baseUrl) {
               _text_match: displayScore,
               text_match: textMatch,
               score: displayScore,
+              score_type: scoreType,
               highlights: hit.highlights || {},
               created_at: hit.created_at || hit.timestamp
             }

@@ -13,7 +13,7 @@
 
         <h1 class="search-syntax-title">Search syntax examples</h1>
         <p class="search-syntax-subtitle">
-          Common query patterns you can paste directly into this collection search box.
+          Query patterns, vector payloads, and geo filters aligned with benchmark --fake sample data.
         </p>
       </div>
     </div>
@@ -32,6 +32,10 @@
     </v-card>
 
     <v-card class="search-syntax-table-card" elevation="0">
+      <div class="search-syntax-section-heading">
+        <h2>Text query syntax</h2>
+        <p>Click an example to run it in the collection search box.</p>
+      </div>
       <div class="search-syntax-table-wrap">
         <table class="search-syntax-table">
           <thead>
@@ -59,6 +63,46 @@
         </table>
       </div>
     </v-card>
+
+    <v-card
+      v-for="section in advancedSections"
+      :key="section.title"
+      class="search-syntax-table-card"
+      elevation="0"
+    >
+      <div class="search-syntax-section-heading">
+        <h2>{{ section.title }}</h2>
+        <p>{{ section.description }}</p>
+      </div>
+
+      <div class="search-syntax-table-wrap">
+        <table class="search-syntax-table">
+          <thead>
+            <tr>
+              <th>Use case</th>
+              <th>Example</th>
+              <th>How to use it</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="example in section.examples" :key="example.label">
+              <td class="search-syntax-label-cell">{{ example.label }}</td>
+              <td class="search-syntax-code-cell">
+                <button
+                  type="button"
+                  class="search-syntax-code-button"
+                  title="Open in collection search"
+                  @click="runAdvancedExample(example)"
+                >
+                  <code>{{ example.code }}</code>
+                </button>
+              </td>
+              <td class="search-syntax-description-cell">{{ example.description }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </v-card>
   </div>
 </template>
 
@@ -77,7 +121,19 @@ const route = useRoute()
 const router = useRouter()
 
 const collectionName = computed(() => props.name || route.params.name || '')
-const baseTerm = ref('laptop')
+const defaultTerms = {
+  art: 'painting',
+  books: 'gatsby',
+  food: 'recipe',
+  history: 'archive',
+  movies: 'film',
+  music: 'beatles',
+  science: 'quantum',
+  sports: 'team',
+  technology: 'software',
+  travel: 'destination'
+}
+const baseTerm = ref(defaultTerms[String(collectionName.value || '').toLowerCase()] || 'painting')
 const normalizedBaseTerm = computed(() => {
   const value = String(baseTerm.value || '').trim()
   return value || 'laptop'
@@ -125,6 +181,158 @@ const examples = computed(() => [
   }
 ])
 
+const advancedExampleUrl = (query) => {
+  const encodedName = encodeURIComponent(collectionName.value)
+  const params = new URLSearchParams()
+
+  Object.entries(query || {}).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') {
+      return
+    }
+    params.set(key, String(value))
+  })
+
+  const queryString = params.toString()
+  return `#/collections/${encodedName}${queryString ? `?${queryString}` : ''}`
+}
+
+const advancedSections = computed(() => [
+  {
+    title: 'Vector search',
+    description: 'These raw vectors match benchmark --fake art embeddings, so they are useful for testing Vector mode directly.',
+    examples: [
+      {
+        label: 'Nearest painting vector',
+        query: {
+          mode: 'vector',
+          vector: JSON.stringify([0.724, -0.143, -0.66, -0.651]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          mode: 'vector',
+          vector: JSON.stringify([0.724, -0.143, -0.66, -0.651]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          limit: 10
+        }),
+        description: 'Uses the exact benchmark vector generated for the art tag painting.'
+      },
+      {
+        label: 'Nearest gallery vector',
+        query: {
+          mode: 'vector',
+          vector: JSON.stringify([-0.828, -0.129, 0.148, 0.624]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          mode: 'vector',
+          vector: JSON.stringify([-0.828, -0.129, 0.148, 0.624]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          limit: 10
+        }),
+        description: 'Uses the exact benchmark vector generated for the art tag gallery.'
+      },
+      {
+        label: 'Abstract vector with scores',
+        query: {
+          mode: 'vector',
+          vector: JSON.stringify([0.258, 0.433, -0.663, -0.082]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          show_scores: true,
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          mode: 'vector',
+          vector: JSON.stringify([0.258, 0.433, -0.663, -0.082]),
+          vector_field: 'embedding',
+          distance: 'cosine',
+          show_scores: true,
+          limit: 10
+        }),
+        description: 'Uses the exact benchmark vector generated for the art tag abstract and requests score details.'
+      }
+    ]
+  },
+  {
+    title: 'Geo search',
+    description: 'benchmark --fake stores art locations in the location geo_point field around the New York gallery district.',
+    examples: [
+      {
+        label: 'Near painting sample',
+        query: {
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_radius(location,40.7254,-74.0256,2km)',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_radius(location,40.7254,-74.0256,2km)',
+          limit: 10
+        }),
+        description: 'Filters around the exact benchmark location generated for the painting art document.'
+      },
+      {
+        label: 'Whole fake art grid',
+        query: {
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_box(location,40.81,-74.04,40.71,-73.99)',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_box(location,40.81,-74.04,40.71,-73.99)',
+          limit: 10
+        }),
+        description: 'Covers the deterministic art fake-data coordinate grid.'
+      },
+      {
+        label: 'Nearest gallery first',
+        query: {
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          sort_by: '_geo_distance(location,40.7614,-74.0256):asc',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          sort_by: '_geo_distance(location,40.7614,-74.0256):asc',
+          limit: 10
+        }),
+        description: 'Sorts results by distance from the benchmark gallery-tag coordinate.'
+      },
+      {
+        label: 'Radius plus nearest sort',
+        query: {
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_radius(location,40.7614,-74.0256,5km)',
+          sort_by: '_geo_distance(location,40.7614,-74.0256):asc',
+          limit: 10
+        },
+        code: advancedExampleUrl({
+          q: normalizedBaseTerm.value,
+          mode: 'geo',
+          filter_by: '_geo_radius(location,40.7614,-74.0256,5km)',
+          sort_by: '_geo_distance(location,40.7614,-74.0256):asc',
+          limit: 10
+        }),
+        description: 'Filters within the fake art grid and orders matching documents by nearest first.'
+      }
+    ]
+  }
+])
+
 const capitalizeFirst = (value) => {
   const text = String(value || '')
   if (!text) return ''
@@ -136,6 +344,18 @@ const runExample = (query) => {
   router.push({
     path: `/collections/${encodedName}`,
     query: { q: query }
+  }).catch((err) => {
+    if (err?.name !== 'NavigationDuplicated' && !err?.message?.includes('Avoided redundant navigation')) {
+      console.error('Navigation error:', err)
+    }
+  })
+}
+
+const runAdvancedExample = (example) => {
+  const encodedName = encodeURIComponent(collectionName.value)
+  router.push({
+    path: `/collections/${encodedName}`,
+    query: example.query || {}
   }).catch((err) => {
     if (err?.name !== 'NavigationDuplicated' && !err?.message?.includes('Avoided redundant navigation')) {
       console.error('Navigation error:', err)
@@ -254,6 +474,25 @@ const goBack = () => {
   padding: 10px;
 }
 
+.search-syntax-section-heading {
+  padding: 18px 20px 6px;
+}
+
+.search-syntax-section-heading h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.search-syntax-section-heading p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .search-syntax-table {
   width: 100%;
   border-collapse: separate;
@@ -300,7 +539,8 @@ const goBack = () => {
   color: #e2e8f0;
   font-size: 14px;
   line-height: 1.4;
-  white-space: normal;
+  text-align: left;
+  white-space: pre-wrap;
   word-break: break-word;
 }
 

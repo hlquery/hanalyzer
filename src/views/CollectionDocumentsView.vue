@@ -162,7 +162,7 @@
                 type="text"
                 class="compact-search-input"
                 aria-label="Search this collection"
-                placeholder="Search this collection ..."
+                placeholder="Search this collection..."
                 @keyup.enter="handleSearch"
                 @input="handleSearchInput"
               />
@@ -171,6 +171,29 @@
                 class="compact-search-clear mdi mdi-close-circle"
                 @click="clearSearchInput"
               ></i>
+            </div>
+            <div class="collection-search-controls">
+              <div class="collection-search-mode-selector" aria-label="Search mode">
+                <button
+                  v-for="mode in simpleSearchModes"
+                  :key="mode.value"
+                  type="button"
+                  class="collection-search-mode-btn"
+                  :class="{ active: simpleSearchMode === mode.value }"
+                  @click="setSimpleSearchMode(mode.value)"
+                >
+                  {{ mode.label }}
+                </button>
+              </div>
+              <button
+                type="button"
+                class="collection-advanced-search-btn"
+                :class="{ active: advancedSearchPayload }"
+                @click="openAdvancedSearch"
+              >
+                <v-icon size="16">mdi-tune-variant</v-icon>
+                <span>Advanced</span>
+              </button>
             </div>
           </div>
         </div>
@@ -741,7 +764,8 @@
                   <span class="document-meta-separator">-</span>
                 </span>
                 <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
-                <span v-if="doc._text_match !== undefined" class="document-meta-score">Score: {{ typeof doc._text_match === 'number' ? doc._text_match.toFixed(2) : doc._text_match }}</span>
+                <span v-if="showResultScores && getDocumentScore(doc) !== null" class="document-meta-score">Score: {{ formatSearchScore(getDocumentScore(doc)) }}</span>
+                <span v-if="showResultScores && getScoreType(doc)" class="document-score-type-badge">{{ getScoreType(doc) }}</span>
               </router-link>
               
               <!-- Snippet/Description (Google style) with BOLD highlights - SELECTABLE TEXT -->
@@ -900,6 +924,13 @@
     </div> <!-- End documents-layout-container -->
 
     </div> <!-- End Documents Tab -->
+
+    <AdvancedSearchDialog
+      v-model="showAdvancedSearchDialog"
+      :query="searchQuery"
+      :mode="advancedDialogMode"
+      @submit="submitAdvancedSearch"
+    />
 
     <!-- Synonyms Tab -->
     <div v-if="activeTab === 'synonyms'">
@@ -1618,6 +1649,7 @@ import { useExport } from '../composables/useExport'
 import { useCopy } from '../composables/useCopy'
 import { useKeyboardShortcuts } from '../composables/useKeyboardShortcuts'
 import { useCollections } from '../composables/useCollections'
+import AdvancedSearchDialog from '../components/AdvancedSearchDialog.vue'
 import ConfirmationDialog from '../components/ConfirmationDialog.vue'
 import StopwordChip from '../components/StopwordChip.vue'
 import { extractSafeErrorMessage } from '../utils/sanitize'
@@ -1654,6 +1686,9 @@ const searchQuery = ref('')
 const searchPerformed = ref(false)
 const searchInputPending = ref(false)
 const lastSubmittedSearchQuery = ref('')
+const simpleSearchMode = ref('text')
+const showAdvancedSearchDialog = ref(false)
+const advancedSearchPayload = ref(null)
 const viewMode = ref('list')
 const showDocumentDialog = ref(false)
 const documentJson = ref('')
@@ -1678,6 +1713,17 @@ const itemsPerPageOptions = [10, 25, 50, 100]
 const collectionSchema = ref(null)
 const hasHandledInitialMount = ref(false)
 const isLoadingDocuments = ref(false)
+const simpleSearchModes = [
+  { label: 'Text', value: 'text' },
+  { label: 'Vector', value: 'vector' },
+  { label: 'Geo', value: 'geo' }
+]
+const urlFilterBy = ref('')
+const urlSortBy = ref('')
+const advancedDialogMode = computed(() => {
+  return advancedSearchPayload.value?.mode || simpleSearchMode.value || 'text'
+})
+const showResultScores = computed(() => advancedSearchPayload.value?.show_scores === true)
 const searchFieldItems = computed(() => {
   const names = (availableFields.value || [])
     .map(f => (typeof f === 'string' ? f : f?.name))
@@ -3180,6 +3226,7 @@ const showMaybeSuggestions = computed(() => {
 })
 
 const handleSearchInput = () => {
+  advancedSearchPayload.value = null
   searchInputPending.value = true
 
   // Clear existing timer
@@ -3238,15 +3285,85 @@ const handleSearchInput = () => {
   }, 150)
 }
 
-const buildSearchRouteQuery = () => {
+const normalizeRouteSearchMode = (value) => {
+  const mode = String(value || '').trim().toLowerCase()
+  return ['text', 'vector', 'geo', 'hybrid'].includes(mode) ? mode : 'text'
+}
+
+const getRouteQueryString = (value) => {
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+const parseRouteVector = (value) => {
+  const raw = getRouteQueryString(value)
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) && parsed.every((item) => typeof item === 'number' && Number.isFinite(item))
+      ? parsed
+      : null
+  } catch {
+    return null
+  }
+}
+
+const getRouteLimit = (value) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null
+}
+
+const buildAdvancedPayloadFromRoute = () => {
+  const mode = normalizeRouteSearchMode(route.query.mode)
+  if (mode === 'text') {
+    return null
+  }
+
+  const payload = {
+    query: getRouteQueryString(route.query.q),
+    mode,
+    vector: parseRouteVector(route.query.vector),
+    vector_field: getRouteQueryString(route.query.vector_field) || 'embedding',
+    distance: getRouteQueryString(route.query.distance) || 'cosine',
+    show_scores: route.query.show_scores === 'true' || route.query.show_scores === true,
+    limit: getRouteLimit(route.query.limit) || 10
+  }
+
+  return payload
+}
+
+const applySearchStateFromRoute = () => {
+  const mode = normalizeRouteSearchMode(route.query.mode)
+  simpleSearchMode.value = mode
+  advancedSearchPayload.value = buildAdvancedPayloadFromRoute()
+  urlFilterBy.value = getRouteQueryString(route.query.filter_by)
+  urlSortBy.value = getRouteQueryString(route.query.sort_by)
+}
+
+const buildSearchRouteQuery = (overrides = {}) => {
   const nextQuery = {}
 
   if (route.query.tab) {
     nextQuery.tab = route.query.tab
   }
 
-  if (searchQuery.value && searchQuery.value.trim()) {
-    nextQuery.q = searchQuery.value
+  const nextMode = overrides.mode ?? advancedSearchPayload.value?.mode ?? simpleSearchMode.value
+  const normalizedMode = normalizeRouteSearchMode(nextMode)
+  const nextAdvancedPayload = overrides.advancedPayload ?? advancedSearchPayload.value
+  const nextFilterBy = Object.prototype.hasOwnProperty.call(overrides, 'filterBy')
+    ? overrides.filterBy
+    : urlFilterBy.value
+  const nextSortBy = Object.prototype.hasOwnProperty.call(overrides, 'sortBy')
+    ? overrides.sortBy
+    : urlSortBy.value
+  const nextQueryText = Object.prototype.hasOwnProperty.call(overrides, 'query')
+    ? overrides.query
+    : searchQuery.value
+
+  if (nextQueryText && String(nextQueryText).trim()) {
+    nextQuery.q = String(nextQueryText).trim()
   }
 
   if (dateFrom.value) {
@@ -3257,12 +3374,106 @@ const buildSearchRouteQuery = () => {
     nextQuery.to = dateTo.value
   }
 
+  if (normalizedMode !== 'text') {
+    nextQuery.mode = normalizedMode
+  }
+
+  if (Array.isArray(nextAdvancedPayload?.vector) && nextAdvancedPayload.vector.length > 0) {
+    nextQuery.vector = JSON.stringify(nextAdvancedPayload.vector)
+  }
+
+  if (normalizedMode === 'vector' || normalizedMode === 'hybrid') {
+    nextQuery.vector_field = nextAdvancedPayload?.vector_field || 'embedding'
+    nextQuery.distance = nextAdvancedPayload?.distance || 'cosine'
+  }
+
+  if (nextAdvancedPayload?.show_scores === true) {
+    nextQuery.show_scores = 'true'
+  }
+
+  if (nextAdvancedPayload?.limit) {
+    nextQuery.limit = String(nextAdvancedPayload.limit)
+  }
+
+  if (nextFilterBy && String(nextFilterBy).trim()) {
+    nextQuery.filter_by = String(nextFilterBy).trim()
+  }
+
+  if (nextSortBy && String(nextSortBy).trim()) {
+    nextQuery.sort_by = String(nextSortBy).trim()
+  }
+
   return nextQuery
 }
 
 const clearDisplayedSearchResults = () => {
   searchResults.value = []
   currentPage.value = 1
+}
+
+const hasAdvancedVectorPayload = computed(() => {
+  return Array.isArray(advancedSearchPayload.value?.vector) && advancedSearchPayload.value.vector.length > 0
+})
+
+const setSimpleSearchMode = (mode) => {
+  simpleSearchMode.value = mode
+  advancedSearchPayload.value = null
+  urlFilterBy.value = ''
+  urlSortBy.value = ''
+
+  suppressRouteQuerySearch.value = true
+  router.replace({
+    path: route.path,
+    query: buildSearchRouteQuery({ mode })
+  }).finally(() => {
+    suppressRouteQuerySearch.value = false
+  })
+
+  if (searchQuery.value?.trim() || buildFilterString()?.trim()) {
+    handleSearch()
+  }
+}
+
+const openAdvancedSearch = () => {
+  showAdvancedSearchDialog.value = true
+}
+
+const submitAdvancedSearch = async (payload) => {
+  advancedSearchPayload.value = payload
+  simpleSearchMode.value = payload.mode || 'text'
+  searchQuery.value = payload.query || ''
+  urlFilterBy.value = ''
+  urlSortBy.value = ''
+  currentPage.value = 1
+  await handleSearch()
+}
+
+const buildCollectionSearchPayload = (effectiveQuery, resultLimit) => {
+  const advancedPayload = advancedSearchPayload.value
+  const mode = advancedPayload?.mode || simpleSearchMode.value || 'text'
+  const payload = {
+    mode,
+    query: String(advancedPayload?.query ?? effectiveQuery ?? '').trim(),
+    limit: advancedPayload?.limit || resultLimit
+  }
+
+  if (Array.isArray(advancedPayload?.vector) && advancedPayload.vector.length > 0) {
+    payload.vector = advancedPayload.vector
+  }
+
+  if (mode === 'vector' || mode === 'hybrid') {
+    payload.vector_field = advancedPayload?.vector_field || 'embedding'
+    payload.distance = advancedPayload?.distance || 'cosine'
+  }
+
+  if (mode === 'hybrid') {
+    payload.weights = advancedPayload?.weights || {
+      text: 0.4,
+      vector: 0.6
+    }
+  }
+
+  return payload
 }
 
 const handleSearch = async () => {
@@ -3285,11 +3496,12 @@ const handleSearch = async () => {
   normalizeDateRange()
   
   // Allow empty query if filters are provided (filter-only search)
-  const filterString = buildFilterString()
+  const filterString = buildFilterString() || urlFilterBy.value
   const hasFilter = filterString && filterString.trim()
   const hasQuery = searchQuery.value?.trim()
+  const hasAdvancedVector = hasAdvancedVectorPayload.value
 
-  if (!hasQuery && !hasFilter) {
+  if (!hasQuery && !hasFilter && !hasAdvancedVector) {
     searchInputPending.value = false
     // No query and no filters - show all documents (default behavior)
     searchPerformed.value = false
@@ -3325,7 +3537,7 @@ const handleSearch = async () => {
   searchInputPending.value = true
   searchPerformed.value = true
   clearDisplayedSearchResults()
-  lastSubmittedSearchQuery.value = hasQuery ? searchQuery.value.trim() : ''
+  lastSubmittedSearchQuery.value = hasQuery ? searchQuery.value.trim() : (hasAdvancedVector ? 'vector search' : '')
   searchError.value = null
   await ensureSearchSchemaReady()
   
@@ -3345,7 +3557,7 @@ const handleSearch = async () => {
   
   // Add filter_by
   if (hasFilter) {
-    options.filterBy = filterString
+    options.filterBy = String(filterString).trim()
   }
 
   if ((searchQuery.value || '').toLowerCase().includes('do:casesensitive') ||
@@ -3361,7 +3573,9 @@ const handleSearch = async () => {
   }
   
   // Add sort_by. An explicit field sort should win, even when searching text.
-  if (sortBy.value) {
+  if (urlSortBy.value) {
+    options.sortBy = urlSortBy.value
+  } else if (sortBy.value) {
     options.sortBy = sortBy.value
   } else {
     // Default to relevance if nothing is set
@@ -3374,8 +3588,20 @@ const handleSearch = async () => {
   options.includeMaybe = options.caseSensitive ? false : true
   options.maybeMin = 3
   options.maybeLimit = 1
+  options.searchPayload = buildCollectionSearchPayload(effectiveQuery, resultLimit)
   try {
     await performSearch(collectionName.value, effectiveQuery, resultLimit, options)
+    suppressRouteQuerySearch.value = true
+    router.replace({
+      path: route.path,
+      query: buildSearchRouteQuery({
+        query: searchQuery.value,
+        filterBy: options.filterBy || '',
+        sortBy: urlSortBy.value || ''
+      })
+    }).finally(() => {
+      suppressRouteQuerySearch.value = false
+    })
     // Enforce scoped field behavior in the UI so the results reflect the chosen scope.
     if (hasQuery && explicitQueryFields.length > 0 && searchScopeMode.value !== 'all') {
       const matcher = buildWildcardMatcher(searchQuery.value)
@@ -3655,6 +3881,30 @@ const getScoreColor = (score) => {
   if (score >= 0.5) return 'info'
   if (score >= 0.3) return 'warning'
   return 'error'
+}
+
+const getDocumentScore = (doc) => {
+  const score = doc?.score ?? doc?._score ?? doc?._text_match ?? doc?.text_match ?? null
+  if (score === null || score === undefined || score === '') {
+    return null
+  }
+  return score
+}
+
+const formatSearchScore = (score) => {
+  const numeric = Number(score)
+  if (Number.isFinite(numeric)) {
+    return numeric.toFixed(2)
+  }
+  return String(score)
+}
+
+const getScoreType = (doc) => {
+  const value = String(doc?.score_type || doc?.scoreType || doc?._score_type || '').trim().toLowerCase()
+  if (!value || value === 'hybrid' || !['text', 'keyword', 'vector', 'geo'].includes(value)) {
+    return ''
+  }
+  return value === 'keyword' ? 'text' : value
 }
 
 // Pagination computed properties
@@ -4575,6 +4825,7 @@ watch(() => route.params.name, async (newName, oldName) => {
       loadCollectionSchema()
       // Clear search when collection changes
       searchQuery.value = ''
+      advancedSearchPayload.value = null
       searchPerformed.value = false
       lastSubmittedSearchQuery.value = ''
       searchResults.value = []
@@ -4604,7 +4855,19 @@ watch(() => route.params.page, (newPage) => {
 // Watch route query params for search query
 // Track if we've already handled initial mount to prevent double-loading
 
-watch(() => [route.query.q, route.query.from, route.query.to], ([newQuery, newFrom, newTo]) => {
+watch(() => [
+  route.query.q,
+  route.query.from,
+  route.query.to,
+  route.query.mode,
+  route.query.vector,
+  route.query.vector_field,
+  route.query.distance,
+  route.query.show_scores,
+  route.query.filter_by,
+  route.query.sort_by,
+  route.query.limit
+], ([newQuery, newFrom, newTo]) => {
   if (suppressRouteQuerySearch.value) {
     return
   }
@@ -4613,12 +4876,25 @@ watch(() => [route.query.q, route.query.from, route.query.to], ([newQuery, newFr
     return
   }
   
+  applySearchStateFromRoute()
+
+  const hasRouteMode = normalizeRouteSearchMode(route.query.mode) !== 'text'
+  const hasRouteFilter = Boolean(urlFilterBy.value)
+  const hasRouteVector = Array.isArray(advancedSearchPayload.value?.vector) && advancedSearchPayload.value.vector.length > 0
+
   if (newQuery && typeof newQuery === 'string') {
     searchQuery.value = newQuery
     dateFrom.value = typeof newFrom === 'string' && newFrom.trim() ? newFrom : null
     dateTo.value = typeof newTo === 'string' && newTo.trim() ? newTo : null
     // Auto-search if we have a query
     if ((newQuery.trim() || dateFrom.value || dateTo.value) && collectionName.value) {
+      handleSearch()
+    }
+  } else if (hasRouteMode || hasRouteFilter || hasRouteVector) {
+    searchQuery.value = ''
+    dateFrom.value = typeof newFrom === 'string' && newFrom.trim() ? newFrom : null
+    dateTo.value = typeof newTo === 'string' && newTo.trim() ? newTo : null
+    if (collectionName.value) {
       handleSearch()
     }
   } else if (!newQuery || !String(newQuery).trim()) {
@@ -4634,6 +4910,10 @@ watch(() => [route.query.q, route.query.from, route.query.to], ([newQuery, newFr
 
     // Query was removed - clear search and show documents
     searchQuery.value = ''
+    advancedSearchPayload.value = null
+    simpleSearchMode.value = 'text'
+    urlFilterBy.value = ''
+    urlSortBy.value = ''
     searchPerformed.value = false
     lastSubmittedSearchQuery.value = ''
     searchResults.value = []
@@ -4734,14 +5014,18 @@ onMounted(async () => {
   // Use computed collectionName which already handles all fallbacks
   const nameToLoad = collectionName.value
   currentPage.value = parseRoutePage(route.params.page)
+  applySearchStateFromRoute()
   // Check if there's a search query in URL - if so, perform search instead of loading documents
   const hasSearchQuery = route.query.q && typeof route.query.q === 'string' && route.query.q.trim()
   const hasDateQuery = (typeof route.query.from === 'string' && route.query.from.trim()) || (typeof route.query.to === 'string' && route.query.to.trim())
+  const hasModeQuery = normalizeRouteSearchMode(route.query.mode) !== 'text'
+  const hasFilterQuery = Boolean(urlFilterBy.value)
+  const hasVectorQuery = Array.isArray(advancedSearchPayload.value?.vector) && advancedSearchPayload.value.vector.length > 0
 
   dateFrom.value = typeof route.query.from === 'string' && route.query.from.trim() ? route.query.from : null
   dateTo.value = typeof route.query.to === 'string' && route.query.to.trim() ? route.query.to : null
   
-  if (hasSearchQuery || hasDateQuery) {
+  if (hasSearchQuery || hasDateQuery || hasModeQuery || hasFilterQuery || hasVectorQuery) {
     // Restore search query and perform search
     searchQuery.value = hasSearchQuery ? route.query.q : ''
     if (nameToLoad && nameToLoad.trim()) {
@@ -5859,7 +6143,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: nowrap;
 }
 
@@ -6073,7 +6357,7 @@ onUnmounted(() => {
   .collection-search-row {
     align-items: stretch;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
 
   .collection-date-toolbar-btn {
@@ -6088,13 +6372,20 @@ onUnmounted(() => {
   .collection-search-input {
     width: 100%;
     min-width: 0;
+    max-width: none;
+  }
+
+  .collection-search-controls {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
   }
 }
 
 .collection-search-input {
-  flex: 1 1 540px;
+  flex: 1 1 560px;
   min-width: 0;
-  max-width: 540px;
+  max-width: 640px;
 }
 
 .collection-search-scope-select {
@@ -6237,7 +6528,7 @@ onUnmounted(() => {
   padding: 0 12px;
   transition: all 0.2s ease;
   flex: 1;
-  max-width: 540px;
+  max-width: 720px;
   width: 100%;
   min-height: 38px;
   box-shadow: none;
@@ -6271,6 +6562,8 @@ onUnmounted(() => {
   padding: 0;
   line-height: 1.3;
   font-weight: 500;
+  min-width: 80px;
+  box-sizing: border-box;
 }
 
 .compact-search-input::placeholder {
@@ -6294,6 +6587,101 @@ onUnmounted(() => {
 
 .compact-search-clear:hover {
   color: #374151;
+}
+
+.collection-search-controls {
+  --collection-search-control-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.collection-search-mode-selector {
+  display: inline-flex;
+  align-items: center;
+  height: var(--collection-search-control-height);
+  min-height: var(--collection-search-control-height);
+  padding: 0;
+  margin-left: 0;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #f3f4f6;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  overflow: hidden;
+}
+
+.collection-search-mode-btn {
+  min-width: 58px;
+  height: var(--collection-search-control-height);
+  min-height: var(--collection-search-control-height);
+  margin: -1px 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.collection-search-mode-btn + .collection-search-mode-btn {
+  border-left: 1px solid #e3e8ef;
+}
+
+.collection-search-mode-btn:hover {
+  background: #e8edf3;
+  color: #0f172a;
+}
+
+.collection-search-mode-btn.active {
+  background: #043061;
+  border-left-color: #043061;
+  color: #ffffff;
+}
+
+.collection-search-mode-btn.active + .collection-search-mode-btn {
+  border-left-color: #043061;
+}
+
+.collection-advanced-search-btn {
+  height: var(--collection-search-control-height);
+  min-height: var(--collection-search-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  background: #f3f4f6;
+  box-sizing: border-box;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.collection-advanced-search-btn:hover {
+  border-color: #c7d2df;
+  background: #e8edf3;
+  color: #0f172a;
+}
+
+.collection-advanced-search-btn.active {
+  border-color: #043061;
+  background: #043061;
+  color: #ffffff;
 }
 
 .compact-search-settings-btn {
@@ -7311,9 +7699,31 @@ onUnmounted(() => {
 }
 
 .document-meta-score {
+  display: inline-flex !important;
+  align-items: baseline;
   color: #70757a;
   font-size: 12px;
+  line-height: 1.12;
   margin-left: 4px;
+  vertical-align: baseline;
+}
+
+.document-score-type-badge {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 6px;
+  margin-left: 4px;
+  border: 1px solid #dbe3ef;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: lowercase;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .document-result-item,
@@ -7414,7 +7824,8 @@ onUnmounted(() => {
   .document-meta-date,
   .document-meta-separator,
   .document-meta-slug,
-  .document-meta-score {
+  .document-meta-score,
+  .document-score-type-badge {
     font-size: 13px;
   }
 }
@@ -10606,12 +11017,53 @@ body :deep([role="tooltip"]) {
   .collection-search-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
 
   .collection-search-input {
     flex: 1 1 auto;
     width: 100%;
     max-width: none;
+  }
+
+  .collection-search-controls {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-end;
+  }
+
+  .collection-search-mode-selector {
+    flex: 0 0 auto;
+    margin-left: 0;
+  }
+
+  .collection-search-mode-btn {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: auto;
+    padding: 0 10px;
+  }
+
+  .collection-advanced-search-btn {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .collection-search-mode-btn {
+    min-width: 50px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .collection-advanced-search-btn {
+    width: 32px;
+    min-width: 32px;
+    padding: 0;
+  }
+
+  .collection-advanced-search-btn span {
+    display: none;
   }
 }
 
