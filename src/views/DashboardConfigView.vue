@@ -26,10 +26,51 @@
         <section class="dashboard-settings-section metric-card">
           <div class="dashboard-settings-header">
             <div class="dashboard-settings-heading">
-              <v-icon class="detail-card-icon">mdi-cog-outline</v-icon>
-              <span class="detail-card-title">{{ selectedFile?.name || 'Configuration' }}</span>
+              <v-icon class="detail-card-icon">mdi-graph-outline</v-icon>
+              <span class="detail-card-title">Configuration Topology</span>
             </div>
             <span class="dashboard-conf-count">{{ configFiles.length }} files</span>
+          </div>
+
+          <div class="dashboard-conf-topology">
+            <svg
+              class="dashboard-conf-links"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <line
+                v-for="link in topologyLinks"
+                :key="link.key"
+                :x1="link.x1"
+                :y1="link.y1"
+                :x2="link.x2"
+                :y2="link.y2"
+              />
+            </svg>
+            <button
+              v-for="node in topologyNodes"
+              :key="node.name"
+              type="button"
+              class="dashboard-conf-node"
+              :class="{ 'dashboard-conf-node--active': node.name === activeFileName }"
+              :style="{ left: `${node.x}%`, top: `${node.y}%` }"
+              @click="activeFileName = node.name"
+            >
+              <v-icon :icon="node.icon" size="20" />
+              <span>{{ node.label }}</span>
+              <small>{{ node.meta }}</small>
+            </button>
+          </div>
+        </section>
+
+        <section class="dashboard-settings-section metric-card dashboard-conf-details-section">
+          <div class="dashboard-settings-header">
+            <div class="dashboard-settings-heading">
+              <v-icon class="detail-card-icon">mdi-tag-multiple-outline</v-icon>
+              <span class="detail-card-title">{{ selectedFile?.name || 'Configuration' }}</span>
+            </div>
+            <span class="dashboard-conf-count">sanitized tags</span>
           </div>
 
           <div v-if="configFiles.length > 1" class="dashboard-conf-file-tabs">
@@ -43,6 +84,13 @@
             >
               {{ file.name }}
             </button>
+          </div>
+
+          <div v-if="tagSummaryRows.length" class="dashboard-conf-tag-grid">
+            <div v-for="tag in tagSummaryRows" :key="tag.name" class="dashboard-conf-tag-card">
+              <div class="dashboard-conf-tag-name">&lt;{{ tag.name }}&gt;</div>
+              <div class="dashboard-conf-tag-meta">{{ tag.count }} {{ tag.count === 1 ? 'node' : 'nodes' }} &middot; {{ tag.attributeCount }} attrs</div>
+            </div>
           </div>
 
           <div class="dashboard-settings-table-wrap">
@@ -61,14 +109,6 @@
                 </tr>
               </tbody>
             </v-table>
-          </div>
-
-          <div v-if="selectedFile?.content" class="dashboard-conf-raw-wrap">
-            <div class="dashboard-conf-raw-header">
-              <span>Raw file</span>
-              <span v-if="selectedFile.truncated">truncated</span>
-            </div>
-            <pre class="dashboard-conf-raw">{{ selectedFile.content }}</pre>
           </div>
         </section>
       </div>
@@ -139,6 +179,25 @@ const formatValue = (value) => {
   return String(value)
 }
 
+const getTagNameFromKey = (key) => {
+  const match = String(key || '').match(/^([A-Za-z_][A-Za-z0-9_-]*)\[/)
+  return match ? match[1] : 'config'
+}
+
+const getTagInstanceFromKey = (key) => {
+  const match = String(key || '').match(/^([A-Za-z_][A-Za-z0-9_-]*\[\d+\])/)
+  return match ? match[1] : String(key || 'config')
+}
+
+const getFileKind = (name) => {
+  const normalized = String(name || '').toLowerCase()
+  if (normalized.includes('module')) return { label: 'modules', icon: 'mdi-puzzle-outline' }
+  if (normalized.includes('search')) return { label: 'search', icon: 'mdi-magnify' }
+  if (normalized.includes('link')) return { label: 'links', icon: 'mdi-lan-connect' }
+  if (normalized.includes('storage') || normalized.includes('rock')) return { label: 'storage', icon: 'mdi-database-outline' }
+  return { label: 'server', icon: 'mdi-server-outline' }
+}
+
 const flattenConfig = (value, prefix = '') => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return []
@@ -175,12 +234,69 @@ const selectedRows = computed(() => {
     .filter(row => row.key)
 })
 
+const tagSummaryRows = computed(() => {
+  const summary = new Map()
+
+  selectedRows.value.forEach((row) => {
+    const tagName = getTagNameFromKey(row.key)
+    const tagInstance = getTagInstanceFromKey(row.key)
+    if (!summary.has(tagName)) {
+      summary.set(tagName, { name: tagName, instances: new Set(), attributeCount: 0 })
+    }
+
+    const item = summary.get(tagName)
+    item.instances.add(tagInstance)
+    if (String(row.key || '').includes('.')) {
+      item.attributeCount += 1
+    }
+  })
+
+  return Array.from(summary.values())
+    .map(item => ({
+      name: item.name,
+      count: item.instances.size,
+      attributeCount: item.attributeCount
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name))
+})
+
+const topologyNodes = computed(() => {
+  const files = configFiles.value.length ? configFiles.value : buildFallbackConfigFiles()
+  const count = Math.max(files.length, 1)
+  return files.map((file, index) => {
+    const kind = getFileKind(file.name)
+    const angle = count === 1 ? -Math.PI / 2 : (Math.PI * 2 * index / count) - Math.PI / 2
+    const rows = Array.isArray(file.rows) ? file.rows : []
+    const tags = new Set(rows.map(row => getTagNameFromKey(row.key)).filter(Boolean))
+
+    return {
+      name: file.name,
+      label: kind.label,
+      icon: kind.icon,
+      meta: `${tags.size} tags`,
+      x: 50 + Math.cos(angle) * 34,
+      y: 50 + Math.sin(angle) * 34
+    }
+  })
+})
+
+const topologyLinks = computed(() => {
+  return topologyNodes.value
+    .filter(node => node.name !== activeFileName.value)
+    .map(node => ({
+      key: `${activeFileName.value}:${node.name}`,
+      x1: 50,
+      y1: 50,
+      x2: node.x,
+      y2: node.y
+    }))
+})
+
 const buildFallbackConfigFiles = () => ([{
   name: 'search-config',
   path: '/search-config',
   exists: true,
   truncated: false,
-  content: JSON.stringify(getDefaultSearchConfig(), null, 2),
   rows: configRows.value
 }])
 
@@ -202,7 +318,6 @@ const loadConfig = async () => {
           path: file.path || '',
           exists: file.exists !== false,
           truncated: file.truncated === true,
-          content: file.content || '',
           rows: Array.isArray(file.rows) ? file.rows : []
         }))
       activeFileName.value = response.data.main || configFiles.value[0]?.name || ''
@@ -296,6 +411,10 @@ onMounted(loadConfig)
   background: transparent !important;
 }
 
+.dashboard-conf-details-section {
+  margin-top: 18px;
+}
+
 .dashboard-settings-header {
   display: flex;
   align-items: center;
@@ -314,6 +433,97 @@ onMounted(loadConfig)
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.dashboard-conf-topology {
+  position: relative;
+  min-height: 340px;
+  border: 1px solid #d8e1eb;
+  border-radius: 0 0 14px 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(4, 48, 97, 0.08) 0, rgba(4, 48, 97, 0.08) 84px, transparent 85px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+}
+
+.dashboard-conf-links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.dashboard-conf-links line {
+  stroke: #9fb1c4;
+  stroke-width: 0.55;
+  stroke-dasharray: 3 2;
+}
+
+.dashboard-conf-topology::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 92px;
+  height: 92px;
+  border: 1px solid #b9c7d8;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  color: #043061;
+  content: "HLQuery";
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  transform: translate(-50%, -50%);
+}
+
+.dashboard-conf-node {
+  position: absolute;
+  z-index: 1;
+  width: 128px;
+  min-height: 74px;
+  padding: 10px;
+  border: 1px solid #d8e1eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.dashboard-conf-node:hover,
+.dashboard-conf-node:focus-visible {
+  border-color: #043061;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  outline: none;
+  transform: translate(-50%, -50%) translateY(-1px);
+}
+
+.dashboard-conf-node--active {
+  border-color: #043061;
+  background: #f8fafc;
+  color: #043061;
+}
+
+.dashboard-conf-node span {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.dashboard-conf-node small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .detail-card-icon {
@@ -372,10 +582,43 @@ onMounted(loadConfig)
   color: #ffffff;
 }
 
+.dashboard-conf-tag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  padding: 12px 16px;
+  border-right: 1px solid #d8e1eb;
+  border-left: 1px solid #d8e1eb;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.dashboard-conf-tag-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.dashboard-conf-tag-name {
+  color: #0f172a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-conf-tag-meta {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .dashboard-settings-table-wrap {
   border: 1px solid #d8e1eb;
   border-top: none;
-  border-radius: 0;
+  border-radius: 0 0 14px 14px;
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
@@ -426,40 +669,6 @@ onMounted(loadConfig)
   overflow-wrap: anywhere;
 }
 
-.dashboard-conf-raw-wrap {
-  border: 1px solid #d8e1eb;
-  border-top: none;
-  border-radius: 0 0 14px 14px;
-  overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-}
-
-.dashboard-conf-raw-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.dashboard-conf-raw {
-  max-height: 420px;
-  margin: 0;
-  padding: 16px;
-  overflow: auto;
-  color: #334155;
-  background: #f8fafc;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-}
-
 @media (max-width: 720px) {
   .dashboard-conf-content {
     padding: 20px 16px;
@@ -473,6 +682,14 @@ onMounted(loadConfig)
   .collections-header {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .dashboard-conf-topology {
+    min-height: 520px;
+  }
+
+  .dashboard-conf-node {
+    width: 112px;
   }
 
   .dashboard-settings-table :deep(td) {
