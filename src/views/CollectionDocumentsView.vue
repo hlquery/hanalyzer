@@ -201,7 +201,7 @@
         <div class="google-toolbar collection-results-toolbar" v-if="documents.length > 0 || searchPerformed">
           <div class="google-toolbar-left" style="gap: 16px;">
             <span class="google-results-count" v-if="searchPerformed && searchResults.length > 0">
-              {{ searchResultsSummary }}
+              <span>{{ searchResultsSummary.prefix }}</span><strong v-if="searchResultsSummary.query">{{ searchResultsSummary.query }}</strong><span>{{ searchResultsSummary.suffix }}</span>
             </span>
             <span class="google-results-count collection-results-count-mobile" v-else-if="!searchPerformed && documents.length > 0">
               Just showing {{ Math.max(0, paginationInfo.end - paginationInfo.start + 1) }} of {{ paginationInfo.total }} documents
@@ -682,7 +682,9 @@
                 Try adjusting your search terms or filters.
               </div>
             </div>
-            <div class="collection-search-empty-count">{{ emptySearchResultsSummary }}</div>
+            <div class="collection-search-empty-count">
+              <span>{{ emptySearchResultsSummary.prefix }}</span><strong v-if="emptySearchResultsSummary.query">{{ emptySearchResultsSummary.query }}</strong><span>{{ emptySearchResultsSummary.suffix }}</span>
+            </div>
           </div>
 
           <div
@@ -1737,10 +1739,18 @@ const formatSearchResultsSummary = (count) => {
   const timeSuffix = searchTime.value ? ` (${searchTime.value}s)` : ''
 
   if (!query) {
-    return `${count} ${resultWord} found${timeSuffix}`
+    return {
+      prefix: `${count} ${resultWord} found${timeSuffix}`,
+      query: '',
+      suffix: ''
+    }
   }
 
-  return `${count} ${resultWord} found for "${query}"${timeSuffix}`
+  return {
+    prefix: `${count} ${resultWord} found for `,
+    query,
+    suffix: timeSuffix
+  }
 }
 const searchResultsSummary = computed(() => formatSearchResultsSummary(searchResults.value.length))
 const emptySearchResultsSummary = computed(() => formatSearchResultsSummary(0))
