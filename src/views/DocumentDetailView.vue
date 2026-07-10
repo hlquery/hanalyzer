@@ -251,7 +251,6 @@
             variant="flat"
             @click="handleDelete"
             :loading="deleting"
-            prepend-icon="mdi-delete"
             size="default"
             class="delete-confirm-btn-modern"
             color="error"
@@ -793,11 +792,10 @@ onMounted(async () => {
   }
 }
 
-/* Delete Action Button - Red 3D version like before */
+/* Delete Action Button */
 .delete-action-btn {
   border-radius: 6px !important;
   font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 600 !important;
   font-weight: 600 !important;
   font-size: 13px !important;
   line-height: 32px !important;
@@ -812,71 +810,43 @@ onMounted(async () => {
   justify-content: center !important;
   text-align: center !important;
   position: relative !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: background 0.15s ease, color 0.15s ease !important;
   gap: 6px !important;
-  
-  /* 3D gradient background with red colors */
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important;
-  
-  /* Multi-layer 3D shadow effect - raised appearance */
-  box-shadow: 
-    0 4px 8px rgba(220, 38, 38, 0.4),
-    0 2px 4px rgba(220, 38, 38, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  
-  /* Slight 3D transform */
-  transform: perspective(1000px) translateZ(0) !important;
+  background: linear-gradient(to right, transparent 0 14px, #dc2626 14px 100%) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .delete-action-btn::before {
-  content: '' !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  border-radius: 6px !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%) !important;
-  pointer-events: none !important;
-  opacity: 1 !important;
-  transition: opacity 0.3s ease !important;
+  display: none !important;
 }
 
 .delete-action-btn:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important;
-  box-shadow: 
-    0 6px 12px rgba(220, 38, 38, 0.5),
-    0 3px 6px rgba(220, 38, 38, 0.4),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  transform: perspective(1000px) translateY(-1px) translateZ(0) !important;
+  background: linear-gradient(to right, transparent 0 14px, #b91c1c 14px 100%) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
   color: #ffffff !important;
 }
 
 .delete-action-btn:hover::before {
-  opacity: 1 !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 50%) !important;
+  display: none !important;
 }
 
 .delete-action-btn:active {
-  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%) !important;
-  transform: perspective(1000px) translateY(0) translateZ(0) !important;
-  box-shadow: 
-    0 2px 4px rgba(220, 38, 38, 0.4),
-    0 1px 2px rgba(220, 38, 38, 0.3),
-    0 1px 1px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  background: linear-gradient(to right, transparent 0 14px, #991b1b 14px 100%) !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .delete-action-btn:active::before {
-  opacity: 0.5 !important;
+  display: none !important;
 }
 
 .delete-action-btn :deep(.v-btn__content) {
-  color: #ffffff !important;
+  color: inherit !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -884,7 +854,7 @@ onMounted(async () => {
 }
 
 .delete-action-btn :deep(.v-icon) {
-  color: #ffffff !important;
+  color: inherit !important;
   display: inline-flex !important;
   width: auto !important;
   min-width: auto !important;
