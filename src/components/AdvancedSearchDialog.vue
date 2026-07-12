@@ -79,7 +79,7 @@
           </select>
         </label>
 
-        <label class="advanced-search-check advanced-search-field--full">
+        <label class="advanced-search-check">
           <input v-model="form.showScores" type="checkbox" />
           <span>Show scores in results</span>
         </label>
@@ -306,13 +306,13 @@ const submit = () => {
 .advanced-search-input,
 .advanced-search-textarea {
   width: 100%;
-  border: 1px solid #dbe3ef;
+  border: 1px solid transparent;
   border-radius: 8px;
-  background: #ffffff;
+  background: #f8fafc;
   color: #0f172a;
   font: 500 14px/1.4 Inter, Helvetica, sans-serif;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
 }
 
 .advanced-search-input {
@@ -327,7 +327,7 @@ const submit = () => {
 
 .advanced-search-input:focus,
 .advanced-search-textarea:focus {
-  border-color: #043061;
+  background: #f1f5f9;
   box-shadow: 0 0 0 3px rgba(4, 48, 97, 0.08);
 }
 
@@ -341,6 +341,9 @@ const submit = () => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  align-self: end;
+  min-height: 40px;
+  width: fit-content;
   color: #334155;
   font-size: 13px;
   font-weight: 700;

@@ -6404,9 +6404,9 @@ onUnmounted(() => {
 }
 
 .collection-search-scope-select :deep(.v-field) {
-  background: #ffffff !important;
+  background: #f8fafc !important;
   border-radius: 10px !important;
-  border: 1px solid #dbe3ee !important;
+  border: none !important;
   box-shadow: none !important;
 }
 
@@ -6452,9 +6452,9 @@ onUnmounted(() => {
 }
 
 .collection-search-fields-select :deep(.v-field) {
-  background: #ffffff !important;
+  background: #f8fafc !important;
   border-radius: 10px !important;
-  border: 1px solid #dbe3ee !important;
+  border: none !important;
   box-shadow: none !important;
 }
 
@@ -7202,11 +7202,12 @@ onUnmounted(() => {
 }
 
 .search-fields-select :deep(.v-field--variant-outlined) {
-  border: 1px solid #e2e8f0 !important;
+  border: none !important;
+  background: #f8fafc !important;
 }
 
 .search-fields-select :deep(.v-field--focused) {
-  border-color: #1976d2 !important;
+  background: #f1f5f9 !important;
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1) !important;
 }
 
@@ -11853,7 +11854,7 @@ body :deep([role="tooltip"]) {
 /* Advanced Filter Fields - Sophisticated, consistent styling */
 .advanced-filter-field :deep(.v-field) {
   background: #f1f5f9 !important;
-  border-color: #e2e8f0 !important;
+  border-color: transparent !important;
 }
 
 .advanced-filter-field :deep(.v-field),
@@ -11862,7 +11863,7 @@ body :deep([role="tooltip"]) {
 .filter-value-input-modern :deep(.v-field),
 .filter-connector-select-modern :deep(.v-field) {
   background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
+  border: none !important;
   border-radius: 6px !important;
   min-height: 36px !important;
   font-size: 13px !important;
@@ -11873,13 +11874,12 @@ body :deep([role="tooltip"]) {
 .filter-operator-select-modern :deep(.v-field__outline),
 .filter-value-input-modern :deep(.v-field__outline),
 .filter-connector-select-modern :deep(.v-field__outline) {
-  border-color: #e2e8f0 !important;
-  border-width: 1px !important;
+  display: none !important;
 }
 
 .advanced-filter-field :deep(.v-field--focused) {
   background: #e2e8f0 !important;
-  border-color: #cbd5e1 !important;
+  border-color: transparent !important;
   box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.1) !important;
 }
 
@@ -11887,15 +11887,14 @@ body :deep([role="tooltip"]) {
 .filter-operator-select-modern :deep(.v-field--focused),
 .filter-value-input-modern :deep(.v-field--focused),
 .filter-connector-select-modern :deep(.v-field--focused) {
-  background: #ffffff !important;
-  border-color: #cbd5e1 !important;
+  background: #f1f5f9 !important;
+  border-color: transparent !important;
   box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.1) !important;
 }
 
 .advanced-filter-field :deep(.v-field--focused .v-field__outline),
 .filter-field-select-modern :deep(.v-field--focused .v-field__outline) {
-  border-color: #1a73e8 !important;
-  border-width: 2px !important;
+  display: none !important;
   box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1) !important;
 }
 
