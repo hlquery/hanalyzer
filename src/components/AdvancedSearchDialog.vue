@@ -18,16 +18,6 @@
       </div>
 
       <div class="advanced-search-body">
-        <label class="advanced-search-field advanced-search-field--full">
-          <span class="advanced-search-label">Query text</span>
-          <input
-            v-model="form.query"
-            type="text"
-            class="advanced-search-input"
-            placeholder="abstract painting"
-          />
-        </label>
-
         <label class="advanced-search-field">
           <span class="advanced-search-label">Search mode</span>
           <select v-model="form.mode" class="advanced-search-input">
@@ -49,35 +39,47 @@
         </label>
 
         <label class="advanced-search-field advanced-search-field--full">
-          <span class="advanced-search-label">Vector input</span>
-          <textarea
-            v-model="form.vectorText"
-            class="advanced-search-textarea"
-            placeholder="[0.123, -0.082, 0.441, ...]"
-            rows="4"
-            @input="vectorError = ''"
-          ></textarea>
-          <span v-if="vectorError" class="advanced-search-error">{{ vectorError }}</span>
-        </label>
-
-        <label class="advanced-search-field">
-          <span class="advanced-search-label">Vector field</span>
+          <span class="advanced-search-label">Query text</span>
           <input
-            v-model="form.vectorField"
+            v-model="form.query"
             type="text"
             class="advanced-search-input"
-            placeholder="embedding"
+            placeholder="abstract painting"
           />
         </label>
 
-        <label class="advanced-search-field">
-          <span class="advanced-search-label">Distance metric</span>
-          <select v-model="form.distance" class="advanced-search-input">
-            <option value="cosine">Cosine</option>
-            <option value="dot_product">Dot product</option>
-            <option value="euclidean">Euclidean</option>
-          </select>
-        </label>
+        <template v-if="form.mode === 'vector'">
+          <label class="advanced-search-field advanced-search-field--full">
+            <span class="advanced-search-label">Vector input</span>
+            <textarea
+              v-model="form.vectorText"
+              class="advanced-search-textarea"
+              placeholder="[0.123, -0.082, 0.441, ...]"
+              rows="4"
+              @input="vectorError = ''"
+            ></textarea>
+            <span v-if="vectorError" class="advanced-search-error">{{ vectorError }}</span>
+          </label>
+
+          <label class="advanced-search-field">
+            <span class="advanced-search-label">Vector field</span>
+            <input
+              v-model="form.vectorField"
+              type="text"
+              class="advanced-search-input"
+              placeholder="embedding"
+            />
+          </label>
+
+          <label class="advanced-search-field">
+            <span class="advanced-search-label">Distance metric</span>
+            <select v-model="form.distance" class="advanced-search-input">
+              <option value="cosine">Cosine</option>
+              <option value="dot_product">Dot product</option>
+              <option value="euclidean">Euclidean</option>
+            </select>
+          </label>
+        </template>
 
         <label class="advanced-search-check">
           <input v-model="form.showScores" type="checkbox" />
@@ -268,14 +270,19 @@ const submit = () => {
 .advanced-search-icon-btn {
   width: 34px;
   height: 34px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: #ffffff;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
   color: #475569;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+.advanced-search-icon-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .advanced-search-body {
@@ -350,9 +357,15 @@ const submit = () => {
   line-height: 1.2;
 }
 
-.advanced-search-check input {
+.advanced-search-check input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
   width: 15px;
   height: 15px;
+  min-width: 15px;
+  min-height: 15px;
+  margin: 0;
+  flex: 0 0 15px;
   accent-color: #043061;
 }
 
