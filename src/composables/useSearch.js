@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
-import { extractSafeErrorMessage } from '../utils/sanitize'
+import { extractSafeErrorMessage, sanitizeError } from '../utils/sanitize'
 
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
@@ -155,6 +155,27 @@ const buildModePayload = (query, limit, options = {}) => {
   }
 
   return payload
+}
+
+const formatSearchErrorMessage = (err, defaultMessage = 'Search failed') => {
+  const data = err?.response?.data
+  if (!data || typeof data !== 'object') {
+    return extractSafeErrorMessage(err, defaultMessage)
+  }
+
+  const message = data.message || data.error || defaultMessage
+  const codeParts = []
+
+  if (data.code !== undefined && data.code !== null && data.code !== '') {
+    codeParts.push(`code ${data.code}`)
+  }
+
+  if (data.code_text) {
+    codeParts.push(String(data.code_text))
+  }
+
+  const suffix = codeParts.length > 0 ? ` (${codeParts.join(': ')})` : ''
+  return sanitizeError(`${message}${suffix}`)
 }
 
 export function useSearch(baseUrl) {
@@ -463,7 +484,12 @@ export function useSearch(baseUrl) {
         }
         // Handle error response
         else if (response.data.error) {
-          throw new Error(response.data.message || response.data.error || 'Search failed')
+          const responseError = new Error(response.data.message || response.data.error || 'Search failed')
+          responseError.response = {
+            status: response.status,
+            data: response.data
+          }
+          throw responseError
         }
         // Empty or unknown format
         else {
@@ -485,30 +511,28 @@ export function useSearch(baseUrl) {
       // Handle specific error cases
       if (err.response) {
         const status = err.response.status
-        const data = err.response.data
         
         // Handle 404 - collection not found
         if (status === 404) {
-          error.value = `Collection "${collectionName}" not found`
+          error.value = formatSearchErrorMessage(err, `Collection "${collectionName}" not found`)
           return
         }
         
         // Handle 400 - bad request (invalid query, missing parameters, etc.)
         if (status === 400) {
-          const serverMessage = data?.message || data?.error || 'Invalid search request'
-          error.value = serverMessage
+          error.value = formatSearchErrorMessage(err, 'Invalid search request')
           return
         }
         
         // Handle 500 - server error
         if (status === 500) {
-          error.value = 'Server error. Please try again later.'
+          error.value = formatSearchErrorMessage(err, 'Server error. Please try again later.')
           return
         }
         
         // Handle timeout
         if (status === 504 || err.code === 'ECONNABORTED') {
-          error.value = 'Search request timed out. Please try again with a simpler query.'
+          error.value = formatSearchErrorMessage(err, 'Search request timed out. Please try again with a simpler query.')
           return
         }
       }
@@ -520,7 +544,7 @@ export function useSearch(baseUrl) {
       }
       
       // Generic error handling
-      const errorMsg = extractSafeErrorMessage(err, 'Search failed')
+      const errorMsg = formatSearchErrorMessage(err, 'Search failed')
       error.value = errorMsg
       indexingInProgress.value = false
       directSearchExecuted.value = false
