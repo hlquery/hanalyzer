@@ -270,7 +270,6 @@
           <div class="simple-delete-dialog-header-copy">
             <div class="simple-delete-dialog-kicker">Confirm removal</div>
             <div class="simple-delete-dialog-title-row">
-              <v-icon icon="mdi-link-variant-remove" size="18" color="white" class="mr-2"></v-icon>
               <span class="simple-delete-dialog-title">Delete Alias</span>
             </div>
           </div>
@@ -289,7 +288,7 @@
         <v-card-actions class="simple-delete-dialog-actions">
           <v-spacer></v-spacer>
           <v-btn variant="text" @click="showDeleteConfirm = false" :disabled="deletingAlias" size="small" class="mr-2">Cancel</v-btn>
-          <v-btn color="primary" variant="flat" @click="deleteAlias" :loading="deletingAlias" size="small">Delete Alias</v-btn>
+          <v-btn variant="flat" @click="deleteAlias" :loading="deletingAlias" size="small" class="simple-delete-confirm-btn">Delete Alias</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -769,6 +768,14 @@ onMounted(() => {
   opacity: 0 !important;
 }
 
+.aliases-search-input :deep(input:focus),
+.aliases-search-input :deep(input:focus-visible),
+.aliases-search-input :deep(.v-field:focus-within) {
+  outline: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
 .aliases-search-input :deep(.v-field__prepend-inner) {
   padding-left: 10px !important;
   padding-right: 6px !important;
@@ -822,7 +829,7 @@ onMounted(() => {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.72);
+  color: #ffffff;
   margin-bottom: 8px;
 }
 
@@ -879,6 +886,27 @@ onMounted(() => {
   padding: 16px 22px !important;
   background: #f8fafc !important;
   border-top: 1px solid #e2e8f0;
+}
+
+.simple-delete-confirm-btn {
+  color: #ffffff !important;
+  background: #dc2626 !important;
+  border: 1px solid #dc2626 !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+}
+
+.simple-delete-confirm-btn:hover,
+.simple-delete-confirm-btn:focus {
+  color: #ffffff !important;
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  box-shadow: none !important;
+}
+
+.simple-delete-confirm-btn :deep(.v-btn__content) {
+  color: inherit !important;
 }
 
 .detail-item {
