@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../docs/static/img/hlquery/2.png" alt="hlquery logo" width="200">
+  <img src="https://docs.hlquery.com/img/hlquery/2.png" alt="hlquery logo" width="200">
 </div>
 
 <div align="center">
@@ -43,7 +43,7 @@ $ npm install
 $ ./hanalyzer
 ```
 
-By default, hanalyzer runs on `http://localhost:8080` and connects to HLQuery at `http://localhost:9200`.
+By default, hanalyzer runs on `http://localhost:8080` and connects to hlquery at `http://localhost:9200`.
 
 ## Detailed Setup
 
@@ -53,7 +53,7 @@ By default, hanalyzer runs on `http://localhost:8080` and connects to HLQuery at
 - Node.js 18.0.0 or higher
 - npm 9.0.0 or higher
 
-> **Note**: Make sure your hlquery server is running and accessible. hanalyzer connects to the HLQuery API (default: `http://localhost:9200`).
+> **Note**: Make sure your hlquery server is running and accessible. hanalyzer connects to the hlquery API (default: `http://localhost:9200`).
 
 ### Installation
 
@@ -122,9 +122,9 @@ Important:
 
 ## Getting Started
 
-### 1. Start HLQuery Server
+### 1. Start hlquery Server
 
-Make sure your HLQuery server is running:
+Make sure your hlquery server is running:
 
 ```bash
 $ ./run/hlquery start
@@ -151,7 +151,7 @@ Open your browser and navigate to:
 http://localhost:8080
 ```
 
-You should see the hanalyzer dashboard with connection status to your HLQuery server.
+You should see the hanalyzer dashboard with connection status to your hlquery server.
 
 ### Contributing
 
