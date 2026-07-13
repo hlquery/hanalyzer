@@ -128,12 +128,30 @@
             @contextmenu.prevent="openCollectionInNewTab(item.collection_name)"
           >
             <td>
-              <span class="text-body-1 font-weight-bold text-primary alias-name-link">{{ item.name }}</span>
+              <button
+                type="button"
+                class="alias-cell-link alias-name-link"
+                :title="`Open alias ${item.name}`"
+                @click.stop="handleAliasNameClick(item.name, $event)"
+                @auxclick.stop="handleAliasNameClick(item.name, $event)"
+                @contextmenu.stop.prevent="openCollectionInNewTab(item.name)"
+              >
+                {{ item.name }}
+              </button>
             </td>
             <td>
               <div class="d-flex align-center">
                 <v-icon size="18" color="grey-darken-1" class="mr-2">mdi-folder</v-icon>
-                <span class="text-body-1 text-grey-darken-3 collection-name-link">{{ item.collection_name }}</span>
+                <button
+                  type="button"
+                  class="alias-cell-link collection-name-link"
+                  :title="`Open collection ${item.collection_name}`"
+                  @click.stop="handleTargetCollectionClick(item.collection_name, $event)"
+                  @auxclick.stop="handleTargetCollectionClick(item.collection_name, $event)"
+                  @contextmenu.stop.prevent="openCollectionInNewTab(item.collection_name)"
+                >
+                  {{ item.collection_name }}
+                </button>
               </div>
             </td>
             <td>
@@ -346,7 +364,9 @@ const filteredAliases = computed(() => {
   return items.filter((item) => {
     const aliasName = String(item?.name || '').toLowerCase()
     const collectionName = String(item?.collection_name || '').toLowerCase()
-    return aliasName.includes(query) || collectionName.includes(query)
+    return collectionFilter.value
+      ? aliasName.includes(query)
+      : aliasName.includes(query) || collectionName.includes(query)
   })
 })
 
@@ -447,6 +467,14 @@ const handleAliasRowClick = (name, event = null) => {
   goToCollection(name)
 }
 
+const handleAliasNameClick = (aliasName, event = null) => {
+  handleAliasRowClick(aliasName, event)
+}
+
+const handleTargetCollectionClick = (collectionName, event = null) => {
+  handleAliasRowClick(collectionName, event)
+}
+
 const goToCollection = (name) => {
   router.push(`/collections/${encodeURIComponent(name)}`)
 }
@@ -525,7 +553,38 @@ onMounted(() => {
   width: 100%;
 }
 
-.alias-name-link:hover {
+.alias-cell-link {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  line-height: inherit;
+}
+
+.alias-cell-link:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.alias-name-link {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.collection-name-link {
+  color: #374151;
+  font-weight: 400;
+}
+
+.alias-name-link:hover,
+.collection-name-link:hover {
   text-decoration: underline;
 }
 

@@ -33,12 +33,10 @@ export function useAliases(baseUrl) {
       const baseUrlValue = getBaseUrlValue(baseUrl)
       const useProxy = shouldUseProxy(baseUrlValue)
       const trimmedCollectionName = String(currentCollectionFilter.value || '').trim()
-      const url = buildApiUrl(
-        baseUrlValue,
-        useProxy,
-        '/aliases',
-        trimmedCollectionName ? { collection: trimmedCollectionName } : {}
-      )
+      const path = trimmedCollectionName
+        ? `/collections/${encodeURIComponent(trimmedCollectionName)}/aliases`
+        : '/aliases'
+      const url = buildApiUrl(baseUrlValue, useProxy, path)
       
       const response = await axios.get(url, { timeout: 5000 })
       aliases.value = normalizeAliases(response.data?.aliases)
