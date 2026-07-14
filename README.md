@@ -72,6 +72,9 @@ export default {
     defaultBaseUrl: 'http://localhost:9200',
     // Example fallback token if the UI has nothing saved yet.
     defaultAuthToken: '',
+    // Optional fallback HTTP Basic credentials if no token is saved.
+    defaultAuthUsername: '',
+    defaultAuthPassword: '',
     defaultAuthMethod: 'bearer'
   },
   server: {

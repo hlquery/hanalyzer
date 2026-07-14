@@ -16,13 +16,21 @@ const config = {
     defaultBaseUrl: '/api',
     // Example: set a fallback token used when the UI does not already have one saved.
     defaultAuthToken: '',
-    // Supported values: 'bearer' or 'api-key'.
+    // Example: set fallback basic auth credentials used when no token is saved.
+    defaultAuthUsername: '',
+    defaultAuthPassword: '',
+    // Supported values: 'bearer', 'api-key', or 'basic'.
     defaultAuthMethod: 'bearer',
     // Example per-server override:
     // defaultAuthByServer: {
     //   'http://localhost:9200': {
     //     token: 'replace-me',
     //     method: 'bearer'
+    //   },
+    //   'http://private.example:9200': {
+    //     username: 'replace-me',
+    //     password: 'replace-me',
+    //     method: 'basic'
     //   }
     // }
     defaultAuthByServer: {}
@@ -30,13 +38,11 @@ const config = {
   server: {
     port: 8080,
     host: 'localhost',
-    allowedHosts: ['demo.hlquery.com'],
+    // Host/IP allowlist used only when defaultAuthUsername and defaultAuthPassword are set.
+    allowedHosts: ['demo.hlquery.com', 'localhost'],
     apiTarget: 'http://localhost:9200',
     baseUrl: './',
     open: true
-  },
-  preview: {
-    port: 4173
   },
   build: {
     enableAnalytics: false,

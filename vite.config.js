@@ -40,12 +40,23 @@ export default defineConfig(({ mode }) => {
       .map((host) => host.trim())
       .filter(Boolean)
   }
+  const hasConfiguredBasicAuth = () => {
+    const runtime = defaultConfig.runtime || {}
+    const username = typeof runtime.defaultAuthUsername === 'string'
+      ? runtime.defaultAuthUsername.trim()
+      : ''
+    const password = typeof runtime.defaultAuthPassword === 'string'
+      ? runtime.defaultAuthPassword
+      : ''
+
+    return !!(username && password)
+  }
 
   const allowedHostsOverride = parseAllowedHosts(process.env.HANALYZER_ALLOWED_HOSTS)
   const allowedHosts =
     allowedHostsOverride === true || allowedHostsOverride.length > 0
       ? allowedHostsOverride
-      : defaultConfig.server.allowedHosts
+      : (hasConfiguredBasicAuth() ? defaultConfig.server.allowedHosts : true)
 
   const vendorChunkMap = [
     ['vue-vendor', ['vue', 'vue-router']],
@@ -68,8 +79,8 @@ export default defineConfig(({ mode }) => {
       baseUrl: process.env.HANALYZER_BASE_URL || defaultConfig.server.baseUrl
     },
     preview: {
-      ...defaultConfig.preview,
-      port: parseInt(process.env.HANALYZER_PREVIEW_PORT || `${defaultConfig.preview.port}`, 10)
+      ...(defaultConfig.preview || {}),
+      port: parseInt(process.env.HANALYZER_PREVIEW_PORT || `${defaultConfig.preview?.port || defaultConfig.server?.port || 4173}`, 10)
     }
   }
 

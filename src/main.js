@@ -47,7 +47,7 @@ if (typeof window !== 'undefined' && window.localStorage) {
           const stored = window.localStorage.getItem(key)
           if (stored) {
             const credentials = JSON.parse(stored)
-            if (credentials && (credentials.token || credentials.apiKey)) {
+            if (authManager.hasCredentials(credentials)) {
               // Normalize URL (same logic as setAuthForServer)
               let normalizedUrl = serverUrl.trim()
               if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
@@ -175,7 +175,7 @@ axios.interceptors.response.use(
       
       // Check if auth is configured for this server
       const auth = authManager.getAuthForServer(serverUrl) || authManager.loadFromStorage(serverUrl)
-      const hasAuth = !!(auth && (auth.token || auth.apiKey))
+      const hasAuth = authManager.hasCredentials(auth)
       
       if (error.response.status === 401) {
         // If auth is required but not configured, emit event or set flag

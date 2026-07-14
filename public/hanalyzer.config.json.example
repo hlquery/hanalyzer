@@ -1,4 +1,7 @@
 {
   "defaultBaseUrl": "http://localhost:9200",
-  "useProxy": false
+  "useProxy": false,
+  "defaultAuthUsername": "",
+  "defaultAuthPassword": "",
+  "defaultAuthMethod": "basic"
 }

@@ -775,7 +775,7 @@ import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
 const router = useRouter()
 const baseUrl = inject('baseUrl', ref('http://localhost:9200'))
-const { getAuthForServer, loadAuthFromStorage } = useAuth()
+const { getAuthForServer, hasCredentials, loadAuthFromStorage } = useAuth()
 const { showToast } = useToast()
 const { isConnected, lastPingTime, latencyHistory } = useConnectionStatus(baseUrl)
 const { loadCollectionsAsync } = useCollections(baseUrl)
@@ -795,7 +795,7 @@ const openServerMenu = () => {
 const hasAuth = computed(() => {
   const url = baseUrl?.value || baseUrl
   const auth = getAuthForServer(url) || loadAuthFromStorage(url)
-  return !!(auth && (auth.token || auth.apiKey))
+  return hasCredentials(auth)
 })
 
 const pingTooltipText = computed(() => {

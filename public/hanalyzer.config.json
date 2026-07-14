@@ -1,4 +1,7 @@
 {
   "defaultBaseUrl": "/api",
-  "useProxy": true
+  "useProxy": true,
+  "defaultAuthUsername": "",
+  "defaultAuthPassword": "",
+  "defaultAuthMethod": "bearer"
 }

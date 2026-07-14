@@ -609,7 +609,7 @@ const hasAuthConfigured = computed(() => {
   // When modal is open, check serverUrl, otherwise check baseUrl
   const url = showServerMenu.value ? (serverUrl.value || baseUrl?.value || baseUrl) : (baseUrl?.value || baseUrl)
   const auth = authManager.resolveCredentials(url)
-  return !!(auth && (auth.token || auth.apiKey))
+  return authManager.hasCredentials(auth)
 })
 
 const injectedConnectionState = inject('connectionState', null)
@@ -619,7 +619,7 @@ const isEffectivelyConnected = computed(() => {
   runtimeConfigRevision.value
   const url = baseUrl?.value || baseUrl
   const auth = authManager.resolveCredentials(url)
-  const hasAuthForBase = !!(auth && (auth.token || auth.apiKey))
+  const hasAuthForBase = authManager.hasCredentials(auth)
   return isConnected.value && !(authRequired.value && !hasAuthForBase)
 })
 const { collections, loading: collectionsLoading, loadCollectionsAsync } = useCollections(baseUrl)
@@ -751,7 +751,7 @@ const checkAuthRequired = async () => {
       // Check if auth is configured
       const serverUrl = baseUrl?.value || baseUrl
       const auth = authManager.resolveCredentials(serverUrl)
-      const hasAuth = !!(auth && (auth.token || auth.apiKey))
+      const hasAuth = authManager.hasCredentials(auth)
       
       // If auth is required but not configured, show server menu to configure
       if (!hasAuth && !showServerMenu.value) {
@@ -958,7 +958,7 @@ onMounted(() => {
     // Check if auth is configured
     const url = baseUrl?.value || baseUrl
     const auth = authManager.resolveCredentials(url)
-    const hasAuth = !!(auth && (auth.token || auth.apiKey))
+    const hasAuth = authManager.hasCredentials(auth)
     
     // If auth is required but not configured, show server menu to configure auth
     if (!hasAuth) {

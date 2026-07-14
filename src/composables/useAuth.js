@@ -20,6 +20,33 @@ const getRuntimeConfig = () => {
   return window.HANALYZER_CONFIG || {}
 }
 
+const normalizeAuthMethod = (method, credentials = {}) => {
+  if (method === 'api-key') return 'api-key'
+  if (method === 'basic') return 'basic'
+  if (credentials.username || credentials.password) return 'basic'
+  return 'bearer'
+}
+
+const hasCredentialMaterial = (credentials) => {
+  if (!credentials) return false
+  if (credentials.token || credentials.apiKey) return true
+  return !!(credentials.username && credentials.password)
+}
+
+const encodeBasicCredentials = (username, password) => {
+  const raw = `${username}:${password}`
+  if (typeof btoa !== 'function') {
+    return ''
+  }
+
+  const bytes = new TextEncoder().encode(raw)
+  let binary = ''
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte)
+  })
+  return btoa(binary)
+}
+
 const getRuntimeConfigAuth = (serverUrl) => {
   const runtimeConfig = getRuntimeConfig()
   const normalizedUrl = normalizeServerUrl(serverUrl)
@@ -36,10 +63,19 @@ const getRuntimeConfigAuth = (serverUrl) => {
       const configured = byServer[candidate]
       if (configured && typeof configured === 'object') {
         const token = (configured.token || configured.apiKey || '').trim()
+        const username = typeof configured.username === 'string' ? configured.username.trim() : ''
+        const password = typeof configured.password === 'string' ? configured.password : ''
         if (token) {
           return {
-            method: configured.method === 'api-key' ? 'api-key' : 'bearer',
+            method: normalizeAuthMethod(configured.method, configured),
             token,
+          }
+        }
+        if (username && password) {
+          return {
+            method: 'basic',
+            username,
+            password,
           }
         }
       }
@@ -50,13 +86,28 @@ const getRuntimeConfigAuth = (serverUrl) => {
     ? runtimeConfig.defaultAuthToken.trim()
     : ''
 
-  if (!defaultToken) {
+  if (defaultToken) {
+    return {
+      method: normalizeAuthMethod(runtimeConfig.defaultAuthMethod, { token: defaultToken }),
+      token: defaultToken,
+    }
+  }
+
+  const defaultUsername = typeof runtimeConfig.defaultAuthUsername === 'string'
+    ? runtimeConfig.defaultAuthUsername.trim()
+    : ''
+  const defaultPassword = typeof runtimeConfig.defaultAuthPassword === 'string'
+    ? runtimeConfig.defaultAuthPassword
+    : ''
+
+  if (!defaultUsername || !defaultPassword) {
     return null
   }
 
   return {
-    method: runtimeConfig.defaultAuthMethod === 'api-key' ? 'api-key' : 'bearer',
-    token: defaultToken,
+    method: 'basic',
+    username: defaultUsername,
+    password: defaultPassword,
   }
 }
 
@@ -75,16 +126,20 @@ if (typeof window !== 'undefined' && !window.__hanalyzer_runtime_auth_listener__
 export const authManager = {
   credentials: authCredentials,
 
+  hasCredentials(credentials) {
+    return hasCredentialMaterial(credentials)
+  },
+
   resolveCredentials(serverUrl) {
     if (!serverUrl) return null
 
     const inMemory = this.getAuthForServer(serverUrl)
-    if (inMemory && (inMemory.token || inMemory.apiKey)) {
+    if (hasCredentialMaterial(inMemory)) {
       return inMemory
     }
 
     const stored = this.loadFromStorage(serverUrl)
-    if (stored && (stored.token || stored.apiKey)) {
+    if (hasCredentialMaterial(stored)) {
       return stored
     }
 
@@ -121,16 +176,16 @@ export const authManager = {
     // First check memory (faster)
     for (const url of uniqueUrls) {
       credentials = this.getAuthForServer(url)
-      if (credentials && (credentials.token || credentials.apiKey)) {
+      if (hasCredentialMaterial(credentials)) {
         break
       }
     }
     
     // If not in memory, check localStorage
-    if (!credentials || (!credentials.token && !credentials.apiKey)) {
+    if (!hasCredentialMaterial(credentials)) {
       for (const url of uniqueUrls) {
         credentials = this.loadFromStorage(url)
-        if (credentials && (credentials.token || credentials.apiKey)) {
+        if (hasCredentialMaterial(credentials)) {
           // Store in memory for faster lookup next time
           this.credentials[normalizedUrl] = credentials
           this.credentials[serverUrl] = credentials
@@ -139,11 +194,23 @@ export const authManager = {
       }
     }
     
-    if (!credentials || (!credentials.token && !credentials.apiKey)) {
+    if (!hasCredentialMaterial(credentials)) {
       credentials = getRuntimeConfigAuth(normalizedUrl)
     }
 
-    if (!credentials || (!credentials.token && !credentials.apiKey)) return {}
+    if (!hasCredentialMaterial(credentials)) return {}
+    
+    const method = normalizeAuthMethod(credentials.method, credentials)
+
+    if (method === 'basic') {
+      const username = typeof credentials.username === 'string' ? credentials.username.trim() : ''
+      const password = typeof credentials.password === 'string' ? credentials.password : ''
+      const encoded = username && password ? encodeBasicCredentials(username, password) : ''
+      if (!encoded) return {}
+      return {
+        'Authorization': `Basic ${encoded}`
+      }
+    }
     
     const token = credentials.token || credentials.apiKey
     
@@ -151,8 +218,6 @@ export const authManager = {
     if (!token || typeof token !== 'string' || token.trim() === '') {
       return {}
     }
-    
-    const method = credentials.method || 'bearer'
     
     if (method === 'api-key') {
       return {
@@ -189,7 +254,7 @@ export const authManager = {
         if (stored) {
           try {
             const credentials = JSON.parse(stored)
-            if (credentials && (credentials.token || credentials.apiKey)) {
+            if (hasCredentialMaterial(credentials)) {
               // Store in memory with normalized URL for faster lookup
               this.credentials[normalizedUrl] = credentials
               this.credentials[serverUrl] = credentials
@@ -209,7 +274,7 @@ export const authManager = {
 }
 
 // Default auth method
-const defaultAuthMethod = ref('bearer') // 'bearer' or 'api-key'
+const defaultAuthMethod = ref('bearer') // 'bearer', 'api-key', or 'basic'
 
 export function useAuth() {
   /**
@@ -229,12 +294,13 @@ export function useAuth() {
     // Normalize server URL (ensure consistent format)
     let normalizedUrl = normalizeServerUrl(serverUrl)
     
-    /* Store credentials (in production, you might want to encrypt these) */
-    /* Only token is required - username/password not used */
-    if (credentials && (credentials.token || credentials.apiKey)) {
+    /* Store credentials (in production, you might want to encrypt these). */
+    if (hasCredentialMaterial(credentials)) {
       const credsToStore = {
-        method: credentials.method || defaultAuthMethod.value,
-        token: credentials.token || credentials.apiKey || ''
+        method: normalizeAuthMethod(credentials.method || defaultAuthMethod.value, credentials),
+        token: credentials.token || credentials.apiKey || '',
+        username: credentials.username || '',
+        password: credentials.password || ''
       }
       
       authCredentials[normalizedUrl] = credsToStore
@@ -321,6 +387,7 @@ export function useAuth() {
 
   return {
     getAuthForServer,
+    hasCredentials: hasCredentialMaterial,
     runtimeConfigRevision,
     setAuthForServer,
     loadAuthFromStorage,
