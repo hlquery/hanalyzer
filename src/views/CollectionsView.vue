@@ -1085,8 +1085,8 @@ const itemsPerPageOptions = [10, 25, 50, 100]
 const showItemsPerPageMenu = ref(false)
 const searchResultsPage = ref(1)
 const searchResultsPerPage = ref(10)
-const sortBy = ref([])
-const sortDesc = ref([])
+const sortBy = ref(['num_documents'])
+const sortDesc = ref([true])
 
 // Search result sorting - intuitive options
 const searchSortBy = ref('_relevance')

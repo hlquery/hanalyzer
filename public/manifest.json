@@ -28,14 +28,14 @@
       "name": "Collections",
       "short_name": "Collections",
       "description": "View and manage collections",
-      "url": "./#/collections",
+      "url": "./collections",
       "icons": [{ "src": "logo.png", "sizes": "96x96" }]
     },
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
       "description": "View server dashboard",
-      "url": "./#/dashboard",
+      "url": "./dashboard",
       "icons": [{ "src": "logo.png", "sizes": "96x96" }]
     }
   ]

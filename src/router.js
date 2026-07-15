@@ -1,4 +1,4 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios'
 import { buildApiUrl, shouldUseProxy } from './utils/apiHelpers'
 
@@ -356,7 +356,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory(resolveRouterBase()),
+  history: createWebHistory(resolveRouterBase()),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

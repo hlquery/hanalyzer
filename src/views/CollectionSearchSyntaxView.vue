@@ -193,7 +193,10 @@ const advancedExampleUrl = (query) => {
   })
 
   const queryString = params.toString()
-  return `#/collections/${encodedName}${queryString ? `?${queryString}` : ''}`
+  return router.resolve({
+    path: `/collections/${encodedName}`,
+    query: Object.fromEntries(params)
+  }).href
 }
 
 const advancedSections = computed(() => [

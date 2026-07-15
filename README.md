@@ -119,7 +119,7 @@ $ npm run preview
 Important:
 - Do not open `dist/index.html` with `file://`.
 - Serve the built files over `http://` or `https://`, for example with `npm run preview`.
-- The production build now defaults to relative asset paths plus hash-based routing, so `dist/` can be mounted under `/`, `/hanalyzer/`, or another static subdirectory without extra rewrite rules.
+- The production build uses browser history routing, so static deployments must rewrite application routes such as `/collections` and `/dashboard` back to `index.html`.
 
 > **Note**: hanalyzer runs on port **8080** by default. Ensure this port is available and not blocked by your firewall.
 
