@@ -194,7 +194,8 @@ export function useSearch(baseUrl) {
     maybeResult.value = null
 
     // Validate inputs
-    if (!collectionName || !collectionName.trim()) {
+    const searchAllCollections = options.searchAllCollections === true
+    if (!searchAllCollections && (!collectionName || !collectionName.trim())) {
       error.value = 'Collection name is required for search'
       searchResults.value = []
       searchTime.value = null
@@ -232,17 +233,18 @@ export function useSearch(baseUrl) {
       const useProxy = shouldUseProxy(baseUrlValue)
       
       // Validate collection name
-      if (!collectionName?.trim()) {
+      if (!searchAllCollections && !collectionName?.trim()) {
         throw new Error('Invalid collection name')
       }
       
-      const encodedCollection = encodeURIComponent(collectionName.trim())
+      const encodedCollection = searchAllCollections ? '' : encodeURIComponent(collectionName.trim())
       
       // Use POST method like in tests - more reliable for complex queries
       // Always include query_by when explicitly requested by the caller.
       // Preserve quotes in query for exact phrase search
       
-      const url = buildApiUrl(baseUrlValue, useProxy, `/collections/${encodedCollection}/documents/search`)
+      const searchPath = searchAllCollections ? '/search' : `/collections/${encodedCollection}/documents/search`
+      const url = buildApiUrl(baseUrlValue, useProxy, searchPath)
       const params = {
         limit: limit,
         highlight: true,  // Enable server-side highlighting
@@ -251,6 +253,10 @@ export function useSearch(baseUrl) {
 
       if (modePayload) {
         Object.assign(params, modePayload)
+      }
+
+      if (options.offset !== undefined && options.offset !== null && options.offset !== '') {
+        params.offset = Math.max(0, Number(options.offset) || 0)
       }
 
       const sortBy = normalizeSortBy(options.sortBy)
@@ -404,7 +410,7 @@ export function useSearch(baseUrl) {
       } catch (proxyErr) {
         // If proxy fails, try direct URL as fallback (only if we have a valid baseUrl)
         if (useProxy && proxyErr.response?.status !== 200 && baseUrlValue && !baseUrlValue.includes('localhost:8080')) {
-          const directUrl = buildApiUrl(baseUrlValue, false, `/collections/${encodedCollection}/documents/search`)
+          const directUrl = buildApiUrl(baseUrlValue, false, searchPath)
           try {
             response = await axios.post(directUrl, params, {
               headers: {
@@ -445,6 +451,7 @@ export function useSearch(baseUrl) {
                 title: hit.document.title || hit.document.name,
                 content: hit.document.content || hit.document.description || hit.document.text,
                 ...hit.document,  // Spread document fields (id, title, content, etc.) - this will override above if they exist
+                _collection: hit._collection || hit.collection || hit.document._collection || hit.document.collection,
                 _text_match: displayScore,
                 text_match: textMatch,
                 score: displayScore,
@@ -514,7 +521,10 @@ export function useSearch(baseUrl) {
         
         // Handle 404 - collection not found
         if (status === 404) {
-          error.value = formatSearchErrorMessage(err, `Collection "${collectionName}" not found`)
+          error.value = formatSearchErrorMessage(
+            err,
+            searchAllCollections ? 'No accessible collections were found' : `Collection "${collectionName}" not found`
+          )
           return
         }
         

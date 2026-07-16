@@ -736,7 +736,7 @@
           <div class="document-results-list">
             <div 
               v-for="(doc, index) in paginatedSearchResults" 
-              :key="doc.id || index"
+              :key="`${doc._collection || collectionName}:${doc.id || index}`"
               class="document-result-item"
             >
               <!-- Title on top - CLICKABLE -->
@@ -766,6 +766,7 @@
                   <span class="document-meta-separator">-</span>
                 </span>
                 <span class="doc-name-link document-meta-slug">{{ doc.name || doc.id || 'No name' }}</span>
+                <span v-if="doc._collection" class="document-collection-badge">{{ doc._collection }}</span>
                 <span v-if="showResultScores && getDocumentScore(doc) !== null" class="document-meta-score">Score: {{ formatSearchScore(getDocumentScore(doc)) }}</span>
                 <span v-if="showResultScores && getScoreType(doc)" class="document-score-type-badge">{{ getScoreType(doc) }}</span>
               </router-link>
@@ -3553,11 +3554,12 @@ const handleSearch = async () => {
   
   const options = {}
   const explicitQueryFields = getExplicitQueryFields()
+  const searchAllCollections = advancedSearchPayload.value?.search_all_collections === true
   let effectiveQuery = searchQuery.value || ''
   
   // Add query_by (only if we have a query)
   // Scope presets define how text search is constrained.
-  if (hasQuery) {
+  if (hasQuery && !searchAllCollections) {
     if (searchScopeMode.value === 'custom' && explicitQueryFields.length > 1 && queryByMode.value === 'AND') {
       effectiveQuery = buildFieldScopedQuery(searchQuery.value, explicitQueryFields, 'AND')
     } else if (searchScopeMode.value !== 'all' && explicitQueryFields.length > 0) {
@@ -3595,6 +3597,8 @@ const handleSearch = async () => {
   // Fast default: request only near-page-size results.
   const resultLimit = Math.min(Math.max(Number(itemsPerPage.value) || 20, 10), 40)
   options.highlight = false
+  options.offset = Math.max(0, Number(advancedSearchPayload.value?.offset) || 0)
+  options.searchAllCollections = searchAllCollections
   options.includeMaybe = options.caseSensitive ? false : true
   options.maybeMin = 3
   options.maybeLimit = 1
@@ -3613,7 +3617,7 @@ const handleSearch = async () => {
       suppressRouteQuerySearch.value = false
     })
     // Enforce scoped field behavior in the UI so the results reflect the chosen scope.
-    if (hasQuery && explicitQueryFields.length > 0 && searchScopeMode.value !== 'all') {
+    if (!searchAllCollections && hasQuery && explicitQueryFields.length > 0 && searchScopeMode.value !== 'all') {
       const matcher = buildWildcardMatcher(searchQuery.value)
       if (matcher) {
         searchResults.value = (searchResults.value || []).filter((doc) => {
@@ -4104,7 +4108,8 @@ const navigateToDocument = (docId, event = null) => {
 
 const getDocumentRoute = (doc) => {
   if (!doc || !doc.id) return { name: 'collections' }
-  const encodedName = encodeURIComponent(collectionName.value || '')
+  const sourceCollection = String(doc._collection || doc.collection || collectionName.value || '')
+  const encodedName = encodeURIComponent(sourceCollection)
   const encodedId = encodeURIComponent(String(doc.id))
   return {
     name: 'document-detail',
@@ -7734,6 +7739,22 @@ onUnmounted(() => {
   line-height: 1;
   text-transform: lowercase;
   vertical-align: middle;
+  white-space: nowrap;
+}
+
+.document-collection-badge {
+  display: inline-flex !important;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 7px;
+  margin-left: 5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  background: #eef2f7;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 750;
+  line-height: 1;
   white-space: nowrap;
 }
 

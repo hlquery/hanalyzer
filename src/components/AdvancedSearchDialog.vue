@@ -10,7 +10,7 @@
       <div class="advanced-search-header">
         <div>
           <h2 class="advanced-search-title">Advanced Search</h2>
-          <p class="advanced-search-subtitle">Tune search behavior for this collection.</p>
+          <p class="advanced-search-subtitle">Tune search behavior and optionally search across collections.</p>
         </div>
         <button type="button" class="advanced-search-icon-btn" aria-label="Close advanced search" @click="close">
           <v-icon size="18">mdi-close</v-icon>
@@ -36,6 +36,25 @@
             max="100"
             class="advanced-search-input"
           />
+        </label>
+
+        <label class="advanced-search-field">
+          <span class="advanced-search-label">Offset</span>
+          <input
+            v-model.number="form.offset"
+            type="number"
+            min="0"
+            max="9999"
+            class="advanced-search-input"
+          />
+        </label>
+
+        <label class="advanced-search-check advanced-search-check--boxed">
+          <input v-model="form.searchAllCollections" type="checkbox" />
+          <span>
+            <strong>Search in all collections</strong>
+            <small>Merge and rank results from every accessible collection.</small>
+          </span>
         </label>
 
         <label class="advanced-search-field advanced-search-field--full">
@@ -142,7 +161,9 @@ const form = reactive({
   showScores: false,
   textWeight: 0.4,
   vectorWeight: 0.6,
-  limit: 10
+  limit: 10,
+  offset: 0,
+  searchAllCollections: false
 })
 
 const normalizedTextWeight = computed(() => Number(form.textWeight) || 0)
@@ -161,6 +182,8 @@ const resetForm = () => {
   form.textWeight = 0.4
   form.vectorWeight = 0.6
   form.limit = 10
+  form.offset = 0
+  form.searchAllCollections = false
   vectorError.value = ''
 }
 
@@ -213,6 +236,8 @@ const submit = () => {
     return
   }
 
+  const limit = Math.min(100, Math.max(1, Number(form.limit) || 10))
+  const offset = Math.min(Math.max(0, 10000 - limit), Math.max(0, Number(form.offset) || 0))
   const payload = {
     query: String(form.query || '').trim(),
     mode: form.mode,
@@ -220,7 +245,9 @@ const submit = () => {
     vector_field: String(form.vectorField || 'embedding').trim() || 'embedding',
     distance: form.distance,
     show_scores: form.showScores,
-    limit: Math.max(1, Number(form.limit) || 10)
+    limit,
+    offset,
+    search_all_collections: form.searchAllCollections === true
   }
 
   if (form.mode === 'hybrid') {
@@ -313,9 +340,9 @@ const submit = () => {
 .advanced-search-input,
 .advanced-search-textarea {
   width: 100%;
-  border: 1px solid transparent;
+  border: 1px solid #dbe3ec;
   border-radius: 8px;
-  background: #f8fafc;
+  background: #f1f5f9;
   color: #0f172a;
   font: 500 14px/1.4 Inter, Helvetica, sans-serif;
   outline: none;
@@ -334,8 +361,14 @@ const submit = () => {
 
 .advanced-search-input:focus,
 .advanced-search-textarea:focus {
-  background: #f1f5f9;
+  background: #e9eff6;
+  border-color: #b8c6d8;
   box-shadow: 0 0 0 3px rgba(4, 48, 97, 0.08);
+}
+
+.advanced-search-input::placeholder,
+.advanced-search-textarea::placeholder {
+  color: #7c8da3;
 }
 
 .advanced-search-error {
@@ -367,6 +400,34 @@ const submit = () => {
   margin: 0;
   flex: 0 0 15px;
   accent-color: #043061;
+}
+
+.advanced-search-check--boxed {
+  width: 100%;
+  min-height: 58px;
+  align-self: stretch;
+  padding: 9px 11px;
+  border: 1px solid #dbe3ec;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.advanced-search-check--boxed > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.advanced-search-check--boxed strong {
+  color: #24364b;
+  font-size: 13px;
+}
+
+.advanced-search-check--boxed small {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .advanced-search-weights {
