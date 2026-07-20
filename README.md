@@ -52,9 +52,9 @@ mode, and permissions associated with the current credentials.
 Check the local toolchain and server before starting:
 
 ```bash
-node --version
-npm --version
-curl --fail-with-body http://localhost:9200/health
+$ node --version
+$ npm --version
+$ curl --fail-with-body http://localhost:9200/health
 ```
 
 ## Quick start
@@ -62,18 +62,18 @@ curl --fail-with-body http://localhost:9200/health
 ### From the hlquery source tree
 
 ```bash
-cd etc/hanalyzer
-npm install
-./hanalyzer --open
+$ cd hanalyzer/
+$ npm install
+$ ./hanalyzer --open
 ```
 
 ### From the standalone repository
 
 ```bash
-git clone https://github.com/hlquery/hanalyzer.git
-cd hanalyzer
-npm install
-./hanalyzer --open
+$ git clone https://github.com/hlquery/hanalyzer.git
+$ cd hanalyzer
+$ npm install
+$ ./hanalyzer --open
 ```
 
 The development UI listens on `http://localhost:8080` and proxies `/api` to
@@ -82,7 +82,7 @@ The development UI listens on `http://localhost:8080` and proxies `/api` to
 To use another hlquery server:
 
 ```bash
-./hanalyzer --api http://192.0.2.10:9200 --open
+$ ./hanalyzer --api http://192.0.2.10:9200 --open
 ```
 
 The `--api` value is the server-side Vite proxy target. The browser can keep
@@ -93,7 +93,7 @@ using `/api`, which avoids cross-origin requests during local development.
 The `hanalyzer` wrapper provides consistent defaults for local development:
 
 ```text
-./hanalyzer [command] [options]
+$ ./hanalyzer [command] [options]
 
 Commands:
   start, dev, run     Start the development server (default)
@@ -122,17 +122,17 @@ Examples:
 ./hanalyzer --host 0.0.0.0 --allow-host search-ui.example.test
 
 # Build and inspect the static bundle
-./hanalyzer build
-./hanalyzer preview --host 127.0.0.1
+$ ./hanalyzer build
+$ ./hanalyzer preview --host 127.0.0.1
 ```
 
 You can also use the underlying npm scripts directly:
 
 ```bash
-npm run dev
-npm run build
-npm run build:prod
-npm run preview
+$ npm run dev
+$ npm run build
+$ npm run build:prod
+$ npm run preview
 ```
 
 ## Connect to hlquery
@@ -279,40 +279,6 @@ Review the repository's `nginx.conf` for a fuller starting point. Add TLS,
 network restrictions, authentication, security headers, and proxy timeouts that
 fit your environment.
 
-## Troubleshooting
-
-### The UI reports that hlquery is unavailable
-
-Verify both the API and the development proxy:
-
-```bash
-curl --fail-with-body http://localhost:9200/health
-curl --fail-with-body http://localhost:8080/api/health
-```
-
-If the first works and the second fails, restart hanalyzer with the correct
-`--api` target. If using a static build, configure `/api` in the reverse proxy or
-switch runtime configuration to a direct API URL.
-
-### Authentication loops or repeated 401 responses
-
-- Verify the key or token with `curl`.
-- Confirm that the selected authentication method matches the server.
-- Check that credentials were saved for the same scheme, host, and port shown in
-  the header.
-- Remove stale credentials from the server settings and enter them again.
-
-### Direct API calls fail in the browser but work with curl
-
-This usually indicates a CORS or mixed-content restriction. Use a same-origin
-`/api` reverse proxy, or configure the hlquery-facing proxy to allow the exact UI
-origin. An HTTPS page cannot call a plain HTTP API from the browser.
-
-### Refreshing a nested page returns 404
-
-Configure the static server to fall back to `index.html`, as shown in the Nginx
-example.
-
 ### The port is already in use
 
 ```bash
@@ -321,24 +287,6 @@ example.
 
 Vite may choose another port when strict port selection is disabled; use the URL
 printed in the terminal.
-
-## Project layout
-
-```text
-etc/hanalyzer/
-├── public/                 Runtime configuration and static assets
-├── src/
-│   ├── components/         Shared Vue components
-│   ├── composables/        API and UI state helpers
-│   ├── views/              Routed application screens
-│   ├── App.vue             Application shell and runtime configuration
-│   ├── main.js             Vue startup and HTTP interceptors
-│   └── router.js           Browser routes
-├── hanalyzer               Development/build launcher
-├── hanalyzer.conf.js       Build and development defaults
-├── vite.config.js          Vite build, proxy, and bundle configuration
-└── package.json            Dependencies and npm commands
-```
 
 ## Contributing
 
