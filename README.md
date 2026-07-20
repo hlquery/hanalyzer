@@ -4,177 +4,360 @@
 
 <div align="center">
 
-**A modern dashboard for managing, monitoring, and analyzing hlquery servers.**
+**A browser-based workspace for administering, searching, and observing hlquery.**
 
 [![Follow hlquery](https://img.shields.io/badge/Follow-%40hlquery-blue?logo=x&logoColor=white&labelColor=000000)](https://x.com/hlquery)
-[![hanalyzer build](https://img.shields.io/badge/hanalyzer%20build-passing-brightgreen?logo=google-chrome&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer-api/actions/workflows/ci.yml)
-[![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-blue?logo=github&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer/stargazers)
+[![hanalyzer build](https://img.shields.io/badge/hanalyzer%20build-passing-brightgreen?logo=google-chrome&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer/actions)
+[![hanalyzer](https://img.shields.io/badge/GitHub-hanalyzer-blue?logo=github&logoColor=white&labelColor=000000)](https://github.com/hlquery/hanalyzer)
 [![Demo](https://img.shields.io/badge/Demo-live-0ea5e9?logo=google-chrome&logoColor=white&labelColor=000000)](https://demo.hlquery.com/)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-a35a0f?logo=open-source-initiative&logoColor=white&labelColor=000000)](https://opensource.org/licenses/BSD-3-Clause)
 
-
 </div>
 
-> **Development Status**: hanalyzer is currently in active development and should not be used in production environments. The software may contain bugs, incomplete features, and breaking changes may occur without notice.
+> **Development status:** hanalyzer is under active development. Expect incomplete
+> features and breaking changes. Do not expose an administrative instance to an
+> untrusted network without authentication and an HTTPS reverse proxy.
 
-### What is hanalyzer?
+## What is hanalyzer?
 
-hanalyzer is the browser-based control surface for hlquery. It gives you a visual way to work with collections, documents, search behavior, health data, and operational settings without manually stitching together API calls, JSON payloads, or ad hoc scripts.
+hanalyzer is the web interface for [hlquery](https://github.com/hlquery/hlquery).
+It turns the server's HTTP API into a visual workspace for routine development,
+data inspection, search tuning, access management, and diagnostics.
 
-Instead of treating hlquery like a set of disconnected endpoints, hanalyzer organizes the server into one interface for search operations, collection administration, document inspection, diagnostics, and monitoring.
+It is a Vue application; it does not store or index documents itself. Every data
+operation is sent to the hlquery server selected in the connection settings.
 
-### Why use it?
+## What can it do?
 
-Use hanalyzer when you want hlquery management to feel operational and readable instead of repetitive. It is useful when you need to inspect data quickly, verify behavior during development, watch server health live, or hand a teammate a UI instead of a folder full of `curl` examples.
+| Area | Capabilities |
+| --- | --- |
+| Collections | Create collections, inspect schemas and metadata, browse documents, and copy or delete data |
+| Search | Run collection and global searches, inspect result metadata, test advanced syntax, and use SQL queries |
+| Relevance | Manage collection and global synonyms and stopwords |
+| Routing | Create and inspect aliases and browse cluster links |
+| Access | Inspect and manage users and API keys when the connected credentials permit it |
+| Operations | View server status, profiles, connections, RocksDB statistics, counters, and time-series data |
+| Diagnostics | Exercise API behavior from the tests view and inspect errors returned by the server |
 
-### Quick Start
+Available screens depend on the hlquery version, enabled modules, demo/read-only
+mode, and permissions associated with the current credentials.
 
-Clone the repository normally:
+## Requirements
 
-```bash
-$ git clone https://github.com/hlquery/hanalyzer.git
-$ cd hanalyzer/
-```
+- Node.js **20.19.0 or newer**
+- npm 9 or newer
+- A reachable hlquery server
+- A current Chromium, Firefox, or Safari browser
 
-Install dependencies and start the dashboard:
-
-```bash
-$ npm install
-$ ./hanalyzer
-```
-
-By default, hanalyzer runs on `http://localhost:8080` and connects to hlquery at `http://localhost:9200`.
-
-## Detailed Setup
-
-### Prerequisites
-
-**Node.js and npm:**
-- Node.js 18.0.0 or higher
-- npm 9.0.0 or higher
-
-> **Note**: Make sure your hlquery server is running and accessible. hanalyzer connects to the hlquery API (default: `http://localhost:9200`).
-
-### Installation
+Check the local toolchain and server before starting:
 
 ```bash
-$ npm install
-$ npm run dev
+node --version
+npm --version
+curl --fail-with-body http://localhost:9200/health
 ```
 
-### Configuration
+## Quick start
 
-Static dev/build defaults live in `hanalyzer.conf.js`:
+### From the hlquery source tree
 
-```js
-export default {
-  runtime: {
-    defaultBaseUrl: 'http://localhost:9200',
-    // Example fallback token if the UI has nothing saved yet.
-    defaultAuthToken: '',
-    // Optional fallback HTTP Basic credentials if no token is saved.
-    defaultAuthUsername: '',
-    defaultAuthPassword: '',
-    defaultAuthMethod: 'bearer'
-  },
-  server: {
-    port: 8080,
-    host: 'localhost',
-    allowedHosts: ['demo.hlquery.com'],
-    apiTarget: 'http://localhost:9200',
-    baseUrl: './'
-  }
+```bash
+cd etc/hanalyzer
+npm install
+./hanalyzer --open
+```
+
+### From the standalone repository
+
+```bash
+git clone https://github.com/hlquery/hanalyzer.git
+cd hanalyzer
+npm install
+./hanalyzer --open
+```
+
+The development UI listens on `http://localhost:8080` and proxies `/api` to
+`http://localhost:9200` by default.
+
+To use another hlquery server:
+
+```bash
+./hanalyzer --api http://192.0.2.10:9200 --open
+```
+
+The `--api` value is the server-side Vite proxy target. The browser can keep
+using `/api`, which avoids cross-origin requests during local development.
+
+## Launcher reference
+
+The `hanalyzer` wrapper provides consistent defaults for local development:
+
+```text
+./hanalyzer [command] [options]
+
+Commands:
+  start, dev, run     Start the development server (default)
+  install             Install npm dependencies
+  build               Create dist/
+  preview             Serve dist/ locally
+
+Options:
+  --port, -p PORT     UI port (default: 8080)
+  --host, -H HOST     UI listen host (default: 0.0.0.0)
+  --allow-host HOSTS  Comma-separated Vite host allowlist
+  --api, -a URL       hlquery proxy target (default: http://localhost:9200)
+  --open, -o          Open the browser
+```
+
+Examples:
+
+```bash
+# Listen only on the local interface
+./hanalyzer --host 127.0.0.1
+
+# Use a different UI port and API server
+./hanalyzer --port 3000 --api http://127.0.0.1:9300
+
+# Accept a named development host
+./hanalyzer --host 0.0.0.0 --allow-host search-ui.example.test
+
+# Build and inspect the static bundle
+./hanalyzer build
+./hanalyzer preview --host 127.0.0.1
+```
+
+You can also use the underlying npm scripts directly:
+
+```bash
+npm run dev
+npm run build
+npm run build:prod
+npm run preview
+```
+
+## Connect to hlquery
+
+Open the server menu in the header to change the API URL and authentication
+method. hanalyzer supports:
+
+- Bearer tokens: `Authorization: Bearer <token>`
+- API keys: `X-API-Key: <token>`
+- HTTP Basic authentication
+
+Credentials entered in the UI are associated with the normalized server URL and
+may be saved in browser storage. Do not use shared browser profiles for
+administrative credentials. For a public deployment, prefer short-lived or
+least-privileged credentials and serve the UI over HTTPS.
+
+The quickest authentication check outside the UI is:
+
+```bash
+curl --fail-with-body \
+  -H "X-API-Key: $HLQUERY_API_KEY" \
+  http://localhost:9200/collections
+```
+
+If that request fails, correct the server configuration or key permissions before
+debugging hanalyzer.
+
+## Configuration model
+
+hanalyzer has two configuration layers. They solve different problems:
+
+| Layer | File | Used for |
+| --- | --- | --- |
+| Build/development | `hanalyzer.conf.js` | Vite host, port, proxy target, asset base, and development defaults |
+| Runtime/deployment | `public/hanalyzer.config.json` | API URL, proxy selection, and fallback authentication without rebuilding the bundle |
+
+Environment variables override the server portion of `hanalyzer.conf.js`:
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `HANALYZER_PORT` | Development server port | `8080` |
+| `HANALYZER_PREVIEW_PORT` | Preview server port | configured server port |
+| `HANALYZER_HOST` | Development and preview listen host | `localhost` in the config file |
+| `HANALYZER_ALLOWED_HOSTS` | Comma-separated hostnames, `true`, or `*` | derived from configuration |
+| `HANALYZER_API_TARGET` | `/api` proxy destination in development | `http://localhost:9200` |
+| `HANALYZER_BASE_URL` | Production asset base | `./` |
+
+The launcher exports these variables from its command-line options for `start`
+and `preview`.
+
+### Runtime configuration
+
+Copy the example and edit the copy:
+
+```bash
+cp public/hanalyzer.config.json.example public/hanalyzer.config.json
+```
+
+Direct browser connection:
+
+```json
+{
+  "defaultBaseUrl": "https://search-api.example.com",
+  "useProxy": false,
+  "defaultAuthToken": "",
+  "defaultAuthMethod": "api-key"
 }
 ```
 
-### Running hanalyzer
+Same-origin reverse proxy:
 
-**Using the hanalyzer CLI (Recommended):**
+```json
+{
+  "defaultBaseUrl": "/api",
+  "useProxy": true,
+  "defaultAuthToken": "",
+  "defaultAuthMethod": "bearer"
+}
+```
+
+Supported `defaultAuthMethod` values are `bearer`, `api-key`, and `basic`.
+Fallback credentials can also be set per server with `defaultAuthByServer`; see
+the commented example in `hanalyzer.conf.js` for its shape.
+
+Do not commit real tokens or passwords to either configuration file. Runtime
+configuration is downloaded by every browser that opens the application and is
+therefore not a secret store.
+
+## Development connection flow
+
+The default local request path is:
+
+```text
+browser → http://localhost:8080/api/* → Vite proxy → http://localhost:9200/*
+```
+
+This proxy exists only in the Vite development server. A static `dist/` deployment
+must either:
+
+1. connect directly to an API that allows the UI origin through CORS; or
+2. configure its web server to proxy `/api` to hlquery.
+
+## Production build and deployment
+
+Create an optimized bundle:
 
 ```bash
-$ ./hanalyzer
+npm ci
+npm run build:prod
 ```
 
-Or with custom options:
+The output is written to `dist/`. Do not open `dist/index.html` with `file://`;
+serve it over HTTP or HTTPS.
+
+A minimal Nginx layout looks like this:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name search-admin.example.com;
+
+    root /srv/hanalyzer/dist;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:9200/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+The `try_files` fallback is required because hanalyzer uses browser history
+routing. Routes such as `/collections`, `/dashboard`, and `/status` must return
+`index.html` instead of a web-server 404.
+
+Review the repository's `nginx.conf` for a fuller starting point. Add TLS,
+network restrictions, authentication, security headers, and proxy timeouts that
+fit your environment.
+
+## Troubleshooting
+
+### The UI reports that hlquery is unavailable
+
+Verify both the API and the development proxy:
 
 ```bash
-$ ./hanalyzer --port 3000
-$ ./hanalyzer --api http://your-server:9200
-$ ./hanalyzer --open  # Automatically open browser
+curl --fail-with-body http://localhost:9200/health
+curl --fail-with-body http://localhost:8080/api/health
 ```
 
-**Using npm scripts:**
+If the first works and the second fails, restart hanalyzer with the correct
+`--api` target. If using a static build, configure `/api` in the reverse proxy or
+switch runtime configuration to a direct API URL.
+
+### Authentication loops or repeated 401 responses
+
+- Verify the key or token with `curl`.
+- Confirm that the selected authentication method matches the server.
+- Check that credentials were saved for the same scheme, host, and port shown in
+  the header.
+- Remove stale credentials from the server settings and enter them again.
+
+### Direct API calls fail in the browser but work with curl
+
+This usually indicates a CORS or mixed-content restriction. Use a same-origin
+`/api` reverse proxy, or configure the hlquery-facing proxy to allow the exact UI
+origin. An HTTPS page cannot call a plain HTTP API from the browser.
+
+### Refreshing a nested page returns 404
+
+Configure the static server to fall back to `index.html`, as shown in the Nginx
+example.
+
+### The port is already in use
 
 ```bash
-# Development server
-$ npm run dev
-
-# Production build
-$ npm run build
-
-# Preview production build
-$ npm run preview
+./hanalyzer --port 8081
 ```
 
-Important:
-- Do not open `dist/index.html` with `file://`.
-- Serve the built files over `http://` or `https://`, for example with `npm run preview`.
-- The production build uses browser history routing, so static deployments must rewrite application routes such as `/collections` and `/dashboard` back to `index.html`.
+Vite may choose another port when strict port selection is disabled; use the URL
+printed in the terminal.
 
-> **Note**: hanalyzer runs on port **8080** by default. Ensure this port is available and not blocked by your firewall.
+## Project layout
 
-## Getting Started
-
-### 1. Start hlquery Server
-
-Make sure your hlquery server is running:
-
-```bash
-$ ./run/hlquery start
+```text
+etc/hanalyzer/
+├── public/                 Runtime configuration and static assets
+├── src/
+│   ├── components/         Shared Vue components
+│   ├── composables/        API and UI state helpers
+│   ├── views/              Routed application screens
+│   ├── App.vue             Application shell and runtime configuration
+│   ├── main.js             Vue startup and HTTP interceptors
+│   └── router.js           Browser routes
+├── hanalyzer               Development/build launcher
+├── hanalyzer.conf.js       Build and development defaults
+├── vite.config.js          Vite build, proxy, and bundle configuration
+└── package.json            Dependencies and npm commands
 ```
 
-Verify it's accessible:
+## Contributing
 
-```bash
-$ curl http://localhost:9200/health
-```
+1. Create a focused branch.
+2. Install dependencies with `npm ci`.
+3. Run `npm run build` before submitting changes.
+4. Test the affected screen against a current local hlquery server.
+5. Include reproduction steps for API or browser-specific bugs.
 
-### 2. Start hanalyzer
+Please report hanalyzer issues in
+[hlquery/hanalyzer](https://github.com/hlquery/hanalyzer/issues). Changes to the
+server API belong in [hlquery/hlquery](https://github.com/hlquery/hlquery).
 
-```bash
-$ cd hanalyzer/
-$ ./hanalyzer
-```
+## Community and license
 
-### 3. Access the Dashboard
+- [Documentation](https://docs.hlquery.com/)
+- [hanalyzer repository](https://github.com/hlquery/hanalyzer)
+- [hlquery repository](https://github.com/hlquery/hlquery)
+- [X / Twitter](https://x.com/hlquery)
 
-Open your browser and navigate to:
-
-```
-http://localhost:8080
-```
-
-You should see the hanalyzer dashboard with connection status to your hlquery server.
-
-### Contributing
-
-We welcome contributions from the community! All contributions must be released under the BSD 3-Clause license.
-
-### How to Contribute
-
-- Check existing [hanalyzer issues](https://github.com/hlquery/hanalyzer/issues) or create new ones
-- Contribute dashboard changes to [hlquery/hanalyzer](https://github.com/hlquery/hanalyzer)
-- Contribute shared server/API changes to [hlquery/hlquery](https://github.com/hlquery/hlquery)
-- Test and report UI, integration, and API compatibility bugs
-- Improve hanalyzer documentation and examples
-
-### Community
-
-- [Documentation](https://docs.hlquery.com)
-- [X (Twitter)](https://x.com/hlquery)
-- [hanalyzer GitHub](https://github.com/hlquery/hanalyzer)
-- [hlquery GitHub](https://github.com/hlquery/hlquery)
-
-### License
-
-hanalyzer is licensed under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
+hanalyzer is available under the
+[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
