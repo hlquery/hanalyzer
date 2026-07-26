@@ -15,64 +15,10 @@
         </div>
       </div>
       <div class="sql-header-actions">
-        <v-menu
-          v-model="helpMenuOpen"
-          location="bottom end"
-          :close-on-content-click="false"
-          max-width="520"
-        >
-          <template #activator="{ props }">
-            <button
-              v-bind="props"
-              type="button"
-              class="sql-help-btn"
-              aria-label="Open SQL help examples"
-            >
-              <v-icon icon="mdi-help-circle-outline" size="18" aria-hidden="true" />
-              <span>Help</span>
-            </button>
-          </template>
-
-          <div class="sql-help-menu">
-            <div class="sql-help-menu-header">
-              <div class="sql-help-title">SQL Examples</div>
-              <button
-                type="button"
-                class="sql-help-close"
-                aria-label="Close SQL help"
-                @click="helpMenuOpen = false"
-              >
-                <v-icon icon="mdi-close" size="18" aria-hidden="true" />
-              </button>
-            </div>
-
-            <div class="sql-help-example-list">
-              <button
-                v-for="example in sqlExamples"
-                :key="example.sql"
-                type="button"
-                class="sql-help-example"
-                :class="{ 'sql-help-example--active': isExampleActive(example.sql) }"
-                @click="applyExample(example.sql)"
-              >
-                <span class="sql-help-example-title">{{ example.title }}</span>
-                <span class="sql-help-example-copy">{{ example.copy }}</span>
-                <code class="sql-help-example-code">{{ example.sql }}</code>
-              </button>
-            </div>
-
-            <div class="sql-help-footer">
-              <button
-                type="button"
-                class="sql-help-run"
-                :disabled="loading || !query.trim()"
-                @click="runHelpQuery"
-              >
-                Run current SQL
-              </button>
-            </div>
-          </div>
-        </v-menu>
+        <router-link to="/sql/help" class="sql-help-btn" aria-label="Open SQL help">
+          <v-icon icon="mdi-help-circle-outline" size="18" aria-hidden="true" />
+          <span>Help</span>
+        </router-link>
       </div>
     </div>
 
@@ -234,7 +180,6 @@ const query = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const queryInfo = ref(null)
-const helpMenuOpen = ref(false)
 const rows = ref([])
 const columns = ref([])
 const totalRows = ref(0)
@@ -534,11 +479,6 @@ const clearQuery = () => {
 
 const applyExample = (sql) => {
   query.value = sql
-}
-
-const runHelpQuery = async () => {
-  helpMenuOpen.value = false
-  await runQuery(1)
 }
 
 onMounted(async () => {

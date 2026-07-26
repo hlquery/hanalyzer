@@ -228,10 +228,11 @@
 import { ref, inject, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, getDemoModeErrorMessage } from '../utils/apiHelpers'
 
 const router = useRouter()
 const baseUrl = inject('baseUrl')
+const toast = inject('toast', { error: () => {} })
 
 const newCollectionName = ref('')
 // Initialize with one default field automatically
@@ -444,6 +445,12 @@ const createCollection = async () => {
         }
       }, 1500)
     } else {
+      const demoModeMessage = getDemoModeErrorMessage({ response })
+      if (demoModeMessage) {
+        toast.error(demoModeMessage, 'Action unavailable')
+        return
+      }
+
       let errorMsg = 'Unknown error occurred'
       
       // Try to extract meaningful error message
@@ -472,6 +479,12 @@ const createCollection = async () => {
       })
     }
   } catch (err) {
+    const demoModeMessage = getDemoModeErrorMessage(err)
+    if (demoModeMessage) {
+      toast.error(demoModeMessage, 'Action unavailable')
+      return
+    }
+
     let errorMsg = 'An unexpected error occurred'
     
     if (err.response) {

@@ -203,6 +203,15 @@ const routes = [
     }
   },
   {
+    path: '/sql/help',
+    name: 'sql-help',
+    component: () => import('./views/SqlHelpView.vue'),
+    meta: {
+      title: 'SQL Help',
+      icon: 'mdi-help-circle-outline'
+    }
+  },
+  {
     path: '/sql',
     name: 'sql',
     component: () => import('./views/SqlView.vue'),
