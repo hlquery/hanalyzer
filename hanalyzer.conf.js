@@ -41,7 +41,11 @@ const config = {
     // Host/IP allowlist used only when defaultAuthUsername and defaultAuthPassword are set.
     allowedHosts: ['demo.hlquery.com', 'localhost'],
     apiTarget: 'http://localhost:9200',
-    baseUrl: './',
+    // Browser-history routes require a root-relative asset base so a direct
+    // reload on /collections/... resolves assets from /assets, not from the
+    // current route directory. Use an explicit path such as /hanalyzer/ when
+    // deploying below a subdirectory.
+    baseUrl: '/',
     open: true
   },
   build: {

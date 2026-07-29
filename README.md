@@ -178,10 +178,16 @@ Environment variables override the server portion of `hanalyzer.conf.js`:
 | `HANALYZER_HOST` | Development and preview listen host | `localhost` in the config file |
 | `HANALYZER_ALLOWED_HOSTS` | Comma-separated hostnames, `true`, or `*` | derived from configuration |
 | `HANALYZER_API_TARGET` | `/api` proxy destination in development | `http://localhost:9200` |
-| `HANALYZER_BASE_URL` | Production asset base | `./` |
+| `HANALYZER_BASE_URL` | Production asset and router base | `/` |
 
 The launcher exports these variables from its command-line options for `start`
 and `preview`.
+
+`HANALYZER_BASE_URL` must be a stable root-relative path. Keep `/` when
+hanalyzer is served from the domain root, or use a trailing-slash path such as
+`/hanalyzer/` for a subdirectory deployment. Relative values such as `./` are
+normalized to `/` because they resolve below the current browser-history route
+and break direct reloads of pages such as `/collections/.../documents/...`.
 
 ### Runtime configuration
 

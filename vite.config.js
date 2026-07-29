@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
     const normalized = typeof value === 'string' ? value.trim() : ''
     const base = normalized || fallback
     if (base === './' || base === '../') {
-      return base
+      return '/'
     }
     if (!base) {
       return fallback
@@ -85,7 +85,7 @@ export default defineConfig(({ mode }) => {
   }
 
   const resolvedBaseUrl = isProduction
-    ? normalizeBaseUrl(appConfig.server.baseUrl, './')
+    ? normalizeBaseUrl(appConfig.server.baseUrl, '/')
     : '/'
   
   return {

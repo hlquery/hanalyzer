@@ -692,7 +692,7 @@ onMounted(async () => {
   padding-top: 4px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 760px) {
   .document-header {
     flex-direction: column;
     align-items: stretch;
@@ -810,12 +810,17 @@ onMounted(async () => {
   justify-content: center !important;
   text-align: center !important;
   position: relative !important;
-  transition: background 0.15s ease, color 0.15s ease !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   gap: 6px !important;
-  background: linear-gradient(to right, transparent 0 14px, #dc2626 14px 100%) !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important;
+  background-color: #dc2626 !important;
+  box-shadow:
+    0 4px 8px rgba(220, 38, 38, 0.4),
+    0 2px 4px rgba(220, 38, 38, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+  transform: perspective(1000px) translateZ(0) !important;
 }
 
 .delete-action-btn::before {
@@ -823,10 +828,15 @@ onMounted(async () => {
 }
 
 .delete-action-btn:hover {
-  background: linear-gradient(to right, transparent 0 14px, #b91c1c 14px 100%) !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%) !important;
+  background-color: #b91c1c !important;
+  box-shadow:
+    0 4px 8px rgba(220, 38, 38, 0.4),
+    0 2px 4px rgba(220, 38, 38, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+  transform: perspective(1000px) translateZ(0) !important;
   color: #ffffff !important;
 }
 
@@ -835,10 +845,14 @@ onMounted(async () => {
 }
 
 .delete-action-btn:active {
-  background: linear-gradient(to right, transparent 0 14px, #991b1b 14px 100%) !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  transform: none !important;
+  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #6b1a1a 100%) !important;
+  background-color: #991b1b !important;
+  box-shadow:
+    0 2px 4px rgba(220, 38, 38, 0.4),
+    0 1px 2px rgba(220, 38, 38, 0.3),
+    0 1px 1px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+  transform: perspective(1000px) translateY(0) translateZ(0) !important;
 }
 
 .delete-action-btn:active::before {
