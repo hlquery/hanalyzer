@@ -800,9 +800,8 @@
           </div>
         </div>
 
-        <!-- FORCE RENDER: Always show, bypass all conditions - MOVED TO TOP -->
-        <!-- All Documents (when no search) -->
-        <div v-if="!searchPerformed && documents.length === 0 && !loading" class="empty-state-container">
+        <!-- Empty collection state (only after the initial request settles) -->
+        <div v-if="hasHandledInitialMount && !searchPerformed && documents.length === 0 && !loading" class="empty-state-container">
           <div class="text-center pa-8">
             <div class="text-h6 text-grey-darken-1">No documents here</div>
           </div>
@@ -3212,7 +3211,7 @@ const buildFilterString = () => {
 const searchDebounceTimer = ref(null)
 const suppressRouteQuerySearch = ref(false)
 const showSearchSpinner = computed(() => searchLoading.value || searchInputPending.value)
-const showPageSpinner = computed(() => loading.value || showSearchSpinner.value)
+const showPageSpinner = computed(() => !hasHandledInitialMount.value || loading.value || showSearchSpinner.value)
 const filteredMaybeSuggestions = computed(() => {
   const suggestions = Array.isArray(maybeResult.value?.suggestions) ? maybeResult.value.suggestions : []
 

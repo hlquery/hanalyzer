@@ -33,7 +33,7 @@
           size="small"
           @click="viewMode = 'table'"
           prepend-icon="mdi-view-list"
-          class="collections-action-btn"
+          class="document-action-btn"
           :class="{ 'view-mode-btn-active': viewMode === 'table' }"
         >
           Fields
@@ -43,7 +43,7 @@
           size="small"
           @click="viewMode = 'json'"
           prepend-icon="mdi-code-json"
-          class="collections-action-btn"
+          class="document-action-btn"
           :class="{ 'view-mode-btn-active': viewMode === 'json' }"
         >
           JSON
@@ -53,7 +53,7 @@
           size="small"
           @click="confirmDelete"
           prepend-icon="mdi-delete"
-          class="delete-action-btn"
+          class="document-action-btn document-action-btn--delete"
         >
           Delete
         </v-btn>
@@ -689,7 +689,8 @@ onMounted(async () => {
   gap: 12px;
   flex-shrink: 0;
   align-items: center;
-  padding-top: 4px;
+  padding: 4px 2px 6px;
+  overflow: visible;
 }
 
 @media (max-width: 760px) {
@@ -779,30 +780,30 @@ onMounted(async () => {
     padding-top: 0;
   }
 
-  .document-header-actions .collections-action-btn,
-  .document-header-actions .delete-action-btn {
-    flex: 0 1 auto !important;
-    width: auto !important;
-    min-width: 0 !important;
-  }
-
-  .document-header-actions .collections-action-btn :deep(.v-btn__content),
-  .document-header-actions .delete-action-btn :deep(.v-btn__content) {
-    white-space: nowrap !important;
+  .document-header-actions .document-action-btn.v-btn {
+    flex: 0 0 108px !important;
   }
 }
 
-/* Delete Action Button */
-.delete-action-btn {
-  border-radius: 6px !important;
+/* Document header actions */
+.document-action-btn.v-btn {
+  flex: 0 0 108px !important;
+  box-sizing: border-box !important;
+  width: 108px !important;
+  min-width: 108px !important;
+  max-width: 108px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  max-height: 34px !important;
+  padding: 0 12px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 8px !important;
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
   font-size: 13px !important;
-  line-height: 32px !important;
-  height: 32px !important;
-  padding: 0 14px !important;
+  line-height: 1 !important;
   text-transform: none !important;
-  border: none !important;
   letter-spacing: normal !important;
   color: #ffffff !important;
   display: inline-flex !important;
@@ -810,104 +811,99 @@ onMounted(async () => {
   justify-content: center !important;
   text-align: center !important;
   position: relative !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  gap: 6px !important;
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%) !important;
-  background-color: #dc2626 !important;
+  vertical-align: middle !important;
+  transform: none !important;
+  transition: background 0.2s ease, box-shadow 0.2s ease !important;
+  background: linear-gradient(135deg, #043061 0%, #032a4f 100%) !important;
+  background-color: #043061 !important;
   box-shadow:
-    0 4px 8px rgba(220, 38, 38, 0.4),
-    0 2px 4px rgba(220, 38, 38, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  transform: perspective(1000px) translateZ(0) !important;
+    0 4px 8px rgba(4, 48, 97, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
 
-.delete-action-btn::before {
+.document-action-btn::before {
   display: none !important;
 }
 
-.delete-action-btn:hover {
-  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%) !important;
-  background-color: #b91c1c !important;
-  box-shadow:
-    0 4px 8px rgba(220, 38, 38, 0.4),
-    0 2px 4px rgba(220, 38, 38, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  transform: perspective(1000px) translateZ(0) !important;
+.document-action-btn:hover,
+.document-action-btn:focus-visible {
+  background: linear-gradient(135deg, #06427e 0%, #043061 100%) !important;
+  background-color: #06427e !important;
+  box-shadow: 0 6px 12px rgba(4, 48, 97, 0.3) !important;
+  transform: none !important;
   color: #ffffff !important;
 }
 
-.delete-action-btn:hover::before {
-  display: none !important;
+.document-action-btn:active {
+  background: linear-gradient(135deg, #032a4f 0%, #021d3a 100%) !important;
+  background-color: #032a4f !important;
+  box-shadow: 0 2px 5px rgba(4, 48, 97, 0.28) !important;
+  transform: none !important;
 }
 
-.delete-action-btn:active {
-  background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 50%, #6b1a1a 100%) !important;
-  background-color: #991b1b !important;
-  box-shadow:
-    0 2px 4px rgba(220, 38, 38, 0.4),
-    0 1px 2px rgba(220, 38, 38, 0.3),
-    0 1px 1px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-  transform: perspective(1000px) translateY(0) translateZ(0) !important;
-}
-
-.delete-action-btn:active::before {
-  display: none !important;
-}
-
-.delete-action-btn :deep(.v-btn__content) {
-  color: inherit !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 6px !important;
-}
-
-.delete-action-btn :deep(.v-icon) {
-  color: inherit !important;
+.document-action-btn :deep(.v-btn__content) {
   display: inline-flex !important;
   width: auto !important;
-  min-width: auto !important;
-  margin: 0 !important;
+  height: 100% !important;
+  align-items: center !important;
+  justify-content: center !important;
   padding: 0 !important;
+  overflow: visible !important;
+  color: #ffffff !important;
+  font: inherit !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
-.delete-action-btn :deep(.v-btn__overlay) {
+.document-action-btn :deep(.v-btn__overlay) {
   display: none !important;
 }
 
-.delete-action-btn :deep(.v-btn__wrapper) {
-  padding: 0 !important;
+.document-action-btn :deep(.v-btn__prepend),
+.document-action-btn :deep(.v-btn__prepend-inner) {
+  display: inline-flex !important;
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  margin: 0 6px 0 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.document-action-btn :deep(.v-btn__prepend .v-icon),
+.document-action-btn :deep(.v-btn__prepend-inner .v-icon) {
+  display: block !important;
+  flex: 0 0 16px !important;
+  width: 16px !important;
+  min-width: 16px !important;
+  height: 16px !important;
   margin: 0 !important;
-  width: 100% !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+  color: #ffffff !important;
+  font-size: 16px !important;
+  line-height: 16px !important;
+  transform: none !important;
 }
 
-.delete-btn-centered {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
+.document-action-btn--delete.v-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  background-color: #dc2626 !important;
+  box-shadow:
+    0 4px 8px rgba(220, 38, 38, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
 
-.delete-btn-centered :deep(.v-btn__content) {
-  justify-content: center !important;
-  align-items: center !important;
-  width: 100% !important;
-  display: flex !important;
-  gap: 6px !important;
+.document-action-btn--delete:hover,
+.document-action-btn--delete:focus-visible {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  background-color: #dc2626 !important;
+  box-shadow: 0 6px 12px rgba(220, 38, 38, 0.3) !important;
 }
 
-.delete-action-btn.delete-btn-centered :deep(.v-btn__content) {
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 6px !important;
+.document-action-btn--delete:active {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%) !important;
+  background-color: #b91c1c !important;
+  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.28) !important;
 }
 
 /* Document Card */
@@ -919,127 +915,10 @@ onMounted(async () => {
   background: #ffffff !important;
 }
 
-/* View Mode Buttons - Consistent with Delete */
-/* Collections action buttons style - Same as CollectionDocumentsView */
-.collections-action-btn {
-  border-radius: 6px !important;
-  font-family: Inter, Helvetica, sans-serif !important;
-  font-weight: 600 !important;
-  font-size: 13px !important;
-  line-height: 32px !important;
-  height: 32px !important;
-  padding: 0 14px !important;
-  text-transform: none !important;
-  border: none !important;
-  letter-spacing: normal !important;
-  color: #ffffff !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  position: relative !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  gap: 0 !important;
-  
-  /* 3D gradient background with #043061 */
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
-  
-  /* Multi-layer 3D shadow effect - raised appearance */
-  box-shadow: 
-    0 4px 8px rgba(4, 48, 97, 0.4),
-    0 2px 4px rgba(4, 48, 97, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  
-  /* Slight 3D transform */
-  transform: perspective(1000px) translateZ(0) !important;
-}
-
-.collections-action-btn::before {
-  content: '' !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  border-radius: 6px !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%) !important;
-  pointer-events: none !important;
-  opacity: 1 !important;
-  transition: opacity 0.3s ease !important;
-}
-
-.collections-action-btn:hover {
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
-  box-shadow: 
-    0 4px 8px rgba(4, 48, 97, 0.4),
-    0 2px 4px rgba(4, 48, 97, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
-  transform: perspective(1000px) translateZ(0) !important;
-  color: #ffffff !important;
-}
-
-.collections-action-btn:hover::before {
-  opacity: 1 !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%) !important;
-}
-
-.collections-action-btn:hover :deep(.v-btn__content) {
-  text-decoration: underline !important;
-}
-
-.collections-action-btn:active {
-  background: linear-gradient(135deg, #032a4f 0%, #021d3a 50%, #011528 100%) !important;
-  transform: perspective(1000px) translateY(0) translateZ(0) !important;
-  box-shadow: 
-    0 2px 4px rgba(4, 48, 97, 0.4),
-    0 1px 2px rgba(4, 48, 97, 0.3),
-    0 1px 1px rgba(0, 0, 0, 0.2),
-    inset 0 2px 4px rgba(0, 0, 0, 0.3) !important;
-}
-
-.collections-action-btn:active::before {
-  opacity: 0.5 !important;
-}
-
-.collections-action-btn :deep(.v-btn__content) {
-  position: relative !important;
-  z-index: 1 !important;
-  color: #ffffff !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.collections-action-btn :deep(.v-btn__prepend),
-.collections-action-btn :deep(.v-btn__prepend-inner) {
-  display: flex !important;
-  align-items: center !important;
-  width: auto !important;
-  min-width: auto !important;
-  margin: 0 !important;
-  margin-right: 6px !important;
-}
-
-.collections-action-btn :deep(.v-btn__prepend .v-icon),
-.collections-action-btn :deep(.v-btn__prepend-inner .v-icon) {
-  display: inline-flex !important;
-  color: #ffffff !important;
-  opacity: 1 !important;
-  font-size: 18px !important;
-}
-
 .view-mode-btn-active {
-  background: linear-gradient(135deg, #043061 0%, #032a4f 50%, #021d3a 100%) !important;
-  box-shadow: 
-    0 4px 8px rgba(4, 48, 97, 0.4),
-    0 2px 4px rgba(4, 48, 97, 0.3),
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.2) !important;
+  box-shadow:
+    0 4px 8px rgba(4, 48, 97, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42) !important;
 }
 
 /* Fields Table - 2 Column Layout */

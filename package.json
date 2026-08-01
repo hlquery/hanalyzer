@@ -31,7 +31,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "test": "npm run build",
+    "test": "npm run build:prod && node test/deep-link-assets.test.mjs",
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "preview": "vite preview",
