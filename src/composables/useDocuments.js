@@ -7,11 +7,20 @@ export function useDocuments(baseUrl) {
   const loading = ref(false)
   const error = ref(null)
   const total = ref(0)
+  let latestLoadRequestId = 0
+  let activeLoadController = null
 
   const loadDocuments = async (collectionName, options = {}) => {
+    const requestId = ++latestLoadRequestId
+    activeLoadController?.abort()
+    activeLoadController = new AbortController()
+    const { signal } = activeLoadController
+
     if (!collectionName) {
       documents.value = []
       total.value = 0
+      error.value = null
+      loading.value = false
       return
     }
     
@@ -19,6 +28,8 @@ export function useDocuments(baseUrl) {
     if (!baseUrlValue) {
       error.value = 'Invalid server URL configuration'
       documents.value = []
+      total.value = 0
+      loading.value = false
       return
     }
     
@@ -49,7 +60,9 @@ export function useDocuments(baseUrl) {
           params.sort_by = sortBy
         }
 
-        const response = await axios.get(url, { params })
+        const response = await axios.get(url, { params, signal })
+
+        if (requestId !== latestLoadRequestId) return
 
         if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
           documents.value = response.data.documents
@@ -68,6 +81,7 @@ export function useDocuments(baseUrl) {
       const allDocuments = []
       let offset = 0
       let hasMore = true
+      let fetchedTotal = null
 
       while (hasMore) {
         const params = {
@@ -80,18 +94,21 @@ export function useDocuments(baseUrl) {
           params.sort_by = sortBy
         }
 
-        const response = await axios.get(url, { params })
+        const response = await axios.get(url, { params, signal })
+
+        if (requestId !== latestLoadRequestId) return
 
         if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
-          if (total.value === 0 && response.data.total !== undefined) {
-            total.value = response.data.total
+          if (response.data.total !== undefined) {
+            const responseTotal = Number(response.data.total)
+            fetchedTotal = Number.isFinite(responseTotal) ? responseTotal : fetchedTotal
           }
 
           allDocuments.push(...response.data.documents)
 
           if (response.data.documents.length < pageLimit) {
             hasMore = false
-          } else if (total.value > 0 && allDocuments.length >= total.value) {
+          } else if (fetchedTotal !== null && allDocuments.length >= fetchedTotal) {
             hasMore = false
           } else {
             offset += pageLimit
@@ -104,10 +121,17 @@ export function useDocuments(baseUrl) {
         }
       }
 
+      if (requestId !== latestLoadRequestId) return
+
       documents.value = allDocuments
+      total.value = fetchedTotal ?? allDocuments.length
       await new Promise(resolve => setTimeout(resolve, 0))
       
     } catch (err) {
+      if (requestId !== latestLoadRequestId || axios.isCancel(err)) {
+        return
+      }
+
       if (err.response?.status === 404) {
         error.value = `Collection "${collectionName}" not found`
         documents.value = []
@@ -118,7 +142,10 @@ export function useDocuments(baseUrl) {
         total.value = 0
       }
     } finally {
-      loading.value = false
+      if (requestId === latestLoadRequestId) {
+        loading.value = false
+        activeLoadController = null
+      }
     }
   }
 

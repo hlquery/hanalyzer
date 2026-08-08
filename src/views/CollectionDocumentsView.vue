@@ -801,7 +801,7 @@
         </div>
 
         <!-- Empty collection state (only after the initial request settles) -->
-        <div v-if="hasHandledInitialMount && !searchPerformed && documents.length === 0 && !loading" class="empty-state-container">
+        <div v-if="hasHandledInitialMount && !searchPerformed && documents.length === 0 && !loading && !error" class="empty-state-container">
           <div class="text-center pa-8">
             <div class="text-h6 text-grey-darken-1">No documents here</div>
           </div>
@@ -1714,7 +1714,6 @@ const expandedRows = ref([])
 const itemsPerPageOptions = [10, 25, 50, 100]
 const collectionSchema = ref(null)
 const hasHandledInitialMount = ref(false)
-const isLoadingDocuments = ref(false)
 const simpleSearchModes = [
   { label: 'Text', value: 'text' },
   { label: 'Vector', value: 'vector' },
@@ -3266,15 +3265,11 @@ const handleSearchInput = () => {
     // the initial mount skips loading the default documents list. When the user clears
     // the search, explicitly reload the unqueried documents view.
     const nameToLoad = collectionName.value
-    if (nameToLoad && nameToLoad.trim() && !isLoadingDocuments.value) {
-      isLoadingDocuments.value = true
+    if (nameToLoad && nameToLoad.trim()) {
       currentPage.value = 1
       void loadDocuments(nameToLoad, { page: 1, perPage: itemsPerPage.value })
         .catch((err) => {
           console.error('CollectionDocumentsView: Error reloading documents after clearing search:', err)
-        })
-        .finally(() => {
-          isLoadingDocuments.value = false
         })
     }
 
@@ -3521,15 +3516,12 @@ const handleSearch = async () => {
 
     // Ensure we restore the default documents list in cases where the initial mount
     // performed a query-based search (route ?q=...) and never loaded the base list.
-    if (collectionName.value && collectionName.value.trim() && !isLoadingDocuments.value) {
-      isLoadingDocuments.value = true
+    if (collectionName.value && collectionName.value.trim()) {
       currentPage.value = 1
       try {
         await loadDocuments(collectionName.value, { page: 1, perPage: itemsPerPage.value })
       } catch (err) {
         console.error('CollectionDocumentsView: Error loading documents when clearing search:', err)
-      } finally {
-        isLoadingDocuments.value = false
       }
     }
 
@@ -4826,10 +4818,8 @@ watch(activeTab, (newTab) => {
 // Watch collection name changes and reload documents
 // CRITICAL FIX: Only watch route params, not both route and collectionName to avoid double-loading
 // Watch route params to reload when collection name changes in URL
-// Flag to prevent concurrent document loads (race condition fix)
 watch(() => route.params.name, async (newName, oldName) => {
-  if (newName && newName !== oldName && !isLoadingDocuments.value) {
-    isLoadingDocuments.value = true
+  if (newName && newName !== oldName) {
     try {
       currentPage.value = parseRoutePage(route.params.page)
       const decodedName = decodeURIComponent(String(newName))
@@ -4845,8 +4835,6 @@ watch(() => route.params.name, async (newName, oldName) => {
       searchResults.value = []
     } catch (err) {
       console.error('CollectionDocumentsView: Error reloading documents for new collection:', err)
-    } finally {
-      isLoadingDocuments.value = false
     }
   }
 }, { immediate: false }) // Changed to false - onMounted will handle initial load
@@ -4857,11 +4845,10 @@ watch(() => route.params.page, (newPage) => {
     currentPage.value = nextPage
   }
 
-  if (!searchPerformed.value && collectionName.value && !isLoadingDocuments.value) {
-    isLoadingDocuments.value = true
+  if (!searchPerformed.value && collectionName.value) {
     loadDocuments(collectionName.value, { page: nextPage, perPage: itemsPerPage.value })
-      .finally(() => {
-        isLoadingDocuments.value = false
+      .catch((err) => {
+        console.error('CollectionDocumentsView: Error loading document page:', err)
       })
   }
 }, { immediate: false })
@@ -5048,9 +5035,7 @@ onMounted(async () => {
     }
   } else {
     // Load initial data if we have a valid collection name and no search query
-    // Only load if not already loading to prevent race conditions
-    if (nameToLoad && nameToLoad.trim() && !isLoadingDocuments.value) {
-      isLoadingDocuments.value = true
+    if (nameToLoad && nameToLoad.trim()) {
       try {
         // Load documents - ensure we call it even if watchers might also call it
         await loadDocuments(nameToLoad)
@@ -5063,8 +5048,6 @@ onMounted(async () => {
           status: err.response?.status,
           statusText: err.response?.statusText
         })
-      } finally {
-        isLoadingDocuments.value = false
       }
     } else {
       console.error('CollectionDocumentsView: No collection name available on mount', {

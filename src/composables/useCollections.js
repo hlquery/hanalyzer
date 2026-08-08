@@ -7,8 +7,15 @@ export function useCollections(baseUrl) {
   const collections = ref([])
   const loading = ref(false)
   const error = ref(null)
+  let latestLoadRequestId = 0
+  let activeLoadController = null
 
   const loadCollections = async (showLoading = true, searchQuery = null, sortBy = null, sortOrder = null, retryCount = 0) => {
+    const requestId = ++latestLoadRequestId
+    activeLoadController?.abort()
+    activeLoadController = new AbortController()
+    const { signal } = activeLoadController
+
     // Only show loading spinner if explicitly requested or if we have no data
     if (showLoading || collections.value.length === 0) {
       loading.value = true
@@ -66,6 +73,7 @@ export function useCollections(baseUrl) {
       
       // Quick timeout for responsiveness
       const response = await axios.get(url, {
+        signal,
         timeout: 10000, // Increased for better reliability
         headers: {
           'Accept': 'application/json'
@@ -76,8 +84,11 @@ export function useCollections(baseUrl) {
       // Retry on 503 (Service Unavailable) - server may still be starting up
       if (response.status === 503 && retryCount < 3) {
         await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1))) // Exponential backoff
+        if (requestId !== latestLoadRequestId) return
         return loadCollections(showLoading, searchQuery, sortBy, sortOrder, retryCount + 1)
       }
+
+      if (requestId !== latestLoadRequestId) return
       
       if (response.status === 200) {
         // Server always returns {collections: [...]} format
@@ -113,6 +124,10 @@ export function useCollections(baseUrl) {
         throw new Error(`HTTP ${response.status}: ${response.statusText || 'Unknown error'}`)
       }
     } catch (err) {
+      if (requestId !== latestLoadRequestId || axios.isCancel(err)) {
+        return
+      }
+
       // Don't show error if we already have data (background refresh failed)
       if (collections.value.length === 0) {
         const errorMsg = extractSafeErrorMessage(err, 'Failed to load collections')
@@ -123,7 +138,10 @@ export function useCollections(baseUrl) {
         collections.value = []
       }
     } finally {
-      loading.value = false
+      if (requestId === latestLoadRequestId) {
+        loading.value = false
+        activeLoadController = null
+      }
     }
   }
 
