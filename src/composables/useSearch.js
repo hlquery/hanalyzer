@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
-import { extractSafeErrorMessage, sanitizeError } from '../utils/sanitize'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+import { extractSafeErrorMessage, sanitizeError } from '../utils/sanitize.js'
 
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
@@ -24,93 +24,6 @@ const normalizeSortBy = (sortBy) => {
     return ''
   }
   return value
-}
-
-const normalizeSearchText = (value) => {
-  return String(value || '')
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-}
-
-const hasAdvancedQuerySyntax = (query) => {
-  const value = String(query || '')
-  return /["()[\]{}:*~^<>!=|+-]|\b(?:and|or|not)\b/i.test(value)
-}
-
-const getPlainQueryTokens = (query) => {
-  if (!query || hasAdvancedQuerySyntax(query)) {
-    return []
-  }
-
-  const withoutDirectives = String(query)
-    .replace(/\b(?:do|is):[a-z_-]+\b/gi, ' ')
-    .replace(/\b[a-z_]+:[^\s]+/gi, ' ')
-
-  return normalizeSearchText(withoutDirectives)
-    .match(/[a-z0-9]+/g)
-    ?.filter((token) => token.length > 1) || []
-}
-
-const collectDocumentText = (value, parts = []) => {
-  if (value === null || value === undefined) {
-    return parts
-  }
-
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-    parts.push(String(value))
-    return parts
-  }
-
-  if (Array.isArray(value)) {
-    value.forEach((item) => collectDocumentText(item, parts))
-    return parts
-  }
-
-  if (typeof value === 'object') {
-    Object.entries(value).forEach(([key, child]) => {
-      if (key === 'highlights' || key.startsWith('_') || key === 'score' || key === 'text_match') {
-        return
-      }
-      collectDocumentText(child, parts)
-    })
-  }
-
-  return parts
-}
-
-const resultMatchesPlainQuery = (doc, query) => {
-  const tokens = getPlainQueryTokens(query)
-  const uniqueTokens = [...new Set(tokens)]
-
-  if (uniqueTokens.length < 2) {
-    return true
-  }
-
-  const normalizedPhrase = uniqueTokens.join(' ')
-  const searchableText = normalizeSearchText(collectDocumentText(doc).join(' '))
-
-  if (searchableText.includes(normalizedPhrase)) {
-    return true
-  }
-
-  return uniqueTokens.every((token) => {
-    const pattern = new RegExp(`(^|[^a-z0-9])${token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`)
-    return pattern.test(searchableText)
-  })
-}
-
-const filterWeakPlainQueryMatches = (docs, query, options = {}) => {
-  if (!Array.isArray(docs) || options.vectorQuery || options.embedding || options.searchPayload?.vector || options.disablePlainQueryFilter) {
-    return docs
-  }
-
-  const tokens = getPlainQueryTokens(query)
-  if (tokens.length < 2) {
-    return docs
-  }
-
-  return docs.filter((doc) => resultMatchesPlainQuery(doc, query))
 }
 
 const normalizeSearchMode = (mode) => {
@@ -187,8 +100,14 @@ export function useSearch(baseUrl) {
   const indexingInProgress = ref(false)
   const directSearchExecuted = ref(false)
   const maybeResult = ref(null)
+  let latestSearchRequestId = 0
+  let activeSearchController = null
 
   const performSearch = async (collectionName, query, limit = 10, options = {}) => {
+    const requestId = ++latestSearchRequestId
+    activeSearchController?.abort()
+    activeSearchController = null
+
     indexingInProgress.value = false
     directSearchExecuted.value = false
     maybeResult.value = null
@@ -198,7 +117,9 @@ export function useSearch(baseUrl) {
     if (!searchAllCollections && (!collectionName || !collectionName.trim())) {
       error.value = 'Collection name is required for search'
       searchResults.value = []
+      totalFound.value = 0
       searchTime.value = null
+      loading.value = false
       return
     }
     
@@ -211,14 +132,22 @@ export function useSearch(baseUrl) {
     
     if (!trimmedQuery && !hasModeTextQuery && !hasFilter && !hasVectorQuery) {
       searchResults.value = []
+      totalFound.value = 0
       searchTime.value = null
       error.value = null
+      loading.value = false
       return
     }
+
+    activeSearchController = new AbortController()
+    const { signal } = activeSearchController
     
     // Standardized loading state: always set before try
     loading.value = true
     error.value = null
+    searchResults.value = []
+    totalFound.value = 0
+    searchTime.value = null
     
     // Start timing
     const startTime = performance.now()
@@ -405,18 +334,28 @@ export function useSearch(baseUrl) {
           headers: {
             'Content-Type': 'application/json'
           },
-          timeout: 10000
+          timeout: 10000,
+          signal
         })
       } catch (proxyErr) {
-        // If proxy fails, try direct URL as fallback (only if we have a valid baseUrl)
-        if (useProxy && proxyErr.response?.status !== 200 && baseUrlValue && !baseUrlValue.includes('localhost:8080')) {
+        if (axios.isCancel(proxyErr) || requestId !== latestSearchRequestId) {
+          return
+        }
+
+        // Retry directly only when the proxy itself is unavailable. Replaying
+        // normal backend 4xx/5xx responses hides the original server error.
+        const proxyStatus = proxyErr.response?.status
+        const proxyUnavailable = !proxyErr.response || proxyStatus === 502 || proxyStatus === 504
+        const hasDirectServerUrl = /^https?:\/\//i.test(baseUrlValue)
+        if (useProxy && proxyUnavailable && hasDirectServerUrl && !baseUrlValue.includes('localhost:8080')) {
           const directUrl = buildApiUrl(baseUrlValue, false, searchPath)
           try {
             response = await axios.post(directUrl, params, {
               headers: {
                 'Content-Type': 'application/json'
               },
-              timeout: 10000
+              timeout: 10000,
+              signal
             })
           } catch (directErr) {
             throw proxyErr
@@ -425,6 +364,8 @@ export function useSearch(baseUrl) {
           throw proxyErr
         }
       }
+
+      if (requestId !== latestSearchRequestId) return
       
       // Handle response structure: { hits: [...], found: number } or { results: [...] }
       if (response.data) {
@@ -476,17 +417,16 @@ export function useSearch(baseUrl) {
             }
             return doc
           })
-          searchResults.value = filterWeakPlainQueryMatches(normalizedResults, trimmedQuery, options)
-          totalFound.value = searchResults.value.length
+          searchResults.value = normalizedResults
         } 
         // Handle results array format
         else if (response.data.results && Array.isArray(response.data.results)) {
-          searchResults.value = filterWeakPlainQueryMatches(response.data.results, trimmedQuery, options)
-          totalFound.value = searchResults.value.length
+          searchResults.value = response.data.results
+          totalFound.value = Number(response.data.found ?? response.data.results.length)
         }
         // Handle direct array format
         else if (Array.isArray(response.data)) {
-          searchResults.value = filterWeakPlainQueryMatches(response.data, trimmedQuery, options)
+          searchResults.value = response.data
           totalFound.value = searchResults.value.length
         }
         // Handle error response
@@ -515,6 +455,10 @@ export function useSearch(baseUrl) {
       const endTime = performance.now()
       searchTime.value = ((endTime - startTime) / 1000).toFixed(3) // Convert to seconds with 3 decimals
     } catch (err) {
+      if (requestId !== latestSearchRequestId || axios.isCancel(err)) {
+        return
+      }
+
       // Handle specific error cases
       if (err.response) {
         const status = err.response.status
@@ -560,7 +504,10 @@ export function useSearch(baseUrl) {
       directSearchExecuted.value = false
       maybeResult.value = null
     } finally {
-      loading.value = false
+      if (requestId === latestSearchRequestId) {
+        loading.value = false
+        activeSearchController = null
+      }
     }
   }
 

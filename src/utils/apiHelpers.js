@@ -31,7 +31,7 @@ export function shouldUseProxy(baseUrlValue) {
   }
 
   if (!baseUrlValue || typeof baseUrlValue !== 'string') {
-    return !!import.meta.env.DEV
+    return import.meta.env?.DEV === true
   }
 
   if (baseUrlValue === '/api' || baseUrlValue.startsWith('/api?')) {
@@ -40,7 +40,7 @@ export function shouldUseProxy(baseUrlValue) {
 
   // `/api` proxying is guaranteed in the Vite dev server, but not in static or preview builds
   // unless the runtime config explicitly requests it.
-  if (!import.meta.env.DEV) {
+  if (import.meta.env?.DEV !== true) {
     return false
   }
 

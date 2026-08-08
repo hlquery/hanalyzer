@@ -1922,26 +1922,6 @@ const ensureSearchSchemaReady = async () => {
   await loadCollectionSchema(false)
 }
 
-const escapeRegex = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-const buildWildcardMatcher = (rawQuery) => {
-  const normalized = String(rawQuery || '').trim().toLowerCase()
-  if (!normalized) return null
-
-  const hasWildcard = normalized.includes('*') || normalized.includes('?')
-  if (!hasWildcard) {
-    return (value) => String(value || '').toLowerCase().includes(normalized)
-  }
-
-  const pattern = normalized
-    .split('*')
-    .map(part => part.split('?').map(escapeRegex).join('.'))
-    .join('.*')
-
-  const regex = new RegExp(pattern)
-  return (value) => regex.test(String(value || '').toLowerCase())
-}
-
 const buildFieldScopedQuery = (query, fields, mode = 'OR') => {
   const trimmedQuery = String(query || '').trim()
   if (!trimmedQuery || !Array.isArray(fields) || fields.length === 0) {
@@ -3607,28 +3587,6 @@ const handleSearch = async () => {
     }).finally(() => {
       suppressRouteQuerySearch.value = false
     })
-    // Enforce scoped field behavior in the UI so the results reflect the chosen scope.
-    if (!searchAllCollections && hasQuery && explicitQueryFields.length > 0 && searchScopeMode.value !== 'all') {
-      const matcher = buildWildcardMatcher(searchQuery.value)
-      if (matcher) {
-        searchResults.value = (searchResults.value || []).filter((doc) => {
-          const fieldMatches = explicitQueryFields.map((field) => {
-            const value = doc?.[field]
-            if (value === null || value === undefined) return false
-            const text = typeof value === 'string' ? value : JSON.stringify(value)
-            return matcher(text)
-          })
-
-          if (searchScopeMode.value === 'custom' && explicitQueryFields.length > 1) {
-            return queryByMode.value === 'AND'
-              ? fieldMatches.every(Boolean)
-              : fieldMatches.some(Boolean)
-          }
-
-          return fieldMatches.some(Boolean)
-        })
-      }
-    }
   } finally {
     searchInputPending.value = false
   }

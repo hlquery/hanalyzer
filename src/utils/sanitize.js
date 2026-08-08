@@ -1,4 +1,4 @@
-import { getDemoModeErrorMessage } from './apiHelpers'
+import { getDemoModeErrorMessage } from './apiHelpers.js'
 
 /**
  * Sanitize error messages and user input to prevent XSS attacks
