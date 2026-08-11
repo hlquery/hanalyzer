@@ -29,11 +29,18 @@ export const createStableCollectionTotal = (zeroConfirmations = 2) => {
   let consecutiveZeros = 0
 
   return {
-    observe(stats) {
-      const observedTotal = extractCollectionTotal(stats)
+    observe(stats, authoritativeTotal = null) {
+      const confirmedAuthoritativeTotal = asCollectionTotal(authoritativeTotal)
+      const observedTotal = confirmedAuthoritativeTotal ?? extractCollectionTotal(stats)
 
       if (observedTotal === null) {
         return confirmedTotal ?? 0
+      }
+
+      if (confirmedAuthoritativeTotal !== null) {
+        confirmedTotal = confirmedAuthoritativeTotal
+        consecutiveZeros = 0
+        return confirmedTotal
       }
 
       if (observedTotal > 0) {

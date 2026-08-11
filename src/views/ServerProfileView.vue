@@ -771,7 +771,7 @@ import { useConnectionStatus } from '../composables/useConnectionStatus'
 import { useCollections } from '../composables/useCollections'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
-import { createStableCollectionTotal } from '../utils/stableCollectionTotal.js'
+import { createStableCollectionTotal, extractCollectionTotal } from '../utils/stableCollectionTotal.js'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
 const router = useRouter()
@@ -1165,7 +1165,7 @@ const getServerStatsFromStatusPayload = (payload) => {
   return null
 }
 
-const normalizeStatsPayload = (rawStats) => {
+const normalizeStatsPayload = (rawStats, authoritativeCollectionTotal = null) => {
   if (!rawStats || typeof rawStats !== 'object') {
     return {}
   }
@@ -1175,7 +1175,7 @@ const normalizeStatsPayload = (rawStats) => {
   const lsm = normalized.lsm && typeof normalized.lsm === 'object' ? normalized.lsm : {}
   const rocksdb = normalized.rocksdb && typeof normalized.rocksdb === 'object' ? normalized.rocksdb : {}
   const storage = normalized.storage && typeof normalized.storage === 'object' ? normalized.storage : {}
-  const collectionsTotal = stableCollectionTotal.observe(normalized)
+  const collectionsTotal = stableCollectionTotal.observe(normalized, authoritativeCollectionTotal)
 
   normalized.server = {
     ...server,
@@ -1227,6 +1227,22 @@ const fetchStatsSnapshot = async (baseUrlValue, useProxy) => {
   return response.data || {}
 }
 
+const fetchCollectionTotalSnapshot = async (baseUrlValue, useProxy) => {
+  const collectionsUrl = buildApiUrl(baseUrlValue, useProxy, '/collections', { limit: 1 })
+  const response = await axios.get(collectionsUrl, { timeout: 3000 })
+  const payload = response.data || {}
+  const candidates = [payload.total, payload.found]
+
+  for (const candidate of candidates) {
+    const numeric = Number(candidate)
+    if (Number.isFinite(numeric) && numeric >= 0) {
+      return numeric
+    }
+  }
+
+  return Array.isArray(payload.collections) ? payload.collections.length : null
+}
+
 const buildMergedStatsPayload = async (statusPayload, baseUrlValue, useProxy) => {
   const mergedPayload = (statusPayload && typeof statusPayload === 'object')
     ? { ...statusPayload }
@@ -1236,24 +1252,35 @@ const buildMergedStatsPayload = async (statusPayload, baseUrlValue, useProxy) =>
     ? mergedPayload.stats
     : {}
 
-  if (hasUsableServerStats(statusStats)) {
-    mergedPayload.stats = normalizeStatsPayload(statusStats)
-    return mergedPayload
+  let mergedStats = statusStats
+
+  if (!hasUsableServerStats(statusStats)) {
+    try {
+      const statsSnapshot = await fetchStatsSnapshot(baseUrlValue, useProxy)
+      mergedStats = {
+        ...statsSnapshot,
+        ...statusStats,
+        io: {
+          ...(statsSnapshot?.io || {}),
+          ...(statusStats?.io || {})
+        }
+      }
+    } catch (e) {
+      mergedStats = statusStats
+    }
   }
 
-  try {
-    const statsSnapshot = await fetchStatsSnapshot(baseUrlValue, useProxy)
-    mergedPayload.stats = normalizeStatsPayload({
-      ...statsSnapshot,
-      ...statusStats,
-      io: {
-        ...(statsSnapshot?.io || {}),
-        ...(statusStats?.io || {})
-      }
-    })
-  } catch (e) {
-    mergedPayload.stats = normalizeStatsPayload(statusStats)
+  let authoritativeCollectionTotal = null
+  const reportedCollectionTotal = extractCollectionTotal(mergedStats)
+  if (reportedCollectionTotal === null || reportedCollectionTotal === 0) {
+    try {
+      authoritativeCollectionTotal = await fetchCollectionTotalSnapshot(baseUrlValue, useProxy)
+    } catch (e) {
+      // Preserve the last confirmed value if the authoritative check is unavailable.
+    }
   }
+
+  mergedPayload.stats = normalizeStatsPayload(mergedStats, authoritativeCollectionTotal)
 
   return mergedPayload
 }

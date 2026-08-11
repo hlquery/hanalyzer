@@ -57,7 +57,19 @@
           </div>
         </v-alert>
         
-        <div v-if="showDisconnectedState" class="not-connected-wrapper">
+        <div v-if="showConnectingState" class="not-connected-wrapper" aria-live="polite">
+          <v-card class="not-connected-card" elevation="0">
+            <v-card-text class="not-connected-panel">
+              <div class="not-connected-body">
+                <v-progress-circular indeterminate color="primary" class="mb-4" />
+                <h1 class="not-connected-title">Connecting to hlquery</h1>
+                <p class="not-connected-subtitle">Waiting for the server and its collections to be ready.</p>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
+
+        <div v-else-if="showDisconnectedState" class="not-connected-wrapper">
           <v-card class="not-connected-card" elevation="0">
             <v-card-text class="not-connected-panel">
               <div class="not-connected-body">
@@ -125,6 +137,9 @@ const getRouteViewKey = (currentRoute) => {
 }
 const showDisconnectedState = computed(() => {
   return hasChecked.value && !isChecking.value && !isConnected.value
+})
+const showConnectingState = computed(() => {
+  return !hasChecked.value || (!isConnected.value && isChecking.value)
 })
 
 // Expose baseUrl globally for axios interceptor

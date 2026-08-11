@@ -21,4 +21,21 @@ assert.equal(counter.observe({ collections_total: 3 }), 3)
 const initiallyEmpty = createStableCollectionTotal()
 assert.equal(initiallyEmpty.observe({ collections_total: 0 }), 0)
 
+const startupCounter = createStableCollectionTotal()
+assert.equal(
+  startupCounter.observe({ collections_total: 0 }, 21),
+  21,
+  'an authoritative collections response corrects a transient startup zero'
+)
+assert.equal(
+  startupCounter.observe({ collections_total: 0 }),
+  21,
+  'one later transient zero does not replace the authoritative total'
+)
+assert.equal(
+  startupCounter.observe({ collections_total: 21 }, 0),
+  0,
+  'an authoritative empty collection list is accepted immediately'
+)
+
 console.log('Stable collection total test passed')

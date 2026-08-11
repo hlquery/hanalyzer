@@ -1,7 +1,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
-import { authManager } from './useAuth'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+import { authManager } from './useAuth.js'
 
 export function useConnectionStatus(baseUrl) {
   const isConnected = ref(false)
@@ -40,24 +40,36 @@ export function useConnectionStatus(baseUrl) {
     isChecking.value = true
     try {
       const useProxy = shouldUseProxy(baseUrlValue)
+      const readyUrl = buildApiUrl(baseUrlValue, useProxy, '/ready')
       const pingUrl = buildApiUrl(baseUrlValue, useProxy, '/ping')
       const statsUrl = buildApiUrl(baseUrlValue, useProxy, '/stats')
 
       let startTime = Date.now()
-      let response = await axios.get(pingUrl, {
+      let response = await axios.get(readyUrl, {
         timeout: REQUEST_TIMEOUT_MS,
         validateStatus: () => true // Don't throw on any status
       })
       let pingTime = Date.now() - startTime
 
-      // Fall back to /stats if /ping is unavailable on older servers.
+      // Older servers may not expose /ready. Keep compatibility without
+      // treating /ping as sufficient readiness on current servers.
       if (response.status === 404) {
         startTime = Date.now()
-        response = await axios.get(statsUrl, {
+        response = await axios.get(pingUrl, {
           timeout: REQUEST_TIMEOUT_MS,
           validateStatus: () => true
         })
         pingTime = Date.now() - startTime
+
+        // Fall back to /stats if /ping is also unavailable.
+        if (response.status === 404) {
+          startTime = Date.now()
+          response = await axios.get(statsUrl, {
+            timeout: REQUEST_TIMEOUT_MS,
+            validateStatus: () => true
+          })
+          pingTime = Date.now() - startTime
+        }
       }
       
       // 503 means server is not ready yet (still starting up), not necessarily disconnected
@@ -114,6 +126,13 @@ export function useConnectionStatus(baseUrl) {
                 isConnected.value = false
                 lastPingTime.value = null
                 consecutiveFailures = FAILURE_THRESHOLD
+                return
+              }
+              if (authCheck.status < 200 || authCheck.status >= 300) {
+                // /ready can only unlock collection views once the collection
+                // API itself is also routable. This prevents direct refreshes
+                // from racing storage/route initialization.
+                markFailure()
                 return
               }
               authRequiredLocal.value = false

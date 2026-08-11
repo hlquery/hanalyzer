@@ -873,13 +873,17 @@ watch([isConnected, baseUrl], () => {
   }
 }, { immediate: true })
 
-// Load collections on mount and when baseUrl changes
-watch(baseUrl, (newUrl) => {
+// Load collections only after /ready confirms that startup and storage loading
+// have completed. This also prevents an empty startup response from replacing
+// the navigation collection list during a direct browser refresh.
+watch([baseUrl, isConnected], ([newUrl, connected]) => {
   // Update window global for axios interceptor
   if (newUrl) {
     window.__HLQUERY_BASE_URL__ = newUrl
   }
-  loadCollectionsAsync()
+  if (connected) {
+    loadCollectionsAsync()
+  }
 }, { immediate: true })
 
 watch(distributedMode, (newMode) => {
@@ -936,11 +940,6 @@ onMounted(() => {
   }
   applyDistributedMode()
   
-  // Load collections immediately on mount
-  loadCollectionsAsync().then(() => {
-    console.log('Collections loaded:', collections.value.length)
-  })
-  
   // Handle scroll for navbar
   handleScroll = () => {
     isScrolled.value = window.scrollY > 10
@@ -976,7 +975,9 @@ onMounted(() => {
     checkAuthRequired()
     checkDemoMode()
     checkConnection()
-    loadCollectionsAsync()
+    if (isConnected.value) {
+      loadCollectionsAsync()
+    }
   }
   
   window.addEventListener('hlquery-auth-required', handleAuthRequired)
