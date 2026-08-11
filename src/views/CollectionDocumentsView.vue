@@ -7613,7 +7613,7 @@ onUnmounted(() => {
 }
 
 .document-meta-link--after-long-title {
-  margin: -2px 0 1px !important;
+  margin: -8px 0 1px !important;
 }
 
 .document-meta-date-group {
