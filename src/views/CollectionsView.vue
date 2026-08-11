@@ -8,7 +8,7 @@
               <h1 class="collections-title-text">Collections</h1>
               <div class="collections-total-text">
                 <v-icon icon="mdi-folder" size="16" class="collections-dir-icon"></v-icon>
-                Showing {{ filteredCollections.length }} out of {{ collections.length }}
+                Showing {{ filteredCollections.length }} out of {{ collectionInventoryTotal }}
               </div>
             </div>
           </div>
@@ -771,7 +771,15 @@ const emit = defineEmits(['view-collection', 'view-documents'])
 
 const baseUrl = inject('baseUrl')
 const toast = inject('toast', { success: () => {}, error: () => {} })
-const { collections, loading: collectionsLoading, error: collectionsError, loadCollections: fetchCollections, loadCollectionsAsync, deleteCollection } = useCollections(baseUrl)
+const {
+  collections,
+  total: collectionsTotal,
+  loading: collectionsLoading,
+  error: collectionsError,
+  loadCollections: fetchCollections,
+  loadCollectionsAsync,
+  deleteCollection
+} = useCollections(baseUrl)
 const { aliases, loadAliases, deleteAlias: removeAlias } = useAliases(baseUrl)
 
 const loading = computed(() => collectionsLoading.value)
@@ -1164,6 +1172,10 @@ const mergedCollections = computed(() => {
   ]
   return all
 })
+
+// The API total includes collections outside the current server-side filter;
+// aliases are fetched separately and must be included in the inventory count.
+const collectionInventoryTotal = computed(() => collectionsTotal.value + aliases.value.length)
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 

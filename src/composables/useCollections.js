@@ -1,10 +1,48 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
-import { extractSafeErrorMessage } from '../utils/sanitize'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+import { extractSafeErrorMessage } from '../utils/sanitize.js'
+
+const normalizeCount = (value, fallback = 0) => {
+  if (value === null || value === undefined || value === '') return fallback
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric >= 0 ? numeric : fallback
+}
+
+const normalizeCollection = (collection) => {
+  if (typeof collection === 'string') {
+    return collection.trim()
+      ? { name: collection, num_documents: 0, created_at: '' }
+      : null
+  }
+
+  if (!collection || typeof collection !== 'object') return null
+
+  const rawName = typeof collection.name === 'string'
+    ? collection.name
+    : (typeof collection.collection_name === 'string' ? collection.collection_name : '')
+
+  if (!rawName.trim()) return null
+
+  return {
+    ...collection,
+    name: rawName,
+    num_documents: normalizeCount(
+      collection.num_documents ?? collection.document_count ?? collection.documents_count
+    ),
+    created_at: typeof collection.created_at === 'string' ? collection.created_at : ''
+  }
+}
+
+const normalizeCollectionList = (items) => {
+  if (!Array.isArray(items)) return []
+  return items.map(normalizeCollection).filter(Boolean)
+}
 
 export function useCollections(baseUrl) {
   const collections = ref([])
+  const total = ref(0)
+  const found = ref(0)
   const loading = ref(false)
   const error = ref(null)
   let latestLoadRequestId = 0
@@ -91,29 +129,24 @@ export function useCollections(baseUrl) {
       if (requestId !== latestLoadRequestId) return
       
       if (response.status === 200) {
-        // Server always returns {collections: [...]} format
-        // Handle both formats for robustness (though server always uses object format)
-        if (response.data && response.data.collections && Array.isArray(response.data.collections)) {
-          // Normalize collection objects - ensure they have required fields
-          collections.value = response.data.collections.map(col => {
-            // Handle both string and object formats
-            if (typeof col === 'string') {
-              return { name: col, num_documents: 0, created_at: '' }
-            }
-            // Ensure object has required fields
-            return {
-              name: col.name || col,
-              num_documents: col.num_documents || 0,
-              created_at: col.created_at || ''
-            }
-          })
-        } else if (Array.isArray(response.data)) {
-          // Fallback: if server ever returns array directly (shouldn't happen)
-          collections.value = response.data.map(col => 
-            typeof col === 'string' ? { name: col, num_documents: 0, created_at: '' } : col
+        if (response.data && Array.isArray(response.data.collections)) {
+          collections.value = normalizeCollectionList(response.data.collections)
+          total.value = Math.max(
+            normalizeCount(response.data.total, collections.value.length),
+            collections.value.length
           )
+          found.value = Math.max(
+            normalizeCount(response.data.found, collections.value.length),
+            collections.value.length
+          )
+        } else if (Array.isArray(response.data)) {
+          collections.value = normalizeCollectionList(response.data)
+          total.value = collections.value.length
+          found.value = collections.value.length
         } else {
           collections.value = []
+          total.value = 0
+          found.value = 0
         }
       } else if (response.status === 400) {
         // Handle 400 Bad Request specifically
@@ -136,6 +169,8 @@ export function useCollections(baseUrl) {
       // Keep existing collections if refresh fails
       if (collections.value.length === 0) {
         collections.value = []
+        total.value = 0
+        found.value = 0
       }
     } finally {
       if (requestId === latestLoadRequestId) {
@@ -193,6 +228,8 @@ export function useCollections(baseUrl) {
 
   return {
     collections,
+    total,
+    found,
     loading,
     error,
     loadCollections,

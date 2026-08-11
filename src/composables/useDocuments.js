@@ -1,6 +1,12 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+
+const normalizeTotal = (value, fallback, minimum = 0) => {
+  if (value === null || value === undefined || value === '') return fallback
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && numeric >= minimum ? numeric : fallback
+}
 
 export function useDocuments(baseUrl) {
   const documents = ref([])
@@ -21,6 +27,7 @@ export function useDocuments(baseUrl) {
       total.value = 0
       error.value = null
       loading.value = false
+      activeLoadController = null
       return
     }
     
@@ -30,6 +37,7 @@ export function useDocuments(baseUrl) {
       documents.value = []
       total.value = 0
       loading.value = false
+      activeLoadController = null
       return
     }
     
@@ -66,7 +74,10 @@ export function useDocuments(baseUrl) {
 
         if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
           documents.value = response.data.documents
-          total.value = Number(response.data.total ?? response.data.documents.length ?? 0)
+          const returnedThrough = response.data.documents.length > 0
+            ? params.offset + response.data.documents.length
+            : 0
+          total.value = normalizeTotal(response.data.total, returnedThrough, returnedThrough)
         } else if (Array.isArray(response.data)) {
           documents.value = response.data
           total.value = response.data.length
@@ -101,10 +112,15 @@ export function useDocuments(baseUrl) {
         if (response.data && response.data.documents && Array.isArray(response.data.documents)) {
           if (response.data.total !== undefined) {
             const responseTotal = Number(response.data.total)
-            fetchedTotal = Number.isFinite(responseTotal) ? responseTotal : fetchedTotal
+            fetchedTotal = Number.isFinite(responseTotal) && responseTotal >= 0
+              ? responseTotal
+              : fetchedTotal
           }
 
           allDocuments.push(...response.data.documents)
+          if (fetchedTotal !== null && fetchedTotal < allDocuments.length) {
+            fetchedTotal = allDocuments.length
+          }
 
           if (response.data.documents.length < pageLimit) {
             hasMore = false

@@ -65,6 +65,37 @@ try {
   ])
   assert.equal(legacyConnection.isConnected.value, true)
 
+  const switchedBaseUrl = ref('http://old.example.test')
+  const pendingChecks = []
+  axios.get = (url) => new Promise((resolve) => {
+    pendingChecks.push({ url, resolve })
+  })
+
+  const switchedConnection = useConnectionStatus(switchedBaseUrl)
+  const oldCheck = switchedConnection.checkConnection()
+  await Promise.resolve()
+
+  switchedBaseUrl.value = 'http://new.example.test'
+  await Promise.resolve()
+
+  assert.equal(switchedConnection.isConnected.value, false)
+  assert.equal(switchedConnection.hasChecked.value, false)
+  assert.equal(pendingChecks.length, 2)
+  assert.equal(pendingChecks[0].url, 'http://old.example.test/ready')
+  assert.equal(pendingChecks[1].url, 'http://new.example.test/ready')
+
+  pendingChecks[1].resolve({ status: 200, data: { ready: true, auth_required: false } })
+  await Promise.resolve()
+  await Promise.resolve()
+  pendingChecks[0].resolve({ status: 503, data: { ready: false } })
+  await Promise.all([oldCheck, Promise.resolve()])
+
+  assert.equal(
+    switchedConnection.isConnected.value,
+    true,
+    'a late response from the previous server cannot replace the current connection state'
+  )
+
   console.log('Startup readiness test passed')
 } finally {
   axios.get = originalGet

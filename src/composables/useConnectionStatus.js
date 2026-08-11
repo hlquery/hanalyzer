@@ -14,6 +14,8 @@ export function useConnectionStatus(baseUrl) {
   const FAILURE_THRESHOLD = 2
   let pingInterval = null
   let consecutiveFailures = 0
+  let latestCheckRequestId = 0
+  let activeCheckController = null
 
   const markSuccess = () => {
     consecutiveFailures = 0
@@ -28,12 +30,17 @@ export function useConnectionStatus(baseUrl) {
   }
 
   const checkConnection = async () => {
-    if (isChecking.value) return
-    
+    const requestId = ++latestCheckRequestId
+    activeCheckController?.abort()
+    activeCheckController = new AbortController()
+    const { signal } = activeCheckController
+
     const baseUrlValue = getBaseUrlValue(baseUrl)
     if (!baseUrlValue) {
       isConnected.value = false
       hasChecked.value = true
+      isChecking.value = false
+      activeCheckController = null
       return
     }
     
@@ -46,29 +53,38 @@ export function useConnectionStatus(baseUrl) {
 
       let startTime = Date.now()
       let response = await axios.get(readyUrl, {
+        signal,
         timeout: REQUEST_TIMEOUT_MS,
         validateStatus: () => true // Don't throw on any status
       })
       let pingTime = Date.now() - startTime
+
+      if (requestId !== latestCheckRequestId) return
 
       // Older servers may not expose /ready. Keep compatibility without
       // treating /ping as sufficient readiness on current servers.
       if (response.status === 404) {
         startTime = Date.now()
         response = await axios.get(pingUrl, {
+          signal,
           timeout: REQUEST_TIMEOUT_MS,
           validateStatus: () => true
         })
         pingTime = Date.now() - startTime
 
+        if (requestId !== latestCheckRequestId) return
+
         // Fall back to /stats if /ping is also unavailable.
         if (response.status === 404) {
           startTime = Date.now()
           response = await axios.get(statsUrl, {
+            signal,
             timeout: REQUEST_TIMEOUT_MS,
             validateStatus: () => true
           })
           pingTime = Date.now() - startTime
+
+          if (requestId !== latestCheckRequestId) return
         }
       }
       
@@ -104,9 +120,11 @@ export function useConnectionStatus(baseUrl) {
             const collectionsUrl = buildApiUrl(baseUrlValue, useProxy2, '/collections')
             try {
               const authCheck = await axios.get(collectionsUrl, {
+                signal,
                 timeout: REQUEST_TIMEOUT_MS,
                 validateStatus: () => true
               })
+              if (requestId !== latestCheckRequestId) return
               if (authCheck.status === 401) {
                 authRequiredLocal.value = true
                 if (typeof window !== 'undefined') {
@@ -175,12 +193,19 @@ export function useConnectionStatus(baseUrl) {
         markFailure()
       }
     } catch (err) {
+      if (requestId !== latestCheckRequestId || axios.isCancel(err)) {
+        return
+      }
+
       // Network errors or timeouts mean server is not reachable
       // Require consecutive failures to avoid online/offline flapping under load.
       markFailure()
     } finally {
-      hasChecked.value = true
-      isChecking.value = false
+      if (requestId === latestCheckRequestId) {
+        hasChecked.value = true
+        isChecking.value = false
+        activeCheckController = null
+      }
     }
   }
 
@@ -203,6 +228,12 @@ export function useConnectionStatus(baseUrl) {
 
   // Watch baseUrl changes
   watch(baseUrl, () => {
+    // Never carry server A's readiness into server B. AppHeader also watches
+    // this state and must not load B's collection names until B is verified.
+    isConnected.value = false
+    hasChecked.value = false
+    lastPingTime.value = null
+    consecutiveFailures = 0
     checkConnection()
   })
 
@@ -212,9 +243,12 @@ export function useConnectionStatus(baseUrl) {
 
   onUnmounted(() => {
     stopPing()
+    latestCheckRequestId += 1
+    activeCheckController?.abort()
+    activeCheckController = null
   })
 
-    return {
+  return {
     isConnected,
     isChecking,
     hasChecked,
