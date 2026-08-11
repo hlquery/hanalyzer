@@ -771,6 +771,7 @@ import { useConnectionStatus } from '../composables/useConnectionStatus'
 import { useCollections } from '../composables/useCollections'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 import { extractSafeErrorMessage } from '../utils/sanitize'
+import { createStableCollectionTotal } from '../utils/stableCollectionTotal.js'
 import LoadingSkeleton from '../components/LoadingSkeleton.vue'
 
 const router = useRouter()
@@ -876,6 +877,7 @@ const uptimeContextLabel = computed(() => {
 })
 
 const stats = ref(null)
+const stableCollectionTotal = createStableCollectionTotal()
 const loading = ref(false)
 const error = ref(null)
 const totalDocuments = ref(0)
@@ -1173,13 +1175,7 @@ const normalizeStatsPayload = (rawStats) => {
   const lsm = normalized.lsm && typeof normalized.lsm === 'object' ? normalized.lsm : {}
   const rocksdb = normalized.rocksdb && typeof normalized.rocksdb === 'object' ? normalized.rocksdb : {}
   const storage = normalized.storage && typeof normalized.storage === 'object' ? normalized.storage : {}
-  const collectionsTotal = Number(
-    normalized.collections_total ??
-    storage.total_collections ??
-    normalized.total_collections ??
-    normalized.collections?.total ??
-    0
-  )
+  const collectionsTotal = stableCollectionTotal.observe(normalized)
 
   normalized.server = {
     ...server,
@@ -1190,7 +1186,7 @@ const normalizeStatsPayload = (rawStats) => {
 
   normalized.collections = {
     ...(normalized.collections || {}),
-    total: Number.isFinite(collectionsTotal) ? collectionsTotal : 0
+    total: collectionsTotal
   }
 
   normalized.rocksdb = {
