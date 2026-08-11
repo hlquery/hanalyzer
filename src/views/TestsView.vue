@@ -103,6 +103,7 @@
 <script setup>
 import { ref, computed, inject } from 'vue'
 import axios from 'axios'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
 
 const baseUrl = inject('baseUrl')
 
@@ -159,9 +160,11 @@ async function runQuickTest() {
     
     // Search for "content"
     const encodedCollection = encodeURIComponent(testCollection)
-    const searchUrl = useProxy 
-      ? `/api/collections/${encodedCollection}/documents/search`
-      : `${baseUrl.value}/collections/${encodedCollection}/documents/search`
+    const searchUrl = buildApiUrl(
+      baseUrlValue,
+      useProxy,
+      `/collections/${encodedCollection}/documents/search`
+    )
     
     testOutput.value += ' Searching for "content"...\n'
     const searchResp = await axios.post(searchUrl, {
@@ -186,9 +189,12 @@ async function runQuickTest() {
     
     // List some documents
     testOutput.value += '\n\n📄 Listing first 3 documents:\n'
-    const docsUrl = useProxy
-      ? `/api/collections/${encodedCollection}/documents?limit=3`
-      : `${baseUrl.value}/collections/${encodedCollection}/documents?limit=3`
+    const docsUrl = buildApiUrl(
+      baseUrlValue,
+      useProxy,
+      `/collections/${encodedCollection}/documents`,
+      { limit: 3 }
+    )
     const docsResp = await axios.get(docsUrl)
     
     if (docsResp.data.documents && docsResp.data.documents.length > 0) {

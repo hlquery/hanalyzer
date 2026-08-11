@@ -520,10 +520,7 @@ const saveSchema = async () => {
   try {
     const baseUrlValue = getBaseUrlValue(baseUrl)
     if (!baseUrlValue) {
-      if (showLoading) {
-        schemaError.value = 'Invalid server URL configuration'
-        schemaLoading.value = false
-      }
+      schemaError.value = 'Invalid server URL configuration'
       return null
     }
     
@@ -837,4 +834,3 @@ onMounted(() => {
   background: #f1f5f9 !important;
 }
 </style>
-

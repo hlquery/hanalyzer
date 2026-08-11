@@ -2454,6 +2454,8 @@ const loadDocuments = async (collectionName, options = {}) => {
   })
 }
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 // Make searched words bold in text
 const makeSearchedWordsBold = (text) => {
   if (!text || !searchQuery.value || !searchQuery.value.trim()) {

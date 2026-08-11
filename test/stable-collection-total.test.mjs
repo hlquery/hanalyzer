@@ -17,6 +17,9 @@ assert.equal(counter.observe({ collections_total: 4 }), 4, 'a positive response 
 assert.equal(counter.observe({ collections_total: 0 }), 4)
 assert.equal(counter.observe({ collections_total: 0 }), 0, 'two zero responses confirm an empty server')
 assert.equal(counter.observe({ collections_total: 3 }), 3)
+counter.reset()
+assert.equal(counter.observe({}), 0, 'reset removes totals retained for a previous server')
+assert.equal(counter.observe({ collections_total: 2 }), 2)
 
 const initiallyEmpty = createStableCollectionTotal()
 assert.equal(initiallyEmpty.observe({ collections_total: 0 }), 0)

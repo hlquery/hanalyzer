@@ -761,7 +761,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, inject, computed } from 'vue'
+import { ref, onMounted, onUnmounted, inject, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useAuth } from '../composables/useAuth'
@@ -881,6 +881,15 @@ const stableCollectionTotal = createStableCollectionTotal()
 const loading = ref(false)
 const error = ref(null)
 const totalDocuments = ref(0)
+
+watch(
+  () => getBaseUrlValue(baseUrl),
+  () => {
+    stableCollectionTotal.reset()
+    stats.value = null
+    totalDocuments.value = 0
+  }
+)
 const searchConfig = ref(null)
 const searchConfigUnavailable = ref(false)
 const loadedModules = computed(() => {
@@ -1345,6 +1354,10 @@ const updateStatsSilently = async () => {
     const response = await axios.get(url, { timeout: 5000 })
     const payload = await buildMergedStatsPayload(response.data, baseUrlValue, useProxy)
 
+    if (baseUrlValue !== getBaseUrlValue(baseUrl)) {
+      return
+    }
+
     if (payload) {
       // Update stats silently without triggering loading state
       let normalizedHealth = mergeHealthWithEngineFallback(payload)
@@ -1354,6 +1367,10 @@ const updateStatsSilently = async () => {
         } catch (e) {
           // Ignore health fallback errors in silent refresh.
         }
+      }
+
+      if (baseUrlValue !== getBaseUrlValue(baseUrl)) {
+        return
       }
 
       if (payload.stats) {
@@ -1418,6 +1435,10 @@ const loadStats = async () => {
     const response = await axios.get(url, { timeout: 5000 })
     const payload = await buildMergedStatsPayload(response.data, baseUrlValue, useProxy)
 
+    if (baseUrlValue !== getBaseUrlValue(baseUrl)) {
+      return
+    }
+
     if (payload) {
       // /status returns { health: {...}, stats: {...} }
       // The stats object contains: server, collections, cache, rocksdb, io
@@ -1430,6 +1451,10 @@ const loadStats = async () => {
         } catch (e) {
           // Ignore; UI can still render with partial status data.
         }
+      }
+
+      if (baseUrlValue !== getBaseUrlValue(baseUrl)) {
+        return
       }
 
       if (payload.stats) {

@@ -123,18 +123,18 @@
    GLOBAL INPUT STYLES - CONSISTENT & BEAUTIFUL
    ----------------------------------------------------------------==== */
 
-.v-text-field :deep(.v-field),
-.v-select :deep(.v-field),
-.v-autocomplete :deep(.v-field) {
+.v-text-field :is(.v-field),
+.v-select :is(.v-field),
+.v-autocomplete :is(.v-field) {
   border-radius: var(--radius-md) !important;
   background: var(--gray-50) !important;
   border: 1px solid var(--gray-200) !important;
   transition: all var(--transition-base) !important;
 }
 
-.v-text-field :deep(.v-field--focused),
-.v-select :deep(.v-field--focused),
-.v-autocomplete :deep(.v-field--focused) {
+.v-text-field :is(.v-field--focused),
+.v-select :is(.v-field--focused),
+.v-autocomplete :is(.v-field--focused) {
   background: #ffffff !important;
   border-color: var(--primary) !important;
   box-shadow: 0 0 0 3px var(--primary-light) !important;
@@ -514,6 +514,5 @@ table tbody td:last-child {
 .mt-card {
   margin-top: var(--space-6) !important;
 }
-
 
 

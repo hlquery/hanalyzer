@@ -29,6 +29,11 @@ export const createStableCollectionTotal = (zeroConfirmations = 2) => {
   let consecutiveZeros = 0
 
   return {
+    reset() {
+      confirmedTotal = null
+      consecutiveZeros = 0
+    },
+
     observe(stats, authoritativeTotal = null) {
       const confirmedAuthoritativeTotal = asCollectionTotal(authoritativeTotal)
       const observedTotal = confirmedAuthoritativeTotal ?? extractCollectionTotal(stats)

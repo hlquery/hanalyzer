@@ -391,9 +391,10 @@ const createCollection = async () => {
   creating.value = true
   createError.value = null
   createSuccess.value = false
+  let requestConfig = null
 
   try {
-    const config = {
+    requestConfig = {
       name: newCollectionName.value.trim(),
       fields: fields.value.map(f => {
         const field = {
@@ -417,9 +418,9 @@ const createCollection = async () => {
     const useProxy = shouldUseProxy(baseUrlValue)
     const url = buildApiUrl(baseUrlValue, useProxy, '/collections')
 
-    console.log('Creating collection:', { url, config })
+    console.log('Creating collection:', { url, config: requestConfig })
 
-    const response = await axios.post(url, config, {
+    const response = await axios.post(url, requestConfig, {
       timeout: 10000,
       validateStatus: () => true
     })
@@ -475,7 +476,7 @@ const createCollection = async () => {
         status: response.status,
         statusText: response.statusText,
         data: response.data,
-        config: config
+        config: requestConfig
       })
     }
   } catch (err) {
@@ -518,7 +519,7 @@ const createCollection = async () => {
       error: err,
       message: err.message,
       response: err.response?.data,
-      config: config
+      config: requestConfig
     })
   } finally {
     creating.value = false

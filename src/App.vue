@@ -542,7 +542,7 @@ html {
 }
 
 /* Button content styling - Force white text */
-.premium-button :deep(.v-btn__content) {
+.premium-button :is(.v-btn__content) {
   color: #ffffff !important;
   font-weight: 600 !important;
   font-family: Inter, Helvetica, sans-serif !important;
@@ -557,14 +557,14 @@ html {
 }
 
 /* Show icons in premium buttons */
-.premium-button :deep(.v-btn__append),
-.premium-button :deep(.v-btn__prepend) {
+.premium-button :is(.v-btn__append),
+.premium-button :is(.v-btn__prepend) {
   display: flex !important;
   align-items: center !important;
 }
 
-.premium-button :deep(.v-btn__append .v-icon),
-.premium-button :deep(.v-btn__prepend .v-icon) {
+.premium-button :is(.v-btn__append .v-icon),
+.premium-button :is(.v-btn__prepend .v-icon) {
   display: block !important;
   color: #ffffff !important;
   font-size: 18px !important;
@@ -656,13 +656,13 @@ html {
   transition: all 0.2s ease !important;
 }
 
-.simple-action-btn :deep(.v-btn__content) {
+.simple-action-btn :is(.v-btn__content) {
   color: #64748b !important;
   font-weight: 500 !important;
   gap: 6px !important;
 }
 
-.simple-action-btn :deep(.v-icon) {
+.simple-action-btn :is(.v-icon) {
   color: #64748b !important;
   font-size: 18px !important;
 }
@@ -674,8 +674,8 @@ html {
   transform: none !important;
 }
 
-.simple-action-btn:hover :deep(.v-btn__content),
-.simple-action-btn:hover :deep(.v-icon) {
+.simple-action-btn:hover :is(.v-btn__content),
+.simple-action-btn:hover :is(.v-icon) {
   color: #0f172a !important;
 }
 
@@ -949,7 +949,7 @@ html {
   margin: 0 4px !important;
 }
 
-.hlquery-nav-link :deep(.v-icon) {
+.hlquery-nav-link :is(.v-icon) {
   color: #4b5563 !important;
   font-size: 15px !important;
 }
@@ -994,12 +994,12 @@ html {
   box-shadow: none !important;
 }
 
-.connection-badge :deep(.v-chip__content),
-.connection-badge :deep(.v-chip__prepend) {
+.connection-badge :is(.v-chip__content),
+.connection-badge :is(.v-chip__prepend) {
   color: #ffffff !important;
 }
 
-.connection-badge :deep(.v-icon) {
+.connection-badge :is(.v-icon) {
   color: #ffffff !important;
 }
 
@@ -1096,16 +1096,16 @@ html {
   z-index: 1 !important;
 }
 
-.v-btn :deep(.v-btn__prepend),
-.v-btn :deep(.v-btn__append) {
+.v-btn :is(.v-btn__prepend),
+.v-btn :is(.v-btn__append) {
   display: flex !important;
   align-items: center !important;
   position: relative !important;
   z-index: 1 !important;
 }
 
-.v-btn:not(.v-btn--variant-text) :deep(.v-btn__prepend .v-icon),
-.v-btn:not(.v-btn--variant-text) :deep(.v-btn__append .v-icon) {
+.v-btn:not(.v-btn--variant-text) :is(.v-btn__prepend .v-icon),
+.v-btn:not(.v-btn--variant-text) :is(.v-btn__append .v-icon) {
   display: block !important;
   color: #ffffff !important;
   font-size: 18px !important;
@@ -1195,14 +1195,14 @@ html {
 }
 
 /* Force white text on flat buttons */
-.v-btn--variant-flat:not(.action-btn-dark-blue) :deep(.v-btn__content) {
+.v-btn--variant-flat:not(.action-btn-dark-blue) :is(.v-btn__content) {
   color: #ffffff !important;
   position: relative !important;
   z-index: 1 !important;
 }
 
-.v-btn--variant-flat:not(.action-btn-dark-blue) :deep(.v-btn__prepend .v-icon),
-.v-btn--variant-flat:not(.action-btn-dark-blue) :deep(.v-btn__append .v-icon) {
+.v-btn--variant-flat:not(.action-btn-dark-blue) :is(.v-btn__prepend .v-icon),
+.v-btn--variant-flat:not(.action-btn-dark-blue) :is(.v-btn__append .v-icon) {
   color: #ffffff !important;
 }
 
@@ -1274,14 +1274,14 @@ html {
 }
 
 /* Force blue text on text variant button content */
-.v-btn--variant-text :deep(.v-btn__content) {
+.v-btn--variant-text :is(.v-btn__content) {
   color: #488aec !important;
   position: relative !important;
   z-index: 1 !important;
 }
 
-.v-btn--variant-text :deep(.v-btn__prepend .v-icon),
-.v-btn--variant-text :deep(.v-btn__append .v-icon) {
+.v-btn--variant-text :is(.v-btn__prepend .v-icon),
+.v-btn--variant-text :is(.v-btn__append .v-icon) {
   color: #488aec !important;
   font-size: 18px !important;
 }
@@ -1291,12 +1291,12 @@ html {
   color: #3b7bd8 !important;
 }
 
-.v-btn--variant-text:hover:not(:disabled) :deep(.v-btn__content) {
+.v-btn--variant-text:hover:not(:disabled) :is(.v-btn__content) {
   color: #3b7bd8 !important;
 }
 
-.v-btn--variant-text:hover:not(:disabled) :deep(.v-btn__prepend .v-icon),
-.v-btn--variant-text:hover:not(:disabled) :deep(.v-btn__append .v-icon) {
+.v-btn--variant-text:hover:not(:disabled) :is(.v-btn__prepend .v-icon),
+.v-btn--variant-text:hover:not(:disabled) :is(.v-btn__append .v-icon) {
   color: #3b7bd8 !important;
 }
 
@@ -1306,15 +1306,15 @@ html {
   color: #2d6bc7 !important;
 }
 
-.v-btn--variant-text:active:not(:disabled) :deep(.v-btn__content),
-.v-btn--variant-text:focus :deep(.v-btn__content) {
+.v-btn--variant-text:active:not(:disabled) :is(.v-btn__content),
+.v-btn--variant-text:focus :is(.v-btn__content) {
   color: #2d6bc7 !important;
 }
 
-.v-btn--variant-text:active:not(:disabled) :deep(.v-btn__prepend .v-icon),
-.v-btn--variant-text:active:not(:disabled) :deep(.v-btn__append .v-icon),
-.v-btn--variant-text:focus :deep(.v-btn__prepend .v-icon),
-.v-btn--variant-text:focus :deep(.v-btn__append .v-icon) {
+.v-btn--variant-text:active:not(:disabled) :is(.v-btn__prepend .v-icon),
+.v-btn--variant-text:active:not(:disabled) :is(.v-btn__append .v-icon),
+.v-btn--variant-text:focus :is(.v-btn__prepend .v-icon),
+.v-btn--variant-text:focus :is(.v-btn__append .v-icon) {
   color: #2d6bc7 !important;
 }
 
@@ -1656,7 +1656,7 @@ a:active {
   margin-right: 0;
 }
 
-.header-search-input :deep(.v-field) {
+.header-search-input :is(.v-field) {
   background: #f2f2f2 !important;
   border-radius: 999px !important;
   border: none !important;
@@ -1667,7 +1667,7 @@ a:active {
   transition: all 0.2s ease !important;
 }
 
-.header-search-input :deep(.v-field:hover) {
+.header-search-input :is(.v-field:hover) {
   background: #f2f2f2 !important;
   box-shadow: 
     0 1px 2px rgba(0, 0, 0, 0.06),
@@ -1675,7 +1675,7 @@ a:active {
     inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
-.header-search-input :deep(.v-field--focused) {
+.header-search-input :is(.v-field--focused) {
   background: #f2f2f2 !important;
   box-shadow: 
     0 1px 3px rgba(0, 0, 0, 0.08),
@@ -1683,7 +1683,7 @@ a:active {
     inset 0 1px 0 rgba(255, 255, 255, 0.7) !important;
 }
 
-.header-search-input :deep(.v-field__input) {
+.header-search-input :is(.v-field__input) {
   padding: 10px 20px !important;
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
@@ -1695,7 +1695,7 @@ a:active {
   color: rgb(66, 84, 102) !important;
 }
 
-.header-search-input :deep(.v-field__input::placeholder) {
+.header-search-input :is(.v-field__input::placeholder) {
   font-family: Inter, Helvetica, sans-serif !important;
   font-weight: 600 !important;
   font-weight: 500 !important;
@@ -1705,38 +1705,38 @@ a:active {
   opacity: 0.8 !important;
 }
 
-.header-search-input :deep(.v-field__prepend-inner) {
+.header-search-input :is(.v-field__prepend-inner) {
   padding-left: 20px !important;
   padding-top: 2px !important;
   align-items: center !important;
 }
 
-.header-search-input :deep(.v-field__prepend-inner .v-icon) {
+.header-search-input :is(.v-field__prepend-inner .v-icon) {
   color: rgb(66, 84, 102) !important;
   font-size: 20px !important;
   transform: translateY(1px) !important;
 }
 
 /* Remove dropdown icon and all append icons */
-.header-search-input :deep(.v-field__append-inner) {
+.header-search-input :is(.v-field__append-inner) {
   display: none !important;
 }
 
-.header-search-input :deep(.v-autocomplete__menu-icon) {
+.header-search-input :is(.v-autocomplete__menu-icon) {
   display: none !important;
 }
 
-.header-search-input :deep(.v-field__append) {
+.header-search-input :is(.v-field__append) {
   display: none !important;
 }
 
-.header-search-input :deep(.v-input__append) {
+.header-search-input :is(.v-input__append) {
   display: none !important;
 }
 
 /* Hide any chevron/dropdown indicators */
-.header-search-input :deep(.mdi-menu-down),
-.header-search-input :deep(.mdi-chevron-down) {
+.header-search-input :is(.mdi-menu-down),
+.header-search-input :is(.mdi-chevron-down) {
   display: none !important;
 }
 
