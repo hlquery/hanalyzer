@@ -31,7 +31,7 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "test": "npm run build:prod && node test/deep-link-assets.test.mjs && node test/collection-state.test.mjs && node test/document-state.test.mjs && node test/search-interaction.test.mjs && node test/stable-collection-total.test.mjs && node test/startup-readiness.test.mjs",
+    "test": "npm run build:prod && node test/deep-link-assets.test.mjs && node test/collection-state.test.mjs && node test/document-state.test.mjs && node test/search-interaction.test.mjs && node test/query-helpers.test.mjs && node test/stable-collection-total.test.mjs && node test/startup-readiness.test.mjs && node test/demo-replica-recovery.test.mjs",
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "preview": "vite preview",

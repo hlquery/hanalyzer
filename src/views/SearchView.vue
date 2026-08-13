@@ -275,6 +275,7 @@
 
             <v-text-field
               :model-value="filterPreview"
+              :error-messages="filterValidation.error ? [filterValidation.error] : []"
               label="Filter Preview"
               prepend-inner-icon="mdi-filter-check-outline"
               variant="outlined"
@@ -488,7 +489,7 @@
                 color="primary"
                 variant="flat"
                 @click="handleSearch"
-                :disabled="!selectedCollection || (!searchQuery && filters.length === 0)"
+                :disabled="(!searchQuery && filters.length === 0) || Boolean(filterValidation.error)"
                 size="small"
                 prepend-icon="mdi-magnify"
                 class="search-submit-btn"
@@ -679,6 +680,7 @@ import { inject } from 'vue'
 import TooltipHelp from '../components/TooltipHelp.vue'
 
 import { getBestTitle, formatServerHighlights, getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { buildFilterExpression, resolveSearchTarget } from '../utils/queryHelpers'
 
 const baseUrl = inject('baseUrl')
 const toast = inject('toast', { success: () => {}, error: () => {} })
@@ -897,7 +899,8 @@ const filterableFieldItems = computed(() => {
   return Array.from(names)
 })
 
-const filterPreview = computed(() => buildFilterBy())
+const filterValidation = computed(() => buildFilterExpression(filters.value))
+const filterPreview = computed(() => filterValidation.value.expression)
 
 const collectionItems = computed(() => {
   return collections.value.map(col => ({
@@ -946,12 +949,6 @@ onMounted(async () => {
   }
   if (route.query.collection) {
     selectedCollection.value = route.query.collection
-  } else {
-    // Default to "products" collection if it exists (for ecommerce search)
-    const productsCollection = collections.value.find(col => col.name === 'products')
-    if (productsCollection) {
-      selectedCollection.value = 'products'
-    }
   }
   if (route.query.query_by) {
     queryBy.value = String(route.query.query_by)
@@ -986,7 +983,7 @@ onMounted(async () => {
   }
   
   // Auto-search if query is in URL
-  if (searchQuery.value && selectedCollection.value) {
+  if (searchQuery.value) {
     handleSearch()
   }
 })
@@ -1029,49 +1026,24 @@ const updateURL = () => {
   })
 }
 
-const buildFilterBy = () => {
-  if (filters.value.length === 0) return ''
-  
-  const filterParts = filters.value
-    .filter(f => f.field && f.value)
-    .map((f, index) => {
-      const connector = index > 0 ? ` ${f.connector === 'OR' ? '||' : '&&'} ` : ''
-      let filterStr = ''
-      
-      if (f.operator === '=') {
-        filterStr = `${f.field}:=${f.value}`
-      } else if (f.operator === '!=') {
-        filterStr = `${f.field}:!=${f.value}`
-      } else if (f.operator === '>') {
-        filterStr = `${f.field}:>${f.value}`
-      } else if (f.operator === '<') {
-        filterStr = `${f.field}:<${f.value}`
-      } else if (f.operator === '>=') {
-        filterStr = `${f.field}:>=${f.value}`
-      } else if (f.operator === '<=') {
-        filterStr = `${f.field}:<=${f.value}`
-      } else if (f.operator === 'contains') {
-        filterStr = `${f.field}:*${f.value}*`
-      } else if (f.operator === 'starts_with') {
-        filterStr = `${f.field}:${f.value}*`
-      }
-      
-      return connector + filterStr
-    })
-  
-  return filterParts.join('')
-}
-
 const hasCaseSensitiveDirective = (query) => {
   return /\b(?:do|is):case[-_]?sensitive\b/i.test(String(query || ''))
 }
 
 const handleSearch = async () => {
-  if (selectedCollection.value && (searchQuery.value || filters.value.length > 0)) {
+  if (searchQuery.value || filters.value.length > 0) {
+    const { collectionName, searchAllCollections } = resolveSearchTarget(selectedCollection.value)
+    const { expression: filterBy, error: filterError } = buildFilterExpression(filters.value)
+
+    if (filterError) {
+      toast.error(filterError, 'Invalid filter')
+      return
+    }
+
     // Update URL with search parameters
     updateURL()
     
-    const options = {}
+    const options = { searchAllCollections }
     // Set query_by only when explicit fields are provided.
     // If query_by is '*' or empty, omit it and let backend use default all-fields behavior.
     if (Array.isArray(queryBy.value) && queryBy.value.length > 0) {
@@ -1084,7 +1056,6 @@ const handleSearch = async () => {
     }
     
     // Add filter_by if filters are specified
-    const filterBy = buildFilterBy()
     if (filterBy) {
       options.filterBy = filterBy
     }
@@ -1116,7 +1087,7 @@ const handleSearch = async () => {
     }
     
     await performSearch(
-      selectedCollection.value, 
+      collectionName,
       searchQuery.value || '', 
       searchLimit.value,
       options
@@ -1124,7 +1095,7 @@ const handleSearch = async () => {
     
     // Save to search history
     if (searchQuery.value) {
-      addSearch(searchQuery.value, selectedCollection.value, {
+      addSearch(searchQuery.value, collectionName, {
         filters: filters.value,
         queryBy: queryBy.value,
         sortBy: sortBy.value
@@ -1157,7 +1128,7 @@ const clearSearchQuery = () => {
 
 const handleSortChange = async () => {
   // Re-search with new sort order if we already have results
-  if (selectedCollection.value && searchQuery.value && searchResults.value.length > 0) {
+  if (searchQuery.value && searchResults.value.length > 0) {
     await handleSearch()
   }
 }

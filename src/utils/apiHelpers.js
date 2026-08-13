@@ -48,6 +48,51 @@ export function shouldUseProxy(baseUrlValue) {
 }
 
 /**
+ * Return true when the UI is running against the public/demo deployment.
+ * The hostname fallback covers the short interval before the asynchronous
+ * runtime marker has finished loading.
+ */
+export function isDemoDeployment() {
+  if (typeof window === 'undefined') return false
+
+  const config = window.HANALYZER_CONFIG || {}
+  return config.deploymentDemoMode === true ||
+    window.__HLQUERY_DEMO_MODE__ === true ||
+    window.location?.hostname === 'demo.hlquery.com'
+}
+
+/**
+ * The demo can temporarily route reads to a replica whose collection catalog
+ * has not caught up. Restrict recovery to collection-scoped GET requests so a
+ * genuine missing application route is not repeatedly requested.
+ */
+export function shouldRetryDemoCollectionRead(error) {
+  if (!isDemoDeployment()) return false
+
+  const config = error?.config || {}
+  if (String(config.method || 'get').toLowerCase() !== 'get') return false
+  if (config.signal?.aborted) return false
+
+  const status = Number(error?.response?.status)
+  if (status !== 404 && status !== 503) return false
+
+  const requestUrl = String(config.url || '')
+  let pathname = requestUrl
+  try {
+    pathname = new URL(requestUrl, window.location.origin).pathname
+  } catch (_) {
+    pathname = requestUrl.split('?')[0]
+  }
+
+  return /^\/(?:api\/)?collections\/[^/]+(?:\/|$)/.test(pathname)
+}
+
+export function demoReplicaRetryDelay(attempt) {
+  const normalizedAttempt = Math.max(1, Number(attempt) || 1)
+  return Math.min(400, 75 * normalizedAttempt)
+}
+
+/**
  * Build API URL with consistent encoding
  * @param {string} baseUrlValue - Base URL string
  * @param {boolean} useProxy - Whether to use proxy

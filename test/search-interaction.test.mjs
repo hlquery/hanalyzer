@@ -23,6 +23,20 @@ try {
   assert.deepEqual(authoritativeSearch.searchResults.value.map(({ id }) => id), ['synonym-match'])
   assert.equal(authoritativeSearch.totalFound.value, 27)
 
+  let globalSearchUrl = ''
+  axios.post = async (url) => {
+    globalSearchUrl = url
+    return {
+      status: 200,
+      data: { hits: [hit('global-match', 'Cross-collection result')], found: 1 }
+    }
+  }
+
+  const globalSearch = useSearch('http://example.test')
+  await globalSearch.performSearch('', 'cross collection', 10, { searchAllCollections: true })
+  assert.match(globalSearchUrl, /\/search$/)
+  assert.deepEqual(globalSearch.searchResults.value.map(({ id }) => id), ['global-match'])
+
   const pending = []
   axios.post = (_url, payload) => new Promise((resolve) => {
     pending.push({ payload, resolve })

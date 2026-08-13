@@ -19,6 +19,7 @@ import hanalyzerConfig from '../hanalyzer.conf.js'
 import axios from 'axios'
 import { authManager } from './composables/useAuth'
 import { installUsageRecorder } from './utils/usageRecorder'
+import { demoReplicaRetryDelay, shouldRetryDemoCollectionRead } from './utils/apiHelpers'
 
 // Initialize window global early (before interceptor runs)
 if (typeof window !== 'undefined') {
@@ -155,7 +156,29 @@ axios.interceptors.response.use(
     }
     return response
   },
-  (error) => {
+  async (error) => {
+    if (shouldRetryDemoCollectionRead(error)) {
+      const retryCount = Number(error.config.__hlqueryDemoReplicaRetryCount || 0)
+      const maxRetries = 5
+
+      if (retryCount < maxRetries) {
+        const nextAttempt = retryCount + 1
+        await new Promise(resolve => setTimeout(resolve, demoReplicaRetryDelay(nextAttempt)))
+
+        if (!error.config.signal?.aborted) {
+          return axios({
+            ...error.config,
+            __hlqueryDemoReplicaRetryCount: nextAttempt,
+            headers: {
+              ...(error.config.headers || {}),
+              'Cache-Control': 'no-cache',
+              'X-HLQuery-Demo-Retry': String(nextAttempt)
+            }
+          })
+        }
+      }
+    }
+
     // Handle 401 Unauthorized and 403 Forbidden errors
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       const requestUrl = error.config?.url || ''

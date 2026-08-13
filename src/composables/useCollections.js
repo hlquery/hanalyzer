@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+import { getBaseUrlValue, shouldUseProxy, buildApiUrl, isDemoDeployment } from '../utils/apiHelpers.js'
 import { extractSafeErrorMessage } from '../utils/sanitize.js'
 
 const normalizeCount = (value, fallback = 0) => {
@@ -37,6 +37,49 @@ const normalizeCollection = (collection) => {
 const normalizeCollectionList = (items) => {
   if (!Array.isArray(items)) return []
   return items.map(normalizeCollection).filter(Boolean)
+}
+
+const mergeDemoCollectionResponses = (responses) => {
+  const successful = responses.filter(response => response?.status === 200)
+  if (successful.length === 0) return responses[0]
+
+  const byName = new Map()
+  let reportedTotal = 0
+  let reportedFound = 0
+
+  successful.forEach((response) => {
+    const payload = response.data || {}
+    const items = Array.isArray(payload) ? payload : payload.collections
+
+    normalizeCollectionList(items).forEach((collection) => {
+      const existing = byName.get(collection.name)
+      if (!existing) {
+        byName.set(collection.name, collection)
+        return
+      }
+
+      byName.set(collection.name, {
+        ...existing,
+        ...collection,
+        num_documents: Math.max(existing.num_documents || 0, collection.num_documents || 0),
+        created_at: existing.created_at || collection.created_at || ''
+      })
+    })
+
+    reportedTotal = Math.max(reportedTotal, normalizeCount(payload.total, 0))
+    reportedFound = Math.max(reportedFound, normalizeCount(payload.found, 0))
+  })
+
+  const collections = Array.from(byName.values())
+  return {
+    ...successful[0],
+    status: 200,
+    data: {
+      collections,
+      total: Math.max(reportedTotal, collections.length),
+      found: Math.max(reportedFound, collections.length)
+    }
+  }
 }
 
 export function useCollections(baseUrl) {
@@ -110,14 +153,34 @@ export function useCollections(baseUrl) {
       }
       
       // Quick timeout for responsiveness
-      const response = await axios.get(url, {
+      const requestConfig = {
         signal,
-        timeout: 10000, // Increased for better reliability
+        timeout: 10000,
         headers: {
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
         },
-        validateStatus: (status) => status < 500 || status === 503 // Don't throw on 503
-      })
+        validateStatus: (status) => status < 500 || status === 503
+      }
+
+      let response
+      if (isDemoDeployment()) {
+        const samples = await Promise.allSettled(
+          Array.from({ length: 4 }, () => axios.get(url, requestConfig))
+        )
+        const completedResponses = samples
+          .filter(result => result.status === 'fulfilled')
+          .map(result => result.value)
+
+        if (completedResponses.length === 0) {
+          const firstFailure = samples.find(result => result.status === 'rejected')
+          throw firstFailure?.reason || new Error('Failed to load collections')
+        }
+
+        response = mergeDemoCollectionResponses(completedResponses)
+      } else {
+        response = await axios.get(url, requestConfig)
+      }
       
       // Retry on 503 (Service Unavailable) - server may still be starting up
       if (response.status === 503 && retryCount < 3) {

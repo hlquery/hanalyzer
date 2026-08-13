@@ -53,6 +53,44 @@ try {
   assert.equal(raced.collections.value[0].num_documents, 2)
   assert.equal(raced.loading.value, false)
 
+  const originalWindow = globalThis.window
+  globalThis.window = {
+    HANALYZER_CONFIG: { deploymentDemoMode: true },
+    location: { hostname: 'demo.hlquery.com', origin: 'https://demo.hlquery.com' }
+  }
+
+  let demoRequest = 0
+  axios.get = async () => {
+    demoRequest += 1
+    if (demoRequest % 2 === 1) {
+      return {
+        status: 200,
+        data: { collections: [{ name: 'universities', num_documents: 100 }], total: 1, found: 1 }
+      }
+    }
+    return {
+      status: 200,
+      data: { collections: [{ name: 'benchmark', num_documents: 1500 }], total: 1, found: 1 }
+    }
+  }
+
+  const recoveredDemoCatalog = useCollections(ref('/api'))
+  await recoveredDemoCatalog.loadCollections()
+
+  assert.equal(demoRequest, 4, 'demo mode samples multiple replicas')
+  assert.deepEqual(
+    recoveredDemoCatalog.collections.value.map(({ name }) => name),
+    ['universities', 'benchmark'],
+    'collections present on either demo replica remain visible'
+  )
+  assert.equal(recoveredDemoCatalog.total.value, 2)
+
+  if (originalWindow === undefined) {
+    delete globalThis.window
+  } else {
+    globalThis.window = originalWindow
+  }
+
   console.log('Collection state test passed')
 } finally {
   axios.get = originalGet
