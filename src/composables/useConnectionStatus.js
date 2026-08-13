@@ -3,6 +3,10 @@ import axios from 'axios'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
 import { authManager } from './useAuth.js'
 
+export const shouldShowConnectingState = (isChecking, isConnected) => {
+  return Boolean(isChecking && !isConnected)
+}
+
 export function useConnectionStatus(baseUrl) {
   const isConnected = ref(false)
   const isChecking = ref(false)

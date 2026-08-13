@@ -111,7 +111,7 @@ import CommandPalette from './components/CommandPalette.vue'
 import AppHeader from './components/AppHeader.vue'
 import ToastContainer from './components/ToastContainer.vue'
 import { useToast } from './composables/useToast'
-import { useConnectionStatus } from './composables/useConnectionStatus'
+import { shouldShowConnectingState, useConnectionStatus } from './composables/useConnectionStatus'
 
 const router = useRouter()
 const route = useRoute()
@@ -139,7 +139,7 @@ const showDisconnectedState = computed(() => {
   return hasChecked.value && !isChecking.value && !isConnected.value
 })
 const showConnectingState = computed(() => {
-  return !hasChecked.value || (!isConnected.value && isChecking.value)
+  return shouldShowConnectingState(isChecking.value, isConnected.value)
 })
 
 // Expose baseUrl globally for axios interceptor

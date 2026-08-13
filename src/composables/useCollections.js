@@ -1,6 +1,12 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl, isDemoDeployment } from '../utils/apiHelpers.js'
+import {
+  getBaseUrlValue,
+  shouldUseProxy,
+  buildApiUrl,
+  isDemoDeployment,
+  withDemoReplicaProbe
+} from '../utils/apiHelpers.js'
 import { extractSafeErrorMessage } from '../utils/sanitize.js'
 
 const normalizeCount = (value, fallback = 0) => {
@@ -39,46 +45,84 @@ const normalizeCollectionList = (items) => {
   return items.map(normalizeCollection).filter(Boolean)
 }
 
+const DEMO_COLLECTION_CACHE_KEY = 'hlquery.demo.collections.v1'
+
+const getCollectionResponseItems = (response) => {
+  const payload = response?.data
+  return normalizeCollectionList(Array.isArray(payload) ? payload : payload?.collections)
+}
+
+const getCollectionResponseFingerprint = (response) => {
+  return getCollectionResponseItems(response)
+    .map(collection => collection.name)
+    .sort((left, right) => left.localeCompare(right))
+    .join('\u0000')
+}
+
+const readDemoCollectionSnapshot = () => {
+  if (typeof window === 'undefined' || !window.sessionStorage) return null
+
+  try {
+    const snapshot = JSON.parse(window.sessionStorage.getItem(DEMO_COLLECTION_CACHE_KEY) || 'null')
+    if (!snapshot || !Array.isArray(snapshot.collections)) return null
+
+    return {
+      status: 200,
+      data: snapshot
+    }
+  } catch (_) {
+    return null
+  }
+}
+
+const writeDemoCollectionSnapshot = (payload) => {
+  if (typeof window === 'undefined' || !window.sessionStorage) return
+
+  try {
+    window.sessionStorage.setItem(DEMO_COLLECTION_CACHE_KEY, JSON.stringify(payload))
+  } catch (_) {
+    // Storage can be disabled or full; sampling still provides recovery.
+  }
+}
+
 const mergeDemoCollectionResponses = (responses) => {
   const successful = responses.filter(response => response?.status === 200)
   if (successful.length === 0) return responses[0]
 
+  const ranked = successful
+    .map(response => ({ response, collections: getCollectionResponseItems(response) }))
+    .sort((left, right) => right.collections.length - left.collections.length)
+  const authoritative = ranked[0]
   const byName = new Map()
-  let reportedTotal = 0
-  let reportedFound = 0
 
-  successful.forEach((response) => {
-    const payload = response.data || {}
-    const items = Array.isArray(payload) ? payload : payload.collections
-
-    normalizeCollectionList(items).forEach((collection) => {
+  authoritative.collections.forEach(collection => byName.set(collection.name, collection))
+  ranked.slice(1).forEach(({ collections }) => {
+    collections.forEach((collection) => {
       const existing = byName.get(collection.name)
-      if (!existing) {
-        byName.set(collection.name, collection)
-        return
-      }
+      if (!existing) return
 
       byName.set(collection.name, {
-        ...existing,
         ...collection,
+        ...existing,
         num_documents: Math.max(existing.num_documents || 0, collection.num_documents || 0),
         created_at: existing.created_at || collection.created_at || ''
       })
     })
-
-    reportedTotal = Math.max(reportedTotal, normalizeCount(payload.total, 0))
-    reportedFound = Math.max(reportedFound, normalizeCount(payload.found, 0))
   })
 
   const collections = Array.from(byName.values())
+    .sort((left, right) => left.name.localeCompare(right.name))
+  const authoritativePayload = authoritative.response.data || {}
+  const payload = {
+    collections,
+    total: Math.max(normalizeCount(authoritativePayload.total, collections.length), collections.length),
+    found: Math.max(normalizeCount(authoritativePayload.found, collections.length), collections.length)
+  }
+
   return {
-    ...successful[0],
+    ...authoritative.response,
     status: 200,
-    data: {
-      collections,
-      total: Math.max(reportedTotal, collections.length),
-      found: Math.max(reportedFound, collections.length)
-    }
+    data: payload
   }
 }
 
@@ -165,19 +209,45 @@ export function useCollections(baseUrl) {
 
       let response
       if (isDemoDeployment()) {
-        const samples = await Promise.allSettled(
-          Array.from({ length: 4 }, () => axios.get(url, requestConfig))
-        )
-        const completedResponses = samples
-          .filter(result => result.status === 'fulfilled')
-          .map(result => result.value)
+        const sampleBatchId = `${Date.now()}-${requestId}`
+        const completedResponses = []
+        const failedSamples = []
+        const catalogFingerprints = new Set()
+
+        for (let round = 0; round < 3 && catalogFingerprints.size < 2; round += 1) {
+          const samples = await Promise.allSettled(
+            Array.from({ length: 4 }, (_, sampleIndex) => {
+              const probeId = `${sampleBatchId}-${round}-${sampleIndex}`
+              return axios.get(withDemoReplicaProbe(url, probeId), requestConfig)
+            })
+          )
+
+          samples.forEach((result) => {
+            if (result.status === 'fulfilled') {
+              completedResponses.push(result.value)
+              if (result.value?.status === 200) {
+                catalogFingerprints.add(getCollectionResponseFingerprint(result.value))
+              }
+            } else {
+              failedSamples.push(result.reason)
+            }
+          })
+        }
+
+        const isUnfilteredCatalog = !searchQuery?.trim()
+        if (isUnfilteredCatalog) {
+          const cachedSnapshot = readDemoCollectionSnapshot()
+          if (cachedSnapshot) completedResponses.push(cachedSnapshot)
+        }
 
         if (completedResponses.length === 0) {
-          const firstFailure = samples.find(result => result.status === 'rejected')
-          throw firstFailure?.reason || new Error('Failed to load collections')
+          throw failedSamples[0] || new Error('Failed to load collections')
         }
 
         response = mergeDemoCollectionResponses(completedResponses)
+        if (isUnfilteredCatalog && response?.status === 200) {
+          writeDemoCollectionSnapshot(response.data)
+        }
       } else {
         response = await axios.get(url, requestConfig)
       }

@@ -133,9 +133,10 @@
 </template>
 
 <script setup>
-import { computed, inject, onMounted, ref } from 'vue'
+import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
 import axios from 'axios'
 import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers'
+import { buildLinkEndpointKey, findLinkPingResult, getLinkEndpointParts } from '../utils/linkHelpers'
 import { authManager } from '../composables/useAuth'
 
 const baseUrl = inject('baseUrl')
@@ -147,46 +148,21 @@ const lastLinksCheck = ref(null)
 const nodeSortBy = ref([{ key: 'status', order: 'desc' }])
 const pingingRows = ref({})
 const pingOverrides = ref({})
+const linkAttempts = ref({})
+let latestLinksRequestId = 0
+let activeLinksController = null
 
 const getItemRow = (item) => {
   if (!item) return {}
   return item.raw || item
 }
 
-const canonicalizeHost = (host) => {
-  if (!host) return ''
-  const lowered = String(host).trim().toLowerCase()
-  if (lowered === 'localhost') return '127.0.0.1'
-  return lowered
-}
-
 const getEndpointParts = (node) => {
-  const row = getItemRow(node)
-  const host = canonicalizeHost(row.host)
-  const port = String(row.port || '').trim()
-  if (host || port) {
-    return { host: host || '-', port: port || '-' }
-  }
-
-  const endpoint = String(row.endpoint || '').trim().replace(/^https?:\/\//, '').replace(/\/+$/, '')
-  if (endpoint.includes(':')) {
-    const parts = endpoint.split(':')
-    return { host: parts[0] || '-', port: parts.slice(1).join(':') || '-' }
-  }
-
-  return { host: endpoint || '-', port: '-' }
+  return getLinkEndpointParts(getItemRow(node))
 }
 
 const buildEndpointKey = (node) => {
-  const row = getItemRow(node)
-  const normalized = String(row.normalized_endpoint || '').trim().toLowerCase()
-  if (normalized) return normalized
-
-  const endpoint = String(row.endpoint || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/\/+$/, '')
-  if (endpoint) return endpoint
-
-  const parts = getEndpointParts(row)
-  return `${parts.host}:${parts.port}`.toLowerCase()
+  return buildLinkEndpointKey(getItemRow(node))
 }
 
 const firstPresent = (...values) => values.find((value) => value !== null && value !== undefined && value !== '')
@@ -265,7 +241,7 @@ const linkItems = computed(() => {
       key: `${buildEndpointKey(row)}:${index}`,
       status: row.reachable ? 'Connected' : 'Disconnected',
       last_message: getLastMessage(row),
-      last_attempt: lastLinksCheck.value
+      last_attempt: linkAttempts.value[buildEndpointKey(row)] || null
     }
   })
 })
@@ -340,11 +316,7 @@ const pingNode = async (node) => {
       headers: authHeaders
     })
 
-    const pingRows = [
-      ...(Array.isArray(response.data?.nodes) ? response.data.nodes : []),
-      ...(Array.isArray(response.data?.slaves) ? response.data.slaves : [])
-    ]
-    const pingRow = pingRows.find((item) => buildEndpointKey(item) === key) || pingRows[0]
+    const pingRow = findLinkPingResult(response.data, key)
     if (!pingRow) {
       throw new Error('Server returned no ping result for this link.')
     }
@@ -358,7 +330,9 @@ const pingNode = async (node) => {
         error: pingRow.reachable ? null : (pingRow.error || 'Ping failed')
       }
     }
-    lastLinksCheck.value = Date.now()
+    const checkedAt = Date.now()
+    linkAttempts.value = { ...linkAttempts.value, [key]: checkedAt }
+    lastLinksCheck.value = checkedAt
   } catch (err) {
     pingOverrides.value = {
       ...pingOverrides.value,
@@ -369,7 +343,9 @@ const pingNode = async (node) => {
         error: err.response?.data?.error || err.message || 'Ping failed'
       }
     }
-    lastLinksCheck.value = Date.now()
+    const checkedAt = Date.now()
+    linkAttempts.value = { ...linkAttempts.value, [key]: checkedAt }
+    lastLinksCheck.value = checkedAt
   } finally {
     pingingRows.value = {
       ...pingingRows.value,
@@ -379,6 +355,9 @@ const pingNode = async (node) => {
 }
 
 const fetchLinks = async (path, stateRef) => {
+  const requestId = ++latestLinksRequestId
+  activeLinksController?.abort()
+  activeLinksController = new AbortController()
   stateRef.value = true
   error.value = null
 
@@ -386,22 +365,37 @@ const fetchLinks = async (path, stateRef) => {
     const baseUrlValue = getBaseUrlValue(baseUrl)
     const useProxy = shouldUseProxy(baseUrlValue)
     const url = buildApiUrl(baseUrlValue, useProxy, path, { ping: 'true' })
-    const response = await axios.get(url, { timeout: 10000 })
+    const response = await axios.get(url, {
+      timeout: 10000,
+      signal: activeLinksController.signal
+    })
+    if (requestId !== latestLinksRequestId) return
+
     const clusterNodes = Array.isArray(response.data?.nodes)
       ? response.data.nodes.map((node) => ({ ...node, link_type: 'Cluster' }))
       : []
     const slaveNodes = Array.isArray(response.data?.slaves)
       ? response.data.slaves.map((node) => ({ ...node, link_type: 'Slave' }))
       : []
-    links.value = [...clusterNodes, ...slaveNodes]
-    lastLinksCheck.value = Date.now()
+    const nextLinks = [...clusterNodes, ...slaveNodes]
+    const checkedAt = Date.now()
+    links.value = nextLinks
+    linkAttempts.value = Object.fromEntries(
+      nextLinks.map((node) => [buildEndpointKey(node), checkedAt])
+    )
+    pingOverrides.value = {}
+    lastLinksCheck.value = checkedAt
   } catch (err) {
+    if (requestId !== latestLinksRequestId || axios.isCancel(err)) return
     error.value = err.response?.data?.error || err.message || 'Failed to load cluster links'
     if (path === '/links') {
       links.value = []
     }
   } finally {
-    stateRef.value = false
+    if (requestId === latestLinksRequestId) {
+      stateRef.value = false
+      activeLinksController = null
+    }
   }
 }
 
@@ -411,6 +405,21 @@ const loadLinks = async () => {
 
 onMounted(async () => {
   await loadLinks()
+})
+
+watch(
+  () => getBaseUrlValue(baseUrl),
+  (nextUrl, previousUrl) => {
+    if (nextUrl !== previousUrl) {
+      loadLinks()
+    }
+  }
+)
+
+onUnmounted(() => {
+  latestLinksRequestId += 1
+  activeLinksController?.abort()
+  activeLinksController = null
 })
 </script>
 

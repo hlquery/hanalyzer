@@ -19,7 +19,11 @@ import hanalyzerConfig from '../hanalyzer.conf.js'
 import axios from 'axios'
 import { authManager } from './composables/useAuth'
 import { installUsageRecorder } from './utils/usageRecorder'
-import { demoReplicaRetryDelay, shouldRetryDemoCollectionRead } from './utils/apiHelpers'
+import {
+  demoReplicaRetryDelay,
+  shouldRetryDemoCollectionRead,
+  withDemoReplicaProbe
+} from './utils/apiHelpers'
 
 // Initialize window global early (before interceptor runs)
 if (typeof window !== 'undefined') {
@@ -168,6 +172,7 @@ axios.interceptors.response.use(
         if (!error.config.signal?.aborted) {
           return axios({
             ...error.config,
+            url: withDemoReplicaProbe(error.config.url, `retry-${Date.now()}-${nextAttempt}`),
             __hlqueryDemoReplicaRetryCount: nextAttempt,
             headers: {
               ...(error.config.headers || {}),

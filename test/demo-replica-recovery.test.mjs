@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import {
   demoReplicaRetryDelay,
   isDemoDeployment,
-  shouldRetryDemoCollectionRead
+  shouldRetryDemoCollectionRead,
+  withDemoReplicaProbe
 } from '../src/utils/apiHelpers.js'
 
 const originalWindow = globalThis.window
@@ -35,6 +36,15 @@ try {
   }), false, 'unrelated missing routes are not retried')
   assert.equal(demoReplicaRetryDelay(1), 75)
   assert.equal(demoReplicaRetryDelay(99), 400)
+  assert.equal(
+    withDemoReplicaProbe('/api/collections?limit=1000', 'sample one'),
+    '/api/collections?limit=1000&_hlq_demo_replica=sample+one'
+  )
+  assert.equal(
+    withDemoReplicaProbe('/api/collections/universities/documents?_hlq_demo_replica=old', 'new'),
+    '/api/collections/universities/documents?_hlq_demo_replica=new',
+    'retry probes replace their previous value instead of growing the URL'
+  )
 
   console.log('Demo replica recovery test passed')
 } finally {

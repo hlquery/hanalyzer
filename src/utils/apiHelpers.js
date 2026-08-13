@@ -93,6 +93,32 @@ export function demoReplicaRetryDelay(attempt) {
 }
 
 /**
+ * Add a unique cache-busting probe to a demo read. The public demo has more
+ * than one backend catalog, so identical concurrent URLs may be collapsed by
+ * an intermediary and all reach the same replica.
+ */
+export function withDemoReplicaProbe(requestUrl, probeId) {
+  const rawUrl = String(requestUrl || '')
+  if (!rawUrl) return rawUrl
+
+  const isAbsolute = /^[a-z][a-z0-9+.-]*:\/\//i.test(rawUrl)
+  const baseOrigin = typeof window !== 'undefined' && window.location?.origin
+    ? window.location.origin
+    : 'http://localhost'
+
+  try {
+    const parsed = new URL(rawUrl, baseOrigin)
+    parsed.searchParams.set('_hlq_demo_replica', String(probeId))
+    return isAbsolute
+      ? parsed.toString()
+      : `${parsed.pathname}${parsed.search}${parsed.hash}`
+  } catch (_) {
+    const separator = rawUrl.includes('?') ? '&' : '?'
+    return `${rawUrl}${separator}_hlq_demo_replica=${encodeURIComponent(String(probeId))}`
+  }
+}
+
+/**
  * Build API URL with consistent encoding
  * @param {string} baseUrlValue - Base URL string
  * @param {boolean} useProxy - Whether to use proxy

@@ -1,12 +1,31 @@
 import assert from 'node:assert/strict'
 import { ref } from 'vue'
 import axios from 'axios'
-import { useConnectionStatus } from '../src/composables/useConnectionStatus.js'
+import {
+  shouldShowConnectingState,
+  useConnectionStatus
+} from '../src/composables/useConnectionStatus.js'
 
 const originalGet = axios.get
 const originalWarn = console.warn
 
 try {
+  assert.equal(
+    shouldShowConnectingState(false, false),
+    false,
+    'the connecting screen stays hidden before a request actually starts'
+  )
+  assert.equal(
+    shouldShowConnectingState(true, false),
+    true,
+    'the connecting screen is visible during an active initial or reconnect request'
+  )
+  assert.equal(
+    shouldShowConnectingState(true, true),
+    false,
+    'background health checks do not cover an already connected application'
+  )
+
   // The composable is exercised directly here instead of through a mounted
   // component; suppress only Vue's expected lifecycle-context warnings.
   console.warn = (...args) => {
