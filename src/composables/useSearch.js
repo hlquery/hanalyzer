@@ -12,6 +12,7 @@ import { extractSafeErrorMessage, sanitizeError } from '../utils/sanitize.js'
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
 const DEMO_SEARCH_SAMPLE_COUNT = 4
+const DEMO_SEARCH_SAMPLE_TIMEOUT_MS = 2000
 
 const getSearchResponseResultCount = (response) => {
   const data = response?.data
@@ -40,6 +41,44 @@ const selectMostCompleteSearchResponse = (responses) => {
     return (rightCount.reported - leftCount.reported) ||
       (rightCount.returned - leftCount.returned)
   })[0]
+}
+
+const sampleDemoSearch = async (url, requestId, postSearch) => {
+  const sampleBatchId = `${Date.now()}-${requestId}`
+  const samples = Array.from({ length: DEMO_SEARCH_SAMPLE_COUNT }, (_, sampleIndex) => (
+    postSearch(
+      withDemoReplicaProbe(url, `${sampleBatchId}-${sampleIndex}`),
+      { timeout: DEMO_SEARCH_SAMPLE_TIMEOUT_MS }
+    )
+  ))
+
+  // Return as soon as any replica proves that the query has results. Waiting
+  // for every sample made a single unhealthy replica hold the page spinner
+  // until the full request timeout even though another replica had answered.
+  const firstPopulated = new Promise((resolve) => {
+    samples.forEach((sample) => {
+      sample.then((response) => {
+        const count = getSearchResponseResultCount(response)
+        if (count.reported > 0 || count.returned > 0) {
+          resolve(response)
+        }
+      }).catch(() => {})
+    })
+  })
+
+  const bestSettled = Promise.allSettled(samples).then((settled) => {
+    const successful = settled
+      .filter((sample) => sample.status === 'fulfilled')
+      .map((sample) => sample.value)
+
+    if (successful.length === 0) {
+      throw settled.find((sample) => sample.status === 'rejected')?.reason ||
+        new Error('Search failed on every demo replica')
+    }
+    return selectMostCompleteSearchResponse(successful)
+  })
+
+  return Promise.race([firstPopulated, bestSettled])
 }
 
 const hasCaseSensitiveDirective = (query) => {
@@ -370,27 +409,17 @@ export function useSearch(baseUrl) {
         timeout: 10000,
         signal
       }
-      const postSearch = (requestUrl) => axios.post(requestUrl, params, requestConfig)
+      const postSearch = (requestUrl, configOverrides = {}) => axios.post(
+        requestUrl,
+        params,
+        { ...requestConfig, ...configOverrides }
+      )
 
       let response
       directSearchExecuted.value = true
       try {
         if (isDemoDeployment()) {
-          const sampleBatchId = `${Date.now()}-${requestId}`
-          const samples = await Promise.allSettled(
-            Array.from({ length: DEMO_SEARCH_SAMPLE_COUNT }, (_, sampleIndex) => (
-              postSearch(withDemoReplicaProbe(url, `${sampleBatchId}-${sampleIndex}`))
-            ))
-          )
-          const successful = samples
-            .filter((sample) => sample.status === 'fulfilled')
-            .map((sample) => sample.value)
-
-          if (successful.length === 0) {
-            throw samples.find((sample) => sample.status === 'rejected')?.reason ||
-              new Error('Search failed on every demo replica')
-          }
-          response = selectMostCompleteSearchResponse(successful)
+          response = await sampleDemoSearch(url, requestId, postSearch)
         } else {
           response = await postSearch(url)
         }

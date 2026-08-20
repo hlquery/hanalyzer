@@ -67,14 +67,14 @@ try {
   }
   const demoRequests = []
   const demoResponses = [
-    { status: 200, data: { hits: [], found: 0 } },
+    new Promise(() => {}),
     { status: 200, data: { hits: [hit('complete', 'Complete replica')], found: 100 } },
     { status: 200, data: { hits: [], found: 0 } },
     { status: 200, data: { hits: [hit('also-complete', 'Also complete')], found: 100 } }
   ]
-  axios.post = async (url) => {
+  axios.post = (url) => {
     demoRequests.push(url)
-    return demoResponses[demoRequests.length - 1]
+    return Promise.resolve(demoResponses[demoRequests.length - 1])
   }
 
   const demoSearch = useSearch('/api')
