@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useSearch } from '../src/composables/useSearch.js'
 
 const originalPost = axios.post
+const originalWindow = globalThis.window
 
 const hit = (id, title) => ({
   document: { id, title },
@@ -57,6 +58,38 @@ try {
   assert.deepEqual(racedSearch.searchResults.value.map(({ id }) => id), ['newest'])
   assert.equal(racedSearch.loading.value, false)
 
+  globalThis.window = {
+    HANALYZER_CONFIG: { deploymentDemoMode: true },
+    location: {
+      hostname: 'demo.hlquery.com',
+      origin: 'https://demo.hlquery.com'
+    }
+  }
+  const demoRequests = []
+  const demoResponses = [
+    { status: 200, data: { hits: [], found: 0 } },
+    { status: 200, data: { hits: [hit('complete', 'Complete replica')], found: 100 } },
+    { status: 200, data: { hits: [], found: 0 } },
+    { status: 200, data: { hits: [hit('also-complete', 'Also complete')], found: 100 } }
+  ]
+  axios.post = async (url) => {
+    demoRequests.push(url)
+    return demoResponses[demoRequests.length - 1]
+  }
+
+  const demoSearch = useSearch('/api')
+  await demoSearch.performSearch('books', 'replica consistency', 100)
+  assert.equal(demoRequests.length, 4)
+  assert.ok(demoRequests.every((url) => url.includes('_hlq_demo_replica=')))
+  assert.equal(demoSearch.totalFound.value, 100)
+  assert.equal(demoSearch.searchResults.value.length, 1)
+
+  if (originalWindow === undefined) {
+    delete globalThis.window
+  } else {
+    globalThis.window = originalWindow
+  }
+
   let requestCount = 0
   axios.post = async () => {
     requestCount += 1
@@ -73,4 +106,9 @@ try {
   console.log('Search interaction test passed')
 } finally {
   axios.post = originalPost
+  if (originalWindow === undefined) {
+    delete globalThis.window
+  } else {
+    globalThis.window = originalWindow
+  }
 }

@@ -1,10 +1,46 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import { getBaseUrlValue, shouldUseProxy, buildApiUrl } from '../utils/apiHelpers.js'
+import {
+  getBaseUrlValue,
+  shouldUseProxy,
+  buildApiUrl,
+  isDemoDeployment,
+  withDemoReplicaProbe
+} from '../utils/apiHelpers.js'
 import { extractSafeErrorMessage, sanitizeError } from '../utils/sanitize.js'
 
 const DEFAULT_MAYBE_MIN = 5
 const DEFAULT_MAYBE_LIMIT = 1
+const DEMO_SEARCH_SAMPLE_COUNT = 4
+
+const getSearchResponseResultCount = (response) => {
+  const data = response?.data
+  const results = Array.isArray(data?.hits)
+    ? data.hits
+    : (Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []))
+  const rawReported = data?.found
+  const reported = rawReported === null || rawReported === undefined || rawReported === ''
+    ? Number.NaN
+    : Number(rawReported)
+
+  return {
+    reported: Number.isFinite(reported) && reported >= 0 ? reported : results.length,
+    returned: results.length
+  }
+}
+
+// The public demo can briefly route identical reads to replicas at different
+// indexing generations. Prefer the successful response with the largest
+// authoritative result set instead of letting a lagging empty replica make a
+// populated collection appear empty.
+const selectMostCompleteSearchResponse = (responses) => {
+  return [...responses].sort((left, right) => {
+    const leftCount = getSearchResponseResultCount(left)
+    const rightCount = getSearchResponseResultCount(right)
+    return (rightCount.reported - leftCount.reported) ||
+      (rightCount.returned - leftCount.returned)
+  })[0]
+}
 
 const hasCaseSensitiveDirective = (query) => {
   return /\b(?:do|is):case[-_]?sensitive\b/i.test(String(query || ''))
@@ -327,16 +363,37 @@ export function useSearch(baseUrl) {
         params.maybe_limit = maybeLimit
       }
       
+      const requestConfig = {
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000,
+        signal
+      }
+      const postSearch = (requestUrl) => axios.post(requestUrl, params, requestConfig)
+
       let response
       directSearchExecuted.value = true
       try {
-        response = await axios.post(url, params, {
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          timeout: 10000,
-          signal
-        })
+        if (isDemoDeployment()) {
+          const sampleBatchId = `${Date.now()}-${requestId}`
+          const samples = await Promise.allSettled(
+            Array.from({ length: DEMO_SEARCH_SAMPLE_COUNT }, (_, sampleIndex) => (
+              postSearch(withDemoReplicaProbe(url, `${sampleBatchId}-${sampleIndex}`))
+            ))
+          )
+          const successful = samples
+            .filter((sample) => sample.status === 'fulfilled')
+            .map((sample) => sample.value)
+
+          if (successful.length === 0) {
+            throw samples.find((sample) => sample.status === 'rejected')?.reason ||
+              new Error('Search failed on every demo replica')
+          }
+          response = selectMostCompleteSearchResponse(successful)
+        } else {
+          response = await postSearch(url)
+        }
       } catch (proxyErr) {
         if (axios.isCancel(proxyErr) || requestId !== latestSearchRequestId) {
           return
@@ -350,13 +407,7 @@ export function useSearch(baseUrl) {
         if (useProxy && proxyUnavailable && hasDirectServerUrl && !baseUrlValue.includes('localhost:8080')) {
           const directUrl = buildApiUrl(baseUrlValue, false, searchPath)
           try {
-            response = await axios.post(directUrl, params, {
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              timeout: 10000,
-              signal
-            })
+            response = await postSearch(directUrl)
           } catch (directErr) {
             throw proxyErr
           }
@@ -374,7 +425,7 @@ export function useSearch(baseUrl) {
         // Handle standard search response format
         if (response.data.hits && Array.isArray(response.data.hits)) {
           // Store total found count
-          totalFound.value = response.data.found !== undefined ? response.data.found : response.data.hits.length
+          totalFound.value = getSearchResponseResultCount(response).reported
           
           // Preserve backend order. The server already applies explicit
           // sort_by values, relevance order, and collection defaults such as

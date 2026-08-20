@@ -568,7 +568,7 @@
             {{ totalFound || searchResults.length }} found
           </v-chip>
           <span v-if="(searchQuery || '').trim()" class="text-caption text-harmony-muted">
-            Hanalyzer can say {{ searchResults.length }} results for <strong>{{ searchQuery.trim() }}</strong><span v-if="searchTime"> ({{ searchTime }}s)</span>
+            Showing {{ searchResults.length }} of {{ totalFound || searchResults.length }} results for <strong>{{ searchQuery.trim() }}</strong><span v-if="searchTime"> ({{ searchTime }}s)</span>
           </span>
         </div>
         <v-spacer></v-spacer>
