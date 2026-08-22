@@ -235,8 +235,8 @@ The default local request path is:
 browser → http://localhost:8080/api/* → Vite proxy → http://localhost:9200/*
 ```
 
-This proxy exists only in the Vite development server. A static `dist/` deployment
-must either:
+The `./hanalyzer preview` command uses this proxy as well. Other static `dist/`
+deployments must either:
 
 1. connect directly to an API that allows the UI origin through CORS; or
 2. configure its web server to proxy `/api` to hlquery.

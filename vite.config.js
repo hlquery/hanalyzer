@@ -87,6 +87,69 @@ export default defineConfig(({ mode }) => {
   const resolvedBaseUrl = isProduction
     ? normalizeBaseUrl(appConfig.server.baseUrl, '/')
     : '/'
+
+  const apiProxy = {
+    '/api': {
+      target: appConfig.server.apiTarget,
+      changeOrigin: true,
+      rewrite: (path) => path.replace(/^\/api/, ''),
+      ws: true,
+      timeout: 30000,
+      proxyTimeout: 30000,
+      secure: false,
+      followRedirects: true,
+      xfwd: true,
+      agent: false,
+      headers: {
+        'Connection': 'keep-alive'
+      },
+      configure: (proxy) => {
+        proxy.on('error', (err, req, res) => {
+          console.error('Proxy error:', err.message, 'for path:', req.url)
+          if (res && !res.headersSent) {
+            res.writeHead(503, {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            })
+            res.end(JSON.stringify({
+              error: 'Service Unavailable',
+              message: 'The server is not ready or not running. Please wait a moment and try again.',
+              details: err.message
+            }))
+          }
+        })
+
+        proxy.on('proxyReq', (proxyReq, req, res) => {
+          if (req.headers.authorization) {
+            proxyReq.setHeader('Authorization', req.headers.authorization)
+          }
+          if (req.headers['x-api-key']) {
+            proxyReq.setHeader('X-API-Key', req.headers['x-api-key'])
+          }
+
+          proxyReq.setHeader('Connection', 'keep-alive')
+          proxyReq.setTimeout(30000, () => {
+            if (res && !res.headersSent) {
+              res.writeHead(504, {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+              })
+              res.end(JSON.stringify({
+                error: 'Gateway Timeout',
+                message: 'The server took too long to respond. It may still be starting up.'
+              }))
+            }
+          })
+        })
+
+        proxy.on('proxyRes', (proxyRes, req) => {
+          if (req.url && req.url.includes('/etc')) {
+            console.log(`[Vite Proxy] Successfully proxied ${req.method} ${req.url} -> ${proxyRes.statusCode}`)
+          }
+        })
+      }
+    }
+  }
   
   return {
     plugins: [
@@ -157,79 +220,14 @@ export default defineConfig(({ mode }) => {
       strictPort: false,
       open: appConfig.server.open,
       cors: true,
-      proxy: {
-        '/api': {
-          target: appConfig.server.apiTarget,
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api/, ''),
-          ws: true,
-          timeout: 30000,
-          proxyTimeout: 30000,
-          secure: false,
-          followRedirects: true,
-          xfwd: true,
-          agent: false,
-          headers: {
-            'Connection': 'keep-alive'
-          },
-          configure: (proxy, options) => {
-            proxy.on('error', (err, req, res) => {
-              console.error('Proxy error:', err.message, 'for path:', req.url)
-              if (res && !res.headersSent) {
-                res.writeHead(503, { 
-                  'Content-Type': 'application/json',
-                  'Access-Control-Allow-Origin': '*'
-                })
-                res.end(JSON.stringify({ 
-                  error: 'Service Unavailable', 
-                  message: 'The server is not ready or not running. Please wait a moment and try again.',
-                  details: err.message
-                }))
-              }
-            })
-            
-            proxy.on('proxyReq', (proxyReq, req, res) => {
-              // Ensure all headers from the original request are forwarded
-              // Vite proxy should do this automatically, but we verify here
-              if (req.headers.authorization) {
-                proxyReq.setHeader('Authorization', req.headers.authorization)
-              }
-              if (req.headers['x-api-key']) {
-                proxyReq.setHeader('X-API-Key', req.headers['x-api-key'])
-              }
-              
-              // Set keep-alive for better connection reuse
-              proxyReq.setHeader('Connection', 'keep-alive')
-              
-              proxyReq.setTimeout(30000, () => {
-                if (res && !res.headersSent) {
-                  res.writeHead(504, { 
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                  })
-                  res.end(JSON.stringify({ 
-                    error: 'Gateway Timeout', 
-                    message: 'The server took too long to respond. It may still be starting up.' 
-                  }))
-                }
-              })
-            })
-            
-            proxy.on('proxyRes', (proxyRes, req, res) => {
-              // Log successful proxy responses for debugging
-              if (req.url && req.url.includes('/etc')) {
-                console.log(`[Vite Proxy] Successfully proxied ${req.method} ${req.url} -> ${proxyRes.statusCode}`)
-              }
-            })
-          }
-        }
-      }
+      proxy: apiProxy
     },
     preview: {
       port: appConfig.preview.port,
       host: appConfig.server.host,
       allowedHosts: appConfig.server.allowedHosts,
-      strictPort: false
+      strictPort: false,
+      proxy: apiProxy
     },
     optimizeDeps: {
       include: ['vue', 'vue-router', 'vuetify', 'axios', 'chart.js', 'vue-chartjs', 'gsap'],
