@@ -2772,7 +2772,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   border-color: #e5e7eb !important;
 }
 
-.nav-menu-btn {
+.app-navbar .nav-menu-btn,
+.app-navbar .nav-menu-btn.v-btn,
+.app-navbar .nav-menu-btn.header-action-btn--light {
   min-width: 132px !important;
   justify-content: center !important;
   margin-right: 6px !important;
@@ -2780,19 +2782,21 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   min-height: 32px !important;
   padding-inline: 11px !important;
   border-radius: 10px !important;
-  border: 1px solid rgba(148, 163, 184, 0.22) !important;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+  border: 1px solid #38bdf8 !important;
+  background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%) !important;
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.18) !important;
   transform: translateY(0) !important;
 }
 
-.nav-menu-btn:hover,
-.nav-menu-btn:active,
-.nav-menu-btn:focus,
-.nav-menu-btn:focus-visible {
+.app-navbar .nav-menu-btn:hover,
+.app-navbar .nav-menu-btn:active,
+.app-navbar .nav-menu-btn:focus,
+.app-navbar .nav-menu-btn:focus-visible {
   color: #0f172a !important;
+  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
+  border-color: #0ea5e9 !important;
   transform: translateY(0) !important;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06) !important;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.22) !important;
 }
 
 .nav-menu-btn:hover :deep(.v-icon),
@@ -2898,7 +2902,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .nav-menu-item :deep(.v-icon) {
-  color: #334155 !important;
+  color: #0ea5e9 !important;
   font-size: 16px !important;
 }
 
@@ -2945,7 +2949,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 }
 
 .nav-menu-item.nav-menu-item--active :deep(.v-icon) {
-  color: #ffffff !important;
+  color: #7dd3fc !important;
 }
 
 .hlquery-nav-button :deep(.v-btn__content span) {
@@ -4113,7 +4117,12 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
     transform: none !important;
   }
 
-  .app-navbar .nav-menu-btn,
+  .app-navbar .nav-menu-btn {
+    background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%) !important;
+    border: 1px solid #38bdf8 !important;
+    box-shadow: 0 8px 18px rgba(14, 165, 233, 0.2) !important;
+  }
+
   .app-navbar .connection-status-btn.header-action-btn--light {
     background: #ffffff !important;
     border: 1px solid rgba(148, 163, 184, 0.18) !important;
