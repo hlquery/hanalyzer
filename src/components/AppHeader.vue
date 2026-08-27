@@ -2782,9 +2782,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   min-height: 32px !important;
   padding-inline: 11px !important;
   border-radius: 10px !important;
-  border: 1px solid #38bdf8 !important;
-  background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%) !important;
-  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.18) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
   transform: translateY(0) !important;
 }
 
@@ -2793,10 +2793,10 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .app-navbar .nav-menu-btn:focus,
 .app-navbar .nav-menu-btn:focus-visible {
   color: #0f172a !important;
-  background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 100%) !important;
-  border-color: #0ea5e9 !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+  border-color: rgba(100, 116, 139, 0.28) !important;
   transform: translateY(0) !important;
-  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.22) !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06) !important;
 }
 
 .nav-menu-btn:hover :deep(.v-icon),
@@ -4118,9 +4118,9 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   }
 
   .app-navbar .nav-menu-btn {
-    background: linear-gradient(180deg, #bae6fd 0%, #7dd3fc 100%) !important;
-    border: 1px solid #38bdf8 !important;
-    box-shadow: 0 8px 18px rgba(14, 165, 233, 0.2) !important;
+    background: #ffffff !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12) !important;
   }
 
   .app-navbar .connection-status-btn.header-action-btn--light {
