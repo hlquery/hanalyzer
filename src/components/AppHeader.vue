@@ -2775,6 +2775,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 .app-navbar .nav-menu-btn,
 .app-navbar .nav-menu-btn.v-btn,
 .app-navbar .nav-menu-btn.header-action-btn--light {
+  --manage-button-foreground: #0f172a;
   min-width: 132px !important;
   justify-content: center !important;
   margin-right: 6px !important;
@@ -2817,7 +2818,7 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
 
 .nav-menu-btn .nav-button-text {
   margin-left: 0 !important;
-  color: #0f172a !important;
+  color: var(--manage-button-foreground) !important;
   font-size: 14px !important;
   font-weight: 700 !important;
   letter-spacing: -0.01em !important;
@@ -2829,8 +2830,10 @@ watch(isEffectivelyConnected, (newValue, oldValue) => {
   gap: 8px !important;
 }
 
-.nav-menu-btn :deep(.v-icon) {
-  color: #0f172a !important;
+.app-navbar .nav-menu-btn :deep(.v-icon),
+.app-navbar .nav-menu-btn :deep(.v-btn__prepend .v-icon),
+.app-navbar .nav-menu-btn :deep(.v-btn__prepend-inner .v-icon) {
+  color: var(--manage-button-foreground) !important;
   font-size: 18px !important;
   opacity: 1 !important;
 }
